@@ -127,4 +127,12 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "studio/index.html"),
+        advanced: path.resolve(__dirname, "studio/advanced-studio.html"),
+      },
+    },
+  },
 });
