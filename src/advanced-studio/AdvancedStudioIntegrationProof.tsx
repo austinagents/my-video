@@ -1,15 +1,16 @@
 import React from "react";
 import {
   AbsoluteFill,
-  Easing,
   interpolate,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
 import {antVStudioDesigns} from "../antv-studio/registry";
+import {cloneContent} from "../antv-studio/sample-content";
 import {STUDIO_FORMATS, type StudioFormatId} from "../antv-studio/studio-formats";
+import {defaultControls} from "../antv-studio/theme";
 import {studioTheme} from "../antv-studio/theme";
-import type {G2StudioDesign} from "../antv-studio/types";
+import type {AntVEngine, AntVStudioDesign} from "../antv-studio/types";
 import {
   BoardSceneRenderer,
   type BoardSceneContent,
@@ -18,24 +19,46 @@ import {
   InfographicSceneRenderer,
   type InfographicSceneContent,
 } from "./InfographicSceneRenderer";
-import type {AdvancedStudioScene, SceneBounds} from "./scene-contract";
+import {cameraPathStyle} from "./camera-paths";
+import type {
+  AdvancedStudioInfographicContent,
+  AdvancedStudioProject,
+  AdvancedStudioScene,
+  AdvancedStudioTimedScene,
+  SceneBounds,
+} from "./scene-contract";
 
 const fps = 30;
 const transitionFrames = 18;
 
-const selectedDesign = antVStudioDesigns.find(
-  (design): design is G2StudioDesign =>
-    design.engine === "g2" && design.id === "g2-revenue-ranking",
-);
+const findDesign = (designId: string, engine?: AntVEngine) =>
+  antVStudioDesigns.find(
+    (design) => design.id === designId && (!engine || design.engine === engine),
+  );
 
-if (!selectedDesign) {
-  throw new Error("AdvancedStudioIntegrationProof requires g2-revenue-ranking.");
-}
+const requireDesign = (designId: string, engine?: AntVEngine) => {
+  const design = findDesign(designId, engine);
+  if (!design) {
+    throw new Error(`Advanced Studio requires registered design ${designId}.`);
+  }
+  return design;
+};
+
+const revenueRankingDesign = requireDesign("g2-revenue-ranking", "g2");
+
+export const createAdvancedStudioInfographicContent = (
+  design: AntVStudioDesign,
+): AdvancedStudioInfographicContent => ({
+  designId: design.id,
+  content: cloneContent(design.defaultContent),
+  controls: defaultControls,
+});
 
 const scenes: AdvancedStudioScene[] = [
   {
     id: "board-hook",
     type: "board",
+    title: "Budget Focus",
     durationFrames: 120,
     content: {
       activeBlockId: "budget",
@@ -48,11 +71,10 @@ const scenes: AdvancedStudioScene[] = [
   },
   {
     id: "infographic-revenue-ranking",
-    type: "infographic",
+    type: "g2",
+    title: "Revenue Ranking",
     durationFrames: 150,
-    content: {
-      design: selectedDesign,
-    },
+    content: createAdvancedStudioInfographicContent(revenueRankingDesign),
     transitionIn: {
       preset: "crossfade",
       durationFrames: transitionFrames,
@@ -61,11 +83,14 @@ const scenes: AdvancedStudioScene[] = [
       preset: "crossfade",
       durationFrames: transitionFrames,
     },
-    cameraPreset: "push-in",
+    cameraPath: {
+      preset: "push-in",
+    },
   },
   {
     id: "board-cta",
     type: "board",
+    title: "Overview / CTA",
     durationFrames: 90,
     content: {
       activeBlockId: null,
@@ -78,20 +103,19 @@ const scenes: AdvancedStudioScene[] = [
   },
 ];
 
-export const advancedStudioIntegrationProofDuration = scenes.reduce(
-  (sum, scene) => sum + scene.durationFrames,
-  0,
-);
-
-export type AdvancedStudioTimedScene = AdvancedStudioScene & {
-  startFrame: number;
-  endFrame: number;
+export const advancedStudioDefaultProject: AdvancedStudioProject = {
+  title: "Advanced Studio Proof",
+  scenes,
 };
 
-export const advancedStudioIntegrationScenes = scenes;
+export const getAdvancedStudioProjectDuration = (
+  project: AdvancedStudioProject,
+) => project.scenes.reduce((sum, scene) => sum + scene.durationFrames, 0);
 
-export const advancedStudioIntegrationTimedScenes =
-  scenes.reduce<AdvancedStudioTimedScene[]>((items, scene) => {
+export const getAdvancedStudioTimedScenes = (
+  project: AdvancedStudioProject,
+) =>
+  project.scenes.reduce<AdvancedStudioTimedScene[]>((items, scene) => {
     const startFrame = items.at(-1)?.endFrame ?? 0;
     items.push({
       ...scene,
@@ -101,10 +125,23 @@ export const advancedStudioIntegrationTimedScenes =
     return items;
   }, []);
 
-export const getAdvancedStudioSceneAtFrame = (frame: number) =>
-  advancedStudioIntegrationTimedScenes.find(
+export const advancedStudioIntegrationProofDuration =
+  getAdvancedStudioProjectDuration(advancedStudioDefaultProject);
+
+export const advancedStudioIntegrationTimedScenes =
+  getAdvancedStudioTimedScenes(advancedStudioDefaultProject);
+
+export const advancedStudioIntegrationScenes = scenes;
+
+export const getAdvancedStudioSceneAtFrame = (
+  frame: number,
+  project: AdvancedStudioProject = advancedStudioDefaultProject,
+) => {
+  const timedScenes = getAdvancedStudioTimedScenes(project);
+  return timedScenes.find(
     (scene) => frame >= scene.startFrame && frame < scene.endFrame,
-  ) ?? advancedStudioIntegrationTimedScenes.at(-1);
+  ) ?? timedScenes.at(-1);
+};
 
 const clamp = {
   extrapolateLeft: "clamp" as const,
@@ -147,24 +184,6 @@ const shouldRenderScene = (scene: AdvancedStudioTimedScene, frame: number) => {
   return frame >= visibleStart && frame < scene.endFrame;
 };
 
-const cameraStyle = (
-  scene: AdvancedStudioTimedScene,
-  progress: number,
-): React.CSSProperties => {
-  if (scene.cameraPreset !== "push-in") {
-    return {};
-  }
-
-  const eased = Easing.out(Easing.cubic)(progress);
-  const scale = interpolate(eased, [0, 1], [1, 1.08], clamp);
-  const translateY = interpolate(eased, [0, 1], [0, -18], clamp);
-
-  return {
-    transform: `translateY(${translateY}px) scale(${scale})`,
-    transformOrigin: "center center",
-  };
-};
-
 const renderScene = ({
   scene,
   formatId,
@@ -202,35 +221,57 @@ const renderScene = ({
     onError: (message: string) => onError(scene.id, message),
   };
 
-  if (scene.type === "infographic") {
+  const pathStyle = cameraPathStyle(
+    scene.cameraPath?.preset ?? scene.cameraPreset ?? "static",
+    progress,
+  );
+
+  if (scene.type === "g2" || scene.type === "g6" || scene.type === "s2") {
+    const content = scene.content as AdvancedStudioInfographicContent;
+    const design = requireDesign(content.designId, scene.type);
+    const infographicContent: InfographicSceneContent = {
+      design,
+      content: content.content,
+      controls: content.controls,
+    };
     return (
       <div
         style={{
           position: "absolute",
           inset: 0,
           overflow: "hidden",
-          ...cameraStyle(scene, progress),
+          ...pathStyle,
         }}
       >
         <InfographicSceneRenderer
           {...rendererProps}
-          content={scene.content as InfographicSceneContent}
+          content={infographicContent}
         />
       </div>
     );
   }
 
   return (
-    <BoardSceneRenderer
-      {...rendererProps}
-      content={scene.content as BoardSceneContent}
-    />
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        overflow: "hidden",
+        ...pathStyle,
+      }}
+    >
+      <BoardSceneRenderer
+        {...rendererProps}
+        content={scene.content as BoardSceneContent}
+      />
+    </div>
   );
 };
 
 export const AdvancedStudioIntegrationProof: React.FC<{
   formatId?: StudioFormatId;
-}> = ({formatId = "portrait"}) => {
+  project?: AdvancedStudioProject;
+}> = ({formatId = "portrait", project = advancedStudioDefaultProject}) => {
   const frame = useCurrentFrame();
   const {fps: fpsValue} = useVideoConfig();
   const format = STUDIO_FORMATS[formatId];
@@ -261,7 +302,11 @@ export const AdvancedStudioIntegrationProof: React.FC<{
     setErrors((current) => ({...current, [id]: message}));
   }, []);
 
-  const renderedScenes = advancedStudioIntegrationTimedScenes.filter((scene) =>
+  const timedScenes = React.useMemo(
+    () => getAdvancedStudioTimedScenes(project),
+    [project],
+  );
+  const renderedScenes = timedScenes.filter((scene) =>
     shouldRenderScene(scene, frame),
   );
 

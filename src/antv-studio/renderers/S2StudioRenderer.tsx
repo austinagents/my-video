@@ -30,7 +30,7 @@ export const S2StudioRenderer: React.FC<Props> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<TableSheet | null>(null);
   const generationRef = useRef(0);
-  const [message, setMessage] = useState("Loading S2 table");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const container = containerRef.current;
@@ -60,7 +60,7 @@ export const S2StudioRenderer: React.FC<Props> = ({
 
     const generation = generationRef.current + 1;
     generationRef.current = generation;
-    setMessage("Loading S2 table");
+    setErrorMessage("");
 
     const render = async () => {
       try {
@@ -72,12 +72,12 @@ export const S2StudioRenderer: React.FC<Props> = ({
         if (!container.querySelector("canvas")) {
           throw new Error(`${design.name} rendered without a canvas root.`);
         }
-        setMessage("");
+        setErrorMessage("");
         onReady();
       } catch (error) {
         if (generationRef.current !== generation) return;
         const text = error instanceof Error ? error.message : String(error);
-        setMessage(text);
+        setErrorMessage(text);
         onError(text);
       }
     };
@@ -91,9 +91,9 @@ export const S2StudioRenderer: React.FC<Props> = ({
       data-frame-height={frameHeight}
       style={{position: "relative", width, height}}
     >
-      {message ? (
-        <div style={{position: "absolute", inset: 0, display: "grid", placeItems: "center", color: "#b8ab95", fontSize: 13}}>
-          {message}
+      {errorMessage ? (
+        <div style={{position: "absolute", inset: 0, display: "grid", placeItems: "center", color: "#ff9e9e", fontSize: 13}}>
+          {errorMessage}
         </div>
       ) : null}
       <div ref={containerRef} style={{width, height}} />

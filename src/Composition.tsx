@@ -7,7 +7,6 @@ import {
   AdvancedStudioIntegrationProof,
   advancedStudioIntegrationFps,
   advancedStudioIntegrationFormats,
-  advancedStudioIntegrationProofDuration,
 } from "./advanced-studio/AdvancedStudioIntegrationProof";
 
 const totalFrames = Math.round(
@@ -16,6 +15,7 @@ const totalFrames = Math.round(
     0,
   ) * 30,
 );
+const advancedStudioMaxFrames = 1800;
 
 export const MyComposition: React.FC = () => {
   return (
@@ -42,7 +42,7 @@ export const MyComposition: React.FC = () => {
       <Composition
         id="AdvancedStudioIntegrationProofPortrait"
         component={AdvancedStudioIntegrationProof}
-        durationInFrames={advancedStudioIntegrationProofDuration}
+        durationInFrames={advancedStudioMaxFrames}
         fps={advancedStudioIntegrationFps}
         width={advancedStudioIntegrationFormats.portrait.width}
         height={advancedStudioIntegrationFormats.portrait.height}
@@ -52,7 +52,7 @@ export const MyComposition: React.FC = () => {
       <Composition
         id="AdvancedStudioIntegrationProofSquare"
         component={AdvancedStudioIntegrationProof}
-        durationInFrames={advancedStudioIntegrationProofDuration}
+        durationInFrames={advancedStudioMaxFrames}
         fps={advancedStudioIntegrationFps}
         width={advancedStudioIntegrationFormats.square.width}
         height={advancedStudioIntegrationFormats.square.height}
@@ -62,7 +62,7 @@ export const MyComposition: React.FC = () => {
       <Composition
         id="AdvancedStudioIntegrationProofVertical"
         component={AdvancedStudioIntegrationProof}
-        durationInFrames={advancedStudioIntegrationProofDuration}
+        durationInFrames={advancedStudioMaxFrames}
         fps={advancedStudioIntegrationFps}
         width={advancedStudioIntegrationFormats.vertical.width}
         height={advancedStudioIntegrationFormats.vertical.height}

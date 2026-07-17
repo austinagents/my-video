@@ -1,18 +1,20 @@
 import React from "react";
 import {continueRender, delayRender, interpolate} from "remotion";
 import {G2StudioRenderer} from "../antv-studio/renderers/G2StudioRenderer";
+import {G6StudioRenderer} from "../antv-studio/renderers/G6StudioRenderer";
+import {S2StudioRenderer} from "../antv-studio/renderers/S2StudioRenderer";
 import {cloneContent} from "../antv-studio/sample-content";
 import {getStudioLayout} from "../antv-studio/studio-formats";
 import {defaultControls, studioTheme} from "../antv-studio/theme";
 import type {
-  G2StudioDesign,
+  AntVStudioDesign,
   StudioContent,
   StudioControls,
 } from "../antv-studio/types";
 import type {SceneRendererProps} from "./scene-contract";
 
 export type InfographicSceneContent = {
-  design: G2StudioDesign;
+  design: AntVStudioDesign;
   content?: StudioContent;
   controls?: StudioControls;
 };
@@ -23,7 +25,7 @@ const clamp = {
 };
 
 const designAnimationStyle = (
-  design: G2StudioDesign,
+  design: AntVStudioDesign,
   progress: number,
 ): React.CSSProperties => {
   const eased = Math.max(0, Math.min(1, progress));
@@ -43,6 +45,38 @@ const designAnimationStyle = (
       opacity,
       clipPath: `inset(${100 - eased * 100}% 0 0 0)`,
       transform: `translateY(${(1 - eased) * 24}px)`,
+    };
+  }
+
+  if (design.animation === "row-reveal") {
+    return {
+      opacity,
+      clipPath: `inset(${100 - eased * 100}% 0 0 0)`,
+      transform: `translateY(${(1 - eased) * 18}px)`,
+    };
+  }
+
+  if (design.animation === "radial-reveal") {
+    return {
+      opacity,
+      clipPath: `circle(${eased * 76}% at 50% 50%)`,
+      transform: `scale(${scale})`,
+    };
+  }
+
+  if (design.animation === "top-down-tree") {
+    return {
+      opacity,
+      clipPath: `inset(0 0 ${100 - eased * 100}% 0)`,
+      transform: `translateY(${(1 - eased) * -16}px)`,
+    };
+  }
+
+  if (design.animation === "path-style-reveal") {
+    return {
+      opacity,
+      clipPath: `inset(0 ${100 - eased * 100}% 0 0)`,
+      transform: `scale(${scale})`,
     };
   }
 
@@ -163,18 +197,45 @@ export const InfographicSceneRenderer: React.FC<
           ...designAnimationStyle(design, progress),
         }}
       >
-        <G2StudioRenderer
-          design={design}
-          content={editableContent}
-          controls={controls}
-          width={layout.contentWidth}
-          height={layout.contentHeight}
-          frameWidth={format.width}
-          frameHeight={format.height}
-          onReady={finish}
-          onError={fail}
-        />
+        {design.engine === "g2" ? (
+          <G2StudioRenderer
+            design={design}
+            content={editableContent}
+            controls={controls}
+            width={layout.contentWidth}
+            height={layout.contentHeight}
+            frameWidth={format.width}
+            frameHeight={format.height}
+            onReady={finish}
+            onError={fail}
+          />
+        ) : design.engine === "g6" ? (
+          <G6StudioRenderer
+            design={design}
+            content={editableContent}
+            controls={controls}
+            width={layout.contentWidth}
+            height={layout.contentHeight}
+            frameWidth={format.width}
+            frameHeight={format.height}
+            onReady={finish}
+            onError={fail}
+          />
+        ) : (
+          <S2StudioRenderer
+            design={design}
+            content={editableContent}
+            controls={controls}
+            width={layout.contentWidth}
+            height={layout.contentHeight}
+            frameWidth={format.width}
+            frameHeight={format.height}
+            onReady={finish}
+            onError={fail}
+          />
+        )}
       </div>
+
     </div>
   );
 };

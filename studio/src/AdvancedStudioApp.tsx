@@ -23,9 +23,9 @@ import {
   Share2,
   SkipBack,
   SkipForward,
-  SlidersHorizontal,
   Sparkles,
   Square,
+  Trash2,
   Type,
   Upload,
   Video,
@@ -35,43 +35,42 @@ import {
 } from "lucide-react";
 import {
   AdvancedStudioIntegrationProof,
+  advancedStudioDefaultProject,
   advancedStudioIntegrationFormats,
   advancedStudioIntegrationFps,
-  advancedStudioIntegrationProofDuration,
-  advancedStudioIntegrationTimedScenes,
+  createAdvancedStudioInfographicContent,
+  getAdvancedStudioProjectDuration,
   getAdvancedStudioSceneAtFrame,
-  type AdvancedStudioTimedScene,
+  getAdvancedStudioTimedScenes,
 } from "../../src/advanced-studio/AdvancedStudioIntegrationProof";
 import type {BoardSceneContent} from "../../src/advanced-studio/BoardSceneRenderer";
-import type {InfographicSceneContent} from "../../src/advanced-studio/InfographicSceneRenderer";
+import type {
+  AdvancedStudioInfographicContent,
+  AdvancedStudioProject,
+  AdvancedStudioScene,
+  AdvancedStudioSceneType,
+  AdvancedStudioTimedScene,
+} from "../../src/advanced-studio/scene-contract";
+import {
+  advancedStudioCameraPaths,
+  getAdvancedStudioCameraPath,
+} from "../../src/advanced-studio/camera-paths";
+import {advancedStudioG2Templates} from "../../src/advanced-studio/g2-template-library";
+import {antVStudioDesigns} from "../../src/antv-studio/registry";
+import {cloneContent} from "../../src/antv-studio/sample-content";
+import {defaultControls} from "../../src/antv-studio/theme";
 import type {StudioFormatId} from "../../src/antv-studio/studio-formats";
+import type {
+  AntVEngine,
+  AntVStudioDesign,
+  StudioContent,
+} from "../../src/antv-studio/types";
+import {defaultProject} from "../../shared/project";
+import type {StudioProject} from "../../shared/project";
 
 const formatOrder: StudioFormatId[] = ["portrait", "square", "vertical"];
-
-const sceneLabels: Record<
-  string,
-  {
-    title: string;
-    subtitle: string;
-    thumbnailTone: "board" | "chart" | "cta";
-  }
-> = {
-  "board-hook": {
-    title: "Budget Focus",
-    subtitle: "Board Scene",
-    thumbnailTone: "board",
-  },
-  "infographic-revenue-ranking": {
-    title: "Revenue Ranking",
-    subtitle: "Infographic (G2)",
-    thumbnailTone: "chart",
-  },
-  "board-cta": {
-    title: "Overview / CTA",
-    subtitle: "Board Scene",
-    thumbnailTone: "cta",
-  },
-};
+const inspectorTabs = ["Scene", "Camera", "Transition", "Settings"] as const;
+const engineOrder: AntVEngine[] = ["g2", "g6", "s2"];
 
 const navItems = [
   {label: "Project", icon: Folder},
@@ -84,9 +83,23 @@ const navItems = [
   {label: "Settings", icon: Settings},
 ];
 
-const inspectorTabs = ["Scene", "Camera", "Transition", "Settings"] as const;
-const initialPreviewFrame =
-  (advancedStudioIntegrationTimedScenes[1]?.startFrame ?? 0) + 32;
+const copyProject = (project: AdvancedStudioProject): AdvancedStudioProject =>
+  JSON.parse(JSON.stringify(project)) as AdvancedStudioProject;
+
+const boardProjectCopy = (): StudioProject =>
+  JSON.parse(JSON.stringify(defaultProject)) as StudioProject;
+
+const titleForScene = (scene: AdvancedStudioScene) => scene.title;
+
+const subtitleForScene = (scene: AdvancedStudioScene) =>
+  scene.type === "board" ? "Board Scene" : `${scene.type.toUpperCase()} Infographic`;
+
+const sceneTone = (scene: AdvancedStudioScene): "board" | "chart" | "cta" =>
+  scene.type === "board"
+    ? (scene.content as BoardSceneContent).activeBlockId
+      ? "board"
+      : "cta"
+    : "chart";
 
 const formatFrameTime = (frame: number) => {
   const totalSeconds = Math.floor(frame / advancedStudioIntegrationFps);
@@ -104,12 +117,6 @@ const formatRange = (scene: AdvancedStudioTimedScene) =>
     scene.endFrame,
   ).slice(0, 5)}`;
 
-const titleForScene = (scene: AdvancedStudioTimedScene) =>
-  sceneLabels[scene.id]?.title ?? scene.id;
-
-const subtitleForScene = (scene: AdvancedStudioTimedScene) =>
-  sceneLabels[scene.id]?.subtitle ?? scene.type;
-
 const animationLabel = (animation?: string) => {
   if (!animation) return "None";
   return animation
@@ -118,28 +125,77 @@ const animationLabel = (animation?: string) => {
     .join(" ");
 };
 
+const designForScene = (scene: AdvancedStudioScene) => {
+  if (scene.type === "board") return null;
+  const content = scene.content as AdvancedStudioInfographicContent;
+  return antVStudioDesigns.find(
+    (design) => design.id === content.designId && design.engine === scene.type,
+  );
+};
+
+const firstDesignForEngine = (engine: AntVEngine) => {
+  const design = antVStudioDesigns.find((item) => item.engine === engine);
+  if (!design) throw new Error(`No ${engine} designs registered.`);
+  return design;
+};
+
+const newInfographicScene = (engine: AntVEngine): AdvancedStudioScene => {
+  const design = firstDesignForEngine(engine);
+  return {
+    id: `${engine}-${Date.now()}`,
+    type: engine,
+    title: design.name,
+    durationFrames: 150,
+    content: createAdvancedStudioInfographicContent(design),
+    transitionIn: {preset: "crossfade", durationFrames: 18},
+    transitionOut: {preset: "crossfade", durationFrames: 18},
+    cameraPath: {preset: "push-in"},
+  };
+};
+
+const newBoardScene = (): AdvancedStudioScene => ({
+  id: `board-${Date.now()}`,
+  type: "board",
+  title: "Board Focus",
+  durationFrames: 120,
+  content: {
+    project: boardProjectCopy(),
+    activeBlockId: "budget",
+    animation: "focus",
+  },
+  transitionIn: {preset: "crossfade", durationFrames: 18},
+  transitionOut: {preset: "crossfade", durationFrames: 18},
+  cameraPath: {preset: "overview-sweep"},
+});
+
 export const AdvancedStudioApp: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const rulerRef = React.useRef<HTMLDivElement>(null);
+  const [project, setProject] = React.useState<AdvancedStudioProject>(() =>
+    copyProject(advancedStudioDefaultProject),
+  );
   const [formatId, setFormatId] = React.useState<StudioFormatId>("portrait");
   const [selectedSceneId, setSelectedSceneId] = React.useState(
-    advancedStudioIntegrationTimedScenes[1]?.id ??
-      advancedStudioIntegrationTimedScenes[0]?.id,
+    project.scenes[1]?.id ?? project.scenes[0]?.id,
   );
-  const [currentFrame, setCurrentFrame] = React.useState(
-    Math.min(initialPreviewFrame, advancedStudioIntegrationProofDuration - 1),
-  );
+  const [currentFrame, setCurrentFrame] = React.useState(152);
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [inspectorTab, setInspectorTab] =
     React.useState<(typeof inspectorTabs)[number]>("Scene");
   const [addSceneOpen, setAddSceneOpen] = React.useState(false);
   const [zoomLabel, setZoomLabel] = React.useState("100%");
+  const [renderStatus, setRenderStatus] = React.useState<
+    "idle" | "rendering" | "complete" | "error"
+  >("idle");
 
+  const timedScenes = React.useMemo(
+    () => getAdvancedStudioTimedScenes(project),
+    [project],
+  );
+  const duration = getAdvancedStudioProjectDuration(project);
   const selectedScene =
-    advancedStudioIntegrationTimedScenes.find(
-      (scene) => scene.id === selectedSceneId,
-    ) ?? advancedStudioIntegrationTimedScenes[0];
-  const activeScene = getAdvancedStudioSceneAtFrame(currentFrame);
+    timedScenes.find((scene) => scene.id === selectedSceneId) ?? timedScenes[0];
+  const activeScene = getAdvancedStudioSceneAtFrame(currentFrame, project);
   const format = advancedStudioIntegrationFormats[formatId];
 
   React.useEffect(() => {
@@ -149,12 +205,18 @@ export const AdvancedStudioApp: React.FC = () => {
   }, [activeScene, selectedSceneId]);
 
   React.useEffect(() => {
+    if (currentFrame >= duration) {
+      const next = Math.max(0, duration - 1);
+      setCurrentFrame(next);
+      playerRef.current?.seekTo(next);
+    }
+  }, [currentFrame, duration]);
+
+  React.useEffect(() => {
     const player = playerRef.current;
     if (!player) return;
-
-    const onFrame = ({detail}: {detail: {frame: number}}) => {
+    const onFrame = ({detail}: {detail: {frame: number}}) =>
       setCurrentFrame(Math.round(detail.frame));
-    };
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
     const onEnded = () => setIsPlaying(false);
@@ -164,6 +226,7 @@ export const AdvancedStudioApp: React.FC = () => {
     player.addEventListener("play", onPlay);
     player.addEventListener("pause", onPause);
     player.addEventListener("ended", onEnded);
+    player.seekTo(currentFrame);
 
     return () => {
       player.removeEventListener("frameupdate", onFrame);
@@ -174,22 +237,67 @@ export const AdvancedStudioApp: React.FC = () => {
     };
   }, []);
 
-  React.useEffect(() => {
-    playerRef.current?.seekTo(currentFrame);
-  }, []);
-
-  const seekToFrame = React.useCallback((frame: number) => {
-    const nextFrame = Math.max(
-      0,
-      Math.min(advancedStudioIntegrationProofDuration - 1, Math.round(frame)),
-    );
-    playerRef.current?.seekTo(nextFrame);
-    setCurrentFrame(nextFrame);
-  }, []);
+  const seekToFrame = React.useCallback(
+    (frame: number) => {
+      const nextFrame = Math.max(0, Math.min(duration - 1, Math.round(frame)));
+      playerRef.current?.seekTo(nextFrame);
+      setCurrentFrame(nextFrame);
+    },
+    [duration],
+  );
 
   const selectScene = (scene: AdvancedStudioTimedScene) => {
     setSelectedSceneId(scene.id);
     seekToFrame(scene.startFrame);
+  };
+
+  const updateScene = (
+    id: string,
+    updater: (scene: AdvancedStudioScene) => AdvancedStudioScene,
+  ) => {
+    setProject((current) => ({
+      ...current,
+      scenes: current.scenes.map((scene) =>
+        scene.id === id ? updater(scene) : scene,
+      ),
+    }));
+  };
+
+  const addScene = (scene: AdvancedStudioScene) => {
+    const nextProject = {...project, scenes: [...project.scenes, scene]};
+    const start =
+      getAdvancedStudioTimedScenes(nextProject).find(
+        (item) => item.id === scene.id,
+      )?.startFrame ?? 0;
+
+    setProject(nextProject);
+    setSelectedSceneId(scene.id);
+    setCurrentFrame(start);
+    setAddSceneOpen(false);
+    window.setTimeout(() => {
+      playerRef.current?.seekTo(start);
+      setCurrentFrame(start);
+    }, 50);
+  };
+
+  const deleteScene = (id: string) => {
+    if (project.scenes.length <= 1) return;
+    const index = project.scenes.findIndex((scene) => scene.id === id);
+    const nextScenes = project.scenes.filter((scene) => scene.id !== id);
+    const nextSelected = nextScenes[Math.max(0, index - 1)] ?? nextScenes[0];
+    setProject((current) => ({...current, scenes: nextScenes}));
+    setSelectedSceneId(nextSelected.id);
+    seekToFrame(0);
+  };
+
+  const moveScene = (id: string, direction: -1 | 1) => {
+    const index = project.scenes.findIndex((scene) => scene.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= project.scenes.length) return;
+    const nextScenes = [...project.scenes];
+    const [scene] = nextScenes.splice(index, 1);
+    nextScenes.splice(target, 0, scene);
+    setProject((current) => ({...current, scenes: nextScenes}));
   };
 
   const togglePlayback = () => {
@@ -199,18 +307,12 @@ export const AdvancedStudioApp: React.FC = () => {
   };
 
   const stepScene = (direction: -1 | 1) => {
-    const currentIndex = advancedStudioIntegrationTimedScenes.findIndex(
+    const currentIndex = timedScenes.findIndex(
       (scene) => scene.id === selectedSceneId,
     );
     const next =
-      advancedStudioIntegrationTimedScenes[
-        Math.max(
-          0,
-          Math.min(
-            advancedStudioIntegrationTimedScenes.length - 1,
-            currentIndex + direction,
-          ),
-        )
+      timedScenes[
+        Math.max(0, Math.min(timedScenes.length - 1, currentIndex + direction))
       ];
     if (next) selectScene(next);
   };
@@ -218,14 +320,28 @@ export const AdvancedStudioApp: React.FC = () => {
   const scrubTimeline = (event: React.PointerEvent<HTMLDivElement>) => {
     const bounds = rulerRef.current?.getBoundingClientRect();
     if (!bounds) return;
-    const ratio = (event.clientX - bounds.left) / bounds.width;
-    seekToFrame(ratio * advancedStudioIntegrationProofDuration);
+    seekToFrame(((event.clientX - bounds.left) / bounds.width) * duration);
   };
 
   const previewSelectedScene = () => {
     if (!selectedScene) return;
     seekToFrame(selectedScene.startFrame);
     requestAnimationFrame(() => playerRef.current?.play());
+  };
+
+  const renderAdvanced = async () => {
+    setRenderStatus("rendering");
+    try {
+      const response = await fetch("/api/render-advanced", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({project, formatId}),
+      });
+      if (!response.ok) throw new Error("Render failed");
+      setRenderStatus("complete");
+    } catch {
+      setRenderStatus("error");
+    }
   };
 
   return (
@@ -270,8 +386,20 @@ export const AdvancedStudioApp: React.FC = () => {
           <button className="toolbar-button disabled" type="button" disabled>
             <Upload size={16} /> Export
           </button>
-          <button className="render-button disabled" type="button" disabled>
-            <Wand2 size={16} /> Render <ChevronDown size={14} />
+          <button
+            className="render-button"
+            type="button"
+            onClick={renderAdvanced}
+            disabled={renderStatus === "rendering"}
+          >
+            <Wand2 size={16} />
+            {renderStatus === "rendering"
+              ? "Rendering"
+              : renderStatus === "complete"
+                ? "Rendered"
+                : renderStatus === "error"
+                  ? "Render Failed"
+                  : "Render"}
           </button>
           <button className="icon-button" type="button" aria-label="Settings" disabled>
             <Settings size={18} />
@@ -316,19 +444,26 @@ export const AdvancedStudioApp: React.FC = () => {
             </button>
             {addSceneOpen ? (
               <div className="add-popover">
-                <button type="button" disabled>
-                  Board Scene <span>Preset creation pending</span>
+                <button type="button" onClick={() => addScene(newBoardScene())}>
+                  Board Scene <span>Original Studio board</span>
                 </button>
-                <button type="button" disabled>
-                  Infographic <span>Preset creation pending</span>
-                </button>
+                {engineOrder.map((engine) => (
+                  <button
+                    key={engine}
+                    type="button"
+                    onClick={() => addScene(newInfographicScene(engine))}
+                  >
+                    {engine.toUpperCase()} Infographic
+                    <span>{firstDesignForEngine(engine).name}</span>
+                  </button>
+                ))}
               </div>
             ) : null}
           </div>
         </div>
 
         <div className="scene-list">
-          {advancedStudioIntegrationTimedScenes.map((scene, index) => (
+          {timedScenes.map((scene, index) => (
             <button
               key={scene.id}
               className={`scene-card ${scene.id === selectedSceneId ? "selected" : ""}`}
@@ -336,7 +471,7 @@ export const AdvancedStudioApp: React.FC = () => {
               onClick={() => selectScene(scene)}
             >
               <span className="scene-index">{index + 1}</span>
-              <SceneThumbnail tone={sceneLabels[scene.id]?.thumbnailTone ?? "board"} />
+              <SceneThumbnail tone={sceneTone(scene)} />
               <span className="scene-summary">
                 <strong>{titleForScene(scene)}</strong>
                 <small>{subtitleForScene(scene)}</small>
@@ -352,8 +487,7 @@ export const AdvancedStudioApp: React.FC = () => {
         <div className="scene-total">
           <span>Total Duration</span>
           <strong>
-            {formatFrameTime(advancedStudioIntegrationProofDuration).slice(0, 5)} (
-            {advancedStudioIntegrationProofDuration} frames)
+            {formatFrameTime(duration).slice(0, 5)} ({duration} frames)
           </strong>
         </div>
       </aside>
@@ -385,12 +519,12 @@ export const AdvancedStudioApp: React.FC = () => {
             <Player
               ref={playerRef}
               component={AdvancedStudioIntegrationProof}
-              durationInFrames={advancedStudioIntegrationProofDuration}
+              durationInFrames={Math.max(1, duration)}
               fps={advancedStudioIntegrationFps}
               compositionWidth={format.width}
               compositionHeight={format.height}
-              inputProps={{formatId}}
-              initialFrame={currentFrame}
+              inputProps={{formatId, project}}
+              initialFrame={Math.min(currentFrame, duration - 1)}
               controls={false}
               style={{
                 width: "100%",
@@ -415,9 +549,9 @@ export const AdvancedStudioApp: React.FC = () => {
           </button>
           <div className="time-readout">
             <strong>{formatFrameTime(currentFrame)}</strong>
-            <span>/ {formatFrameTime(advancedStudioIntegrationProofDuration)}</span>
+            <span>/ {formatFrameTime(duration)}</span>
             <em>
-              ({currentFrame} / {advancedStudioIntegrationProofDuration})
+              ({currentFrame} / {duration})
             </em>
           </div>
           <button className="fit-button" type="button" onClick={() => setZoomLabel("Fit")}>
@@ -451,6 +585,9 @@ export const AdvancedStudioApp: React.FC = () => {
           scene={selectedScene}
           tab={inspectorTab}
           onPreview={previewSelectedScene}
+          onUpdate={(updater) => selectedScene && updateScene(selectedScene.id, updater)}
+          onDelete={() => selectedScene && deleteScene(selectedScene.id)}
+          onMove={(direction) => selectedScene && moveScene(selectedScene.id, direction)}
         />
       </aside>
 
@@ -462,23 +599,21 @@ export const AdvancedStudioApp: React.FC = () => {
           <TrackLabel icon={Music} label="Music" />
         </div>
         <div className="timeline-board">
-          <div
-            className="ruler"
-            ref={rulerRef}
-            onPointerDown={scrubTimeline}
-          >
-            {Array.from({length: 13}).map((_, index) => {
-              const frame = index * 30;
-              return (
-                <span key={frame} style={{left: `${(frame / 360) * 100}%`}}>
-                  {frame}f
-                </span>
-              );
-            })}
+          <div className="ruler" ref={rulerRef} onPointerDown={scrubTimeline}>
+            {Array.from({length: Math.floor(duration / 30) + 1}).map(
+              (_, index) => {
+                const frame = index * 30;
+                return (
+                  <span key={frame} style={{left: `${(frame / duration) * 100}%`}}>
+                    {frame}f
+                  </span>
+                );
+              },
+            )}
           </div>
           <div className="tracks">
             <div className="video-track">
-              {advancedStudioIntegrationTimedScenes.map((scene, index) => (
+              {timedScenes.map((scene, index) => (
                 <button
                   key={scene.id}
                   className={`timeline-segment ${
@@ -487,50 +622,48 @@ export const AdvancedStudioApp: React.FC = () => {
                   type="button"
                   onClick={() => selectScene(scene)}
                   style={{
-                    left: `${
-                      (scene.startFrame / advancedStudioIntegrationProofDuration) *
-                      100
-                    }%`,
-                    width: `${
-                      (scene.durationFrames /
-                        advancedStudioIntegrationProofDuration) *
-                      100
-                    }%`,
+                    left: `${(scene.startFrame / duration) * 100}%`,
+                    width: `${(scene.durationFrames / duration) * 100}%`,
                   }}
                 >
                   <span className="segment-index">{index + 1}</span>
-                  <SceneThumbnail
-                    tone={sceneLabels[scene.id]?.thumbnailTone ?? "board"}
-                    small
-                  />
+                  <SceneThumbnail tone={sceneTone(scene)} small />
                   <strong>{titleForScene(scene)}</strong>
                   <em>{subtitleForScene(scene)}</em>
                 </button>
               ))}
-              <span className="transition-chip" style={{left: "31.5%"}}>
-                <Share2 size={14} /> 18f
-              </span>
-              <span className="transition-chip" style={{left: "72.5%"}}>
-                <Share2 size={14} /> 18f
-              </span>
+              {timedScenes.slice(1).map((scene) =>
+                scene.transitionIn ? (
+                  <span
+                    key={scene.id}
+                    className="transition-chip"
+                    style={{left: `${(scene.startFrame / duration) * 100}%`}}
+                  >
+                    <Share2 size={14} /> {scene.transitionIn.durationFrames}f
+                  </span>
+                ) : null,
+              )}
             </div>
             <div className="camera-track">
               <div
                 className="camera-curve"
                 style={{
-                  left: `${
-                    ((selectedScene?.startFrame ?? 0) /
-                      advancedStudioIntegrationProofDuration) *
-                    100
-                  }%`,
+                  left: `${((selectedScene?.startFrame ?? 0) / duration) * 100}%`,
                   width: `${
-                    ((selectedScene?.durationFrames ?? 0) /
-                      advancedStudioIntegrationProofDuration) *
-                    100
+                    ((selectedScene?.durationFrames ?? 0) / duration) * 100
                   }%`,
                 }}
               >
-                <span>Push In</span>
+                <span>
+                  {
+                    getAdvancedStudioCameraPath(
+                      selectedScene?.cameraPath?.preset ??
+                        selectedScene?.cameraPreset ??
+                        "static",
+                    ).label
+                  }
+                </span>
+                <i className="camera-path-line" />
               </div>
             </div>
             <div className="audio-track">
@@ -542,11 +675,7 @@ export const AdvancedStudioApp: React.FC = () => {
           </div>
           <div
             className="playhead"
-            style={{
-              left: `${
-                (currentFrame / advancedStudioIntegrationProofDuration) * 100
-              }%`,
-            }}
+            style={{left: `${(currentFrame / duration) * 100}%`}}
           />
         </div>
       </section>
@@ -590,74 +719,190 @@ const InspectorBody: React.FC<{
   scene?: AdvancedStudioTimedScene;
   tab: (typeof inspectorTabs)[number];
   onPreview: () => void;
-}> = ({scene, tab, onPreview}) => {
+  onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
+  onDelete: () => void;
+  onMove: (direction: -1 | 1) => void;
+}> = ({scene, tab, onPreview, onUpdate, onDelete, onMove}) => {
   if (!scene) return null;
 
-  if (tab !== "Scene") {
+  const isBoard = scene.type === "board";
+  const boardContent = scene.content as BoardSceneContent;
+  const infographicContent = scene.content as AdvancedStudioInfographicContent;
+  const design = designForScene(scene);
+
+  if (tab === "Camera") {
     return (
       <div className="inspector-body">
-        <InspectorField label={`${tab} Controls`}>
-          <div className="info-row muted">
-            <SlidersHorizontal size={16} />
-            <span>Preset controls will graduate here after more proofs.</span>
-          </div>
-        </InspectorField>
+        <CameraLibraryInspector scene={scene} onUpdate={onUpdate} />
       </div>
     );
   }
 
-  const isInfographic = scene.type === "infographic";
-  const boardContent = scene.content as BoardSceneContent;
-  const infographicContent = scene.content as InfographicSceneContent;
-  const design = isInfographic ? infographicContent.design : null;
+  if (tab === "Transition") {
+    return (
+      <div className="inspector-body">
+        <TransitionInspector scene={scene} onUpdate={onUpdate} />
+      </div>
+    );
+  }
+
+  if (tab === "Settings") {
+    return (
+      <div className="inspector-body">
+        <G2TemplateLibraryInspector
+          selectedTemplateId={
+            scene.type === "g2"
+              ? (scene.content as AdvancedStudioInfographicContent).designId
+              : undefined
+          }
+          onChange={(templateId) => {
+            const design = antVStudioDesigns.find(
+              (item) => item.id === templateId && item.engine === "g2",
+            );
+            if (!design) return;
+            onUpdate((current) => ({
+              ...current,
+              type: "g2",
+              title: design.name,
+              content: createAdvancedStudioInfographicContent(design),
+            }));
+          }}
+        />
+      </div>
+    );
+  }
+
+  const updateContent = (content: StudioContent) => {
+    onUpdate((current) => ({
+      ...current,
+      title: content.title,
+      content: {
+        ...(current.content as AdvancedStudioInfographicContent),
+        content,
+      },
+    }));
+  };
 
   return (
     <div className="inspector-body">
+      <InspectorField label="Scene">
+        <input
+          className="advanced-input"
+          value={scene.title}
+          onChange={(event) =>
+            onUpdate((current) => ({...current, title: event.target.value}))
+          }
+        />
+        <div className="scene-actions">
+          <button type="button" onClick={() => onMove(-1)}>Move Up</button>
+          <button type="button" onClick={() => onMove(1)}>Move Down</button>
+          <button type="button" onClick={onDelete}>
+            <Trash2 size={14} /> Delete
+          </button>
+        </div>
+      </InspectorField>
+
       <InspectorField label="Scene Type">
-        <button className="wide-select" type="button" disabled>
-          {isInfographic ? <BarChart3 size={17} /> : <Layers3 size={17} />}
-          <span>{subtitleForScene(scene)}</span>
-          <ChevronDown size={16} />
-        </button>
+        <select
+          className="advanced-input"
+          value={scene.type}
+          onChange={(event) => {
+            const type = event.target.value as AdvancedStudioSceneType;
+            onUpdate((current) => {
+              if (type === "board") {
+                return {
+                  ...current,
+                  type,
+                  title: "Board Focus",
+                  content: {
+                    project: boardProjectCopy(),
+                    activeBlockId: "budget",
+                    animation: "focus",
+                  },
+                };
+              }
+              const nextDesign = firstDesignForEngine(type);
+              return {
+                ...current,
+                type,
+                title: nextDesign.name,
+                content: createAdvancedStudioInfographicContent(nextDesign),
+              };
+            });
+          }}
+        >
+          <option value="board">Board Scene</option>
+          <option value="g2">G2 Infographic</option>
+          <option value="g6">G6 Infographic</option>
+          <option value="s2">S2 Infographic</option>
+        </select>
       </InspectorField>
 
       <InspectorField label="Duration">
         <div className="dual-fields">
-          <span>
-            <strong>{scene.durationFrames}</strong> frames
-          </span>
+          <label>
+            <input
+              className="advanced-input"
+              type="number"
+              min={30}
+              step={15}
+              value={scene.durationFrames}
+              onChange={(event) =>
+                onUpdate((current) => ({
+                  ...current,
+                  durationFrames: Math.max(30, Number(event.target.value) || 30),
+                }))
+              }
+            />
+            frames
+          </label>
           <span>
             <strong>{formatFrameTime(scene.durationFrames)}</strong> time
           </span>
         </div>
       </InspectorField>
 
-      <InspectorField label="Design">
-        <div className="asset-row">
-          <SceneThumbnail
-            tone={sceneLabels[scene.id]?.thumbnailTone ?? "board"}
-            small
-          />
-          <span>
-            <strong>{isInfographic ? design?.name : titleForScene(scene)}</strong>
-            <small>
-              {isInfographic ? design?.id : boardContent.activeBlockId ?? "overview"}
-            </small>
-          </span>
-          <button type="button" disabled>
-            Change
-          </button>
-        </div>
-      </InspectorField>
+      {isBoard ? (
+        <BoardInspector
+          content={boardContent}
+          onChange={(content) =>
+            onUpdate((current) => ({...current, content}))
+          }
+        />
+      ) : design ? (
+        <InfographicInspector
+          scene={scene}
+          design={design}
+          content={infographicContent.content ?? cloneContent(design.defaultContent)}
+          onDesign={(nextDesign) =>
+            onUpdate((current) => ({
+              ...current,
+              type: nextDesign.engine,
+              title: nextDesign.name,
+              content: createAdvancedStudioInfographicContent(nextDesign),
+            }))
+          }
+          onContent={updateContent}
+          onControls={(controls) =>
+            onUpdate((current) => ({
+              ...current,
+              content: {
+                ...(current.content as AdvancedStudioInfographicContent),
+                controls,
+              },
+            }))
+          }
+        />
+      ) : null}
 
       <InspectorField label="Animation">
         <div className="asset-row compact">
-          {isInfographic ? <BarChart3 size={18} /> : <Film size={18} />}
+          {isBoard ? <Film size={18} /> : <BarChart3 size={18} />}
           <span>
             <strong>
-              {isInfographic
-                ? animationLabel(design?.animation)
-                : animationLabel(boardContent.animation)}
+              {isBoard
+                ? animationLabel(boardContent.animation)
+                : animationLabel(design?.animation)}
             </strong>
           </span>
           <button type="button" onClick={onPreview}>
@@ -665,39 +910,406 @@ const InspectorBody: React.FC<{
           </button>
         </div>
       </InspectorField>
-
-      <InspectorField label="Camera">
-        <div className="asset-row compact">
-          <Frame size={18} />
-          <span>
-            <strong>{scene.cameraPreset === "push-in" ? "Push In" : "Static"}</strong>
-          </span>
-          <button type="button" disabled>
-            Edit
-          </button>
-        </div>
-      </InspectorField>
-
-      <InspectorField label="Transition In">
-        <div className="transition-row">
-          <Share2 size={16} />
-          <span>{scene.transitionIn?.preset ?? "None"}</span>
-          <strong>{scene.transitionIn?.durationFrames ?? 0} frames</strong>
-        </div>
-      </InspectorField>
-
-      <InspectorField label="Transition Out">
-        <div className="transition-row">
-          <Share2 size={16} />
-          <span>{scene.transitionOut?.preset ?? "None"}</span>
-          <strong>{scene.transitionOut?.durationFrames ?? 0} frames</strong>
-        </div>
-      </InspectorField>
-
-      <button className="advanced-collapse" type="button">
-        Advanced <ChevronDown size={16} />
-      </button>
     </div>
+  );
+};
+
+const CameraLibraryInspector: React.FC<{
+  scene: AdvancedStudioScene;
+  onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
+}> = ({scene, onUpdate}) => (
+  <InspectorField label="Camera Library">
+    <div className="asset-row compact">
+      <Frame size={18} />
+      <select
+        className="advanced-input"
+        value={scene.cameraPath?.preset ?? scene.cameraPreset ?? "static"}
+        onChange={(event) =>
+          onUpdate((current) => ({
+            ...current,
+            cameraPath: {
+              preset: event.target
+                .value as NonNullable<AdvancedStudioScene["cameraPath"]>["preset"],
+            },
+            cameraPreset: undefined,
+          }))
+        }
+      >
+        {advancedStudioCameraPaths.map((path) => (
+          <option key={path.id} value={path.id}>
+            {path.label}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div className="camera-path-grid">
+      {advancedStudioCameraPaths.map((path) => (
+        <button
+          key={path.id}
+          type="button"
+          className={
+            (scene.cameraPath?.preset ?? scene.cameraPreset ?? "static") ===
+            path.id
+              ? "active"
+              : ""
+          }
+          onClick={() =>
+            onUpdate((current) => ({
+              ...current,
+              cameraPath: {preset: path.id},
+              cameraPreset: undefined,
+            }))
+          }
+        >
+          <span>
+            <i
+              style={{
+                left: `${50 + path.points[0].x}%`,
+                top: `${50 + path.points[0].y}%`,
+              }}
+            />
+            <b
+              style={{
+                left: `${50 + path.points[1].x}%`,
+                top: `${50 + path.points[1].y}%`,
+              }}
+            />
+          </span>
+          <strong>{path.label}</strong>
+        </button>
+      ))}
+    </div>
+  </InspectorField>
+);
+
+const TransitionInspector: React.FC<{
+  scene: AdvancedStudioScene;
+  onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
+}> = ({scene, onUpdate}) => (
+  <InspectorField label="Transitions">
+    <div className="transition-row">
+      <Share2 size={16} />
+      <span>Crossfade In</span>
+      <input
+        className="advanced-input compact-number"
+        type="number"
+        min={0}
+        value={scene.transitionIn?.durationFrames ?? 0}
+        onChange={(event) =>
+          onUpdate((current) => ({
+            ...current,
+            transitionIn:
+              Number(event.target.value) > 0
+                ? {preset: "crossfade", durationFrames: Number(event.target.value)}
+                : undefined,
+          }))
+        }
+      />
+    </div>
+    <div className="transition-row">
+      <Share2 size={16} />
+      <span>Crossfade Out</span>
+      <input
+        className="advanced-input compact-number"
+        type="number"
+        min={0}
+        value={scene.transitionOut?.durationFrames ?? 0}
+        onChange={(event) =>
+          onUpdate((current) => ({
+            ...current,
+            transitionOut:
+              Number(event.target.value) > 0
+                ? {preset: "crossfade", durationFrames: Number(event.target.value)}
+                : undefined,
+          }))
+        }
+      />
+    </div>
+  </InspectorField>
+);
+
+const G2TemplateLibraryInspector: React.FC<{
+  selectedTemplateId?: string;
+  onChange: (templateId: string) => void;
+}> = ({selectedTemplateId, onChange}) => (
+  <InspectorField label="AntV G2 Template Library">
+    <select
+      className="advanced-input"
+      value={selectedTemplateId ?? ""}
+      onChange={(event) => event.target.value && onChange(event.target.value)}
+    >
+      <option value="">Choose a G2 template</option>
+      {advancedStudioG2Templates.map((template) => (
+        <option key={template.id} value={template.id}>
+          {template.label} · {template.category}
+        </option>
+      ))}
+    </select>
+    <div className="template-library-grid">
+      {advancedStudioG2Templates.map((template) => (
+        <button
+          key={template.id}
+          type="button"
+          className={selectedTemplateId === template.id ? "active" : ""}
+          onClick={() => onChange(template.id)}
+        >
+          <G2TemplateThumbnail templateId={template.id} />
+          <span className="template-card-copy">
+            <strong>{template.label}</strong>
+            <small>{template.category} · {animationLabel(template.animation)}</small>
+          </span>
+        </button>
+      ))}
+    </div>
+  </InspectorField>
+);
+
+const G2TemplateThumbnail: React.FC<{
+  templateId: string;
+}> = ({templateId}) => (
+  <span className="g2-template-thumbnail">
+    <img
+      src={`/antv-studio-previews/${templateId}.png`}
+      alt=""
+      loading="lazy"
+    />
+  </span>
+);
+
+const BoardInspector: React.FC<{
+  content: BoardSceneContent;
+  onChange: (content: BoardSceneContent) => void;
+}> = ({content, onChange}) => {
+  const project = content.project ?? boardProjectCopy();
+  const block = content.activeBlockId
+    ? project.blocks.find((item) => item.id === content.activeBlockId)
+    : null;
+  return (
+    <>
+      <InspectorField label="Board Content">
+        <input
+          className="advanced-input"
+          value={project.title}
+          onChange={(event) =>
+            onChange({...content, project: {...project, title: event.target.value}})
+          }
+        />
+        <input
+          className="advanced-input"
+          value={project.subtitle}
+          onChange={(event) =>
+            onChange({...content, project: {...project, subtitle: event.target.value}})
+          }
+        />
+        {block ? (
+          <input
+            className="advanced-input"
+            value={block.title}
+            onChange={(event) =>
+              onChange({
+                ...content,
+                project: {
+                  ...project,
+                  blocks: project.blocks.map((item) =>
+                    item.id === block.id ? {...item, title: event.target.value} : item,
+                  ),
+                },
+              })
+            }
+          />
+        ) : null}
+      </InspectorField>
+
+      <InspectorField label="Board Focus">
+        <select
+          className="advanced-input"
+          value={content.activeBlockId ?? "overview"}
+          onChange={(event) =>
+            onChange({
+              ...content,
+              activeBlockId:
+                event.target.value === "overview" ? null : event.target.value,
+            })
+          }
+        >
+          <option value="overview">Full Overview</option>
+          {project.blocks.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.title}
+            </option>
+          ))}
+        </select>
+        <select
+          className="advanced-input"
+          value={content.animation}
+          onChange={(event) =>
+            onChange({...content, animation: event.target.value as BoardSceneContent["animation"]})
+          }
+        >
+          {["focus", "reveal", "build", "trace", "compare", "count", "spotlight", "overview"].map(
+            (item) => (
+              <option key={item} value={item}>
+                {animationLabel(item)}
+              </option>
+            ),
+          )}
+        </select>
+      </InspectorField>
+    </>
+  );
+};
+
+const InfographicInspector: React.FC<{
+  scene: AdvancedStudioScene;
+  design: AntVStudioDesign;
+  content: StudioContent;
+  onDesign: (design: AntVStudioDesign) => void;
+  onContent: (content: StudioContent) => void;
+  onControls: (controls: AdvancedStudioInfographicContent["controls"]) => void;
+}> = ({
+  scene,
+  design,
+  content,
+  onDesign,
+  onContent,
+  onControls,
+}) => {
+  const sceneContent = scene.content as AdvancedStudioInfographicContent;
+  const controls = sceneContent.controls ?? defaultControls;
+  const designs = antVStudioDesigns.filter((item) => item.engine === scene.type);
+
+  return (
+    <>
+      <InspectorField label="Design Browser">
+        <select
+          className="advanced-input"
+          value={design.id}
+          onChange={(event) => {
+            const next = antVStudioDesigns.find(
+              (item) => item.id === event.target.value,
+            );
+            if (next) onDesign(next);
+          }}
+        >
+          {designs.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name} · {item.category}
+            </option>
+          ))}
+        </select>
+        <div className="engine-filter-row">
+          {engineOrder.map((engine) => (
+            <button
+              key={engine}
+              type="button"
+              className={scene.type === engine ? "active" : ""}
+              onClick={() => onDesign(firstDesignForEngine(engine))}
+            >
+              {engine.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </InspectorField>
+
+      <InspectorField label="Content">
+        <input
+          className="advanced-input"
+          value={content.title}
+          onChange={(event) => onContent({...content, title: event.target.value})}
+        />
+        <input
+          className="advanced-input"
+          value={content.subtitle ?? ""}
+          onChange={(event) =>
+            onContent({...content, subtitle: event.target.value})
+          }
+        />
+        {design.engine === "g6"
+          ? (content.nodes ?? []).map((node, index) => (
+              <input
+                key={node.id}
+                className="advanced-input"
+                value={node.label}
+                onChange={(event) =>
+                  onContent({
+                    ...content,
+                    nodes: (content.nodes ?? []).map((item, nodeIndex) =>
+                      nodeIndex === index
+                        ? {...item, label: event.target.value}
+                        : item,
+                    ),
+                  })
+                }
+              />
+            ))
+          : content.rows.map((row, index) => (
+              <div className="data-row" key={row.id}>
+                <input
+                  className="advanced-input"
+                  value={row.label}
+                  onChange={(event) =>
+                    onContent({
+                      ...content,
+                      rows: content.rows.map((item, rowIndex) =>
+                        rowIndex === index
+                          ? {...item, label: event.target.value}
+                          : item,
+                      ),
+                    })
+                  }
+                />
+                <input
+                  className="advanced-input"
+                  type="number"
+                  value={row.value}
+                  onChange={(event) =>
+                    onContent({
+                      ...content,
+                      rows: content.rows.map((item, rowIndex) =>
+                        rowIndex === index
+                          ? {...item, value: Number(event.target.value) || 0}
+                          : item,
+                      ),
+                    })
+                  }
+                />
+              </div>
+            ))}
+      </InspectorField>
+
+      <InspectorField label="Design Controls">
+        <label className="toggle-row">
+          <input
+            type="checkbox"
+            checked={controls.showLabels}
+            onChange={(event) =>
+              onControls({...controls, showLabels: event.target.checked})
+            }
+          />
+          Labels
+        </label>
+        <label className="toggle-row">
+          <input
+            type="checkbox"
+            checked={controls.showLegend}
+            onChange={(event) =>
+              onControls({...controls, showLegend: event.target.checked})
+            }
+          />
+          Legend
+        </label>
+        <label className="toggle-row">
+          <input
+            type="checkbox"
+            checked={controls.compact}
+            onChange={(event) =>
+              onControls({...controls, compact: event.target.checked})
+            }
+          />
+          Compact
+        </label>
+      </InspectorField>
+    </>
   );
 };
 

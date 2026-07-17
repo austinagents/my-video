@@ -28,7 +28,7 @@ export const G2StudioRenderer: React.FC<Props> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<InstanceType<typeof Chart> | null>(null);
   const generationRef = useRef(0);
-  const [message, setMessage] = useState("Loading G2 design");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const container = containerRef.current;
@@ -52,7 +52,7 @@ export const G2StudioRenderer: React.FC<Props> = ({
 
     const generation = generationRef.current + 1;
     generationRef.current = generation;
-    setMessage("Loading G2 design");
+    setErrorMessage("");
 
     const render = async () => {
       try {
@@ -63,12 +63,12 @@ export const G2StudioRenderer: React.FC<Props> = ({
         if (!container.querySelector("canvas,svg")) {
           throw new Error(`${design.name} rendered without a canvas or SVG root.`);
         }
-        setMessage("");
+        setErrorMessage("");
         onReady();
       } catch (error) {
         if (generationRef.current !== generation) return;
         const text = error instanceof Error ? error.message : String(error);
-        setMessage(text);
+        setErrorMessage(text);
         onError(text);
       }
     };
@@ -82,9 +82,9 @@ export const G2StudioRenderer: React.FC<Props> = ({
       data-frame-height={frameHeight}
       style={{position: "relative", width, height}}
     >
-      {message ? (
-        <div style={{position: "absolute", inset: 0, display: "grid", placeItems: "center", color: "#b8ab95", fontSize: 13}}>
-          {message}
+      {errorMessage ? (
+        <div style={{position: "absolute", inset: 0, display: "grid", placeItems: "center", color: "#ff9e9e", fontSize: 13}}>
+          {errorMessage}
         </div>
       ) : null}
       <div ref={containerRef} style={{width, height}} />

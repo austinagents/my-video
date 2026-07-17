@@ -76,7 +76,7 @@
   "scenes": [
     {
       "id": "scene-1",
-      "blockId": "journey",
+      "blockId": "budget",
       "title": "Research & Budget",
       "animation": "focus",
       "durationSeconds": 4

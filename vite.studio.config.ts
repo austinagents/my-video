@@ -22,6 +22,22 @@ const studioApi = (): Plugin => ({
 
   configureServer(server) {
     server.middlewares.use(async (request, response, next) => {
+      if (request.url?.startsWith("/antv-studio-previews/")) {
+        const assetName = decodeURIComponent(
+          request.url.replace("/antv-studio-previews/", "").split("?")[0],
+        );
+        const filePath = path.resolve("output", "antv-studio", "all", assetName);
+        if (!assetName.endsWith(".png") || !fs.existsSync(filePath)) {
+          response.statusCode = 404;
+          response.end("Not found");
+          return;
+        }
+        response.statusCode = 200;
+        response.setHeader("Content-Type", "image/png");
+        response.end(fs.readFileSync(filePath));
+        return;
+      }
+
       if (request.url === "/api/project" && request.method === "POST") {
         try {
           const body = await readBody(request);
@@ -88,6 +104,86 @@ const studioApi = (): Plugin => ({
               JSON.stringify({
                 ok: code === 0,
                 output: "output/explainer.mp4",
+              }),
+            );
+          });
+
+          child.on("error", (error) => {
+            response.statusCode = 500;
+            response.end(
+              JSON.stringify({
+                ok: false,
+                error: error.message,
+              }),
+            );
+          });
+        } catch (error) {
+          response.statusCode = 500;
+          response.end(
+            JSON.stringify({
+              ok: false,
+              error:
+                error instanceof Error ? error.message : "Render failed",
+            }),
+          );
+        }
+
+        return;
+      }
+
+      if (request.url === "/api/render-advanced" && request.method === "POST") {
+        try {
+          const body = await readBody(request);
+          const props = JSON.parse(body);
+          const formatId = props.formatId ?? "portrait";
+          const compositionId =
+            formatId === "square"
+              ? "AdvancedStudioIntegrationProofSquare"
+              : formatId === "vertical"
+                ? "AdvancedStudioIntegrationProofVertical"
+                : "AdvancedStudioIntegrationProofPortrait";
+          const durationFrames = Array.isArray(props.project?.scenes)
+            ? props.project.scenes.reduce(
+                (sum: number, scene: {durationFrames?: number}) =>
+                  sum + (Number(scene.durationFrames) || 0),
+                0,
+              )
+            : 360;
+
+          fs.mkdirSync(path.resolve("public"), {recursive: true});
+          fs.mkdirSync(path.resolve("output"), {recursive: true});
+
+          fs.writeFileSync(
+            path.resolve("public/advanced-project.json"),
+            JSON.stringify(props, null, 2),
+          );
+
+          const child = spawn(
+            "npx",
+            [
+              "remotion",
+              "render",
+              "src/index.ts",
+              compositionId,
+              `output/advanced-studio-${formatId}.mp4`,
+              "--props=public/advanced-project.json",
+              `--frames=0-${Math.max(0, durationFrames - 1)}`,
+              "--overwrite",
+            ],
+            {
+              cwd: process.cwd(),
+              stdio: "inherit",
+              shell: false,
+            },
+          );
+
+          child.on("close", (code) => {
+            response.statusCode = code === 0 ? 200 : 500;
+            response.setHeader("Content-Type", "application/json");
+            response.end(
+              JSON.stringify({
+                ok: code === 0,
+                output: `output/advanced-studio-${formatId}.mp4`,
               }),
             );
           });

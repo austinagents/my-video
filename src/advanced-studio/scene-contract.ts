@@ -1,4 +1,11 @@
 import type {StudioFormat} from "../antv-studio/studio-formats";
+import type {
+  AntVEngine,
+  StudioContent,
+  StudioControls,
+} from "../antv-studio/types";
+import type {BoardSceneContent} from "./BoardSceneRenderer";
+import type {AdvancedStudioCameraPathPreset} from "./camera-paths";
 
 export type SceneBounds = {
   x: number;
@@ -21,11 +28,20 @@ export type SceneRendererProps<TContent = unknown> = {
   onError?: (message: string) => void;
 };
 
+export type AdvancedStudioSceneType = "board" | "g2" | "g6" | "s2";
+
+export type AdvancedStudioInfographicContent = {
+  designId: string;
+  content?: StudioContent;
+  controls?: StudioControls;
+};
+
 export type AdvancedStudioScene = {
   id: string;
-  type: "board" | "infographic";
+  type: AdvancedStudioSceneType;
+  title: string;
   durationFrames: number;
-  content: unknown;
+  content: BoardSceneContent | AdvancedStudioInfographicContent;
   transitionIn?: {
     preset: "crossfade";
     durationFrames: number;
@@ -34,5 +50,22 @@ export type AdvancedStudioScene = {
     preset: "crossfade";
     durationFrames: number;
   };
+  cameraPath?: {
+    preset: AdvancedStudioCameraPathPreset;
+  };
   cameraPreset?: "push-in";
 };
+
+export type AdvancedStudioTimedScene = AdvancedStudioScene & {
+  startFrame: number;
+  endFrame: number;
+};
+
+export type AdvancedStudioProject = {
+  title: string;
+  scenes: AdvancedStudioScene[];
+};
+
+export const isInfographicSceneType = (
+  type: AdvancedStudioSceneType,
+): type is AntVEngine => type === "g2" || type === "g6" || type === "s2";
