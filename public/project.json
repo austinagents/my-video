@@ -8,8 +8,8 @@
       "title": "ANNUAL BUDGET",
       "x": 35,
       "y": 122,
-      "width": 300,
-      "height": 190,
+      "width": 190,
+      "height": 180,
       "designPreset": "hero"
     },
     {
@@ -71,58 +71,28 @@
       "width": 280,
       "height": 125,
       "designPreset": "summary"
-    },
-    {
-      "id": "funnel-1784230235644",
-      "type": "funnel",
-      "title": "FUNNEL",
-      "x": 360,
-      "y": 215,
-      "width": 300,
-      "height": 175,
-      "designPreset": "supporting"
-    },
-    {
-      "id": "funnel-1784230236744",
-      "type": "funnel",
-      "title": "FUNNEL",
-      "x": 360,
-      "y": 215,
-      "width": 300,
-      "height": 175,
-      "designPreset": "supporting"
-    },
-    {
-      "id": "donut-1784262359857",
-      "type": "donut",
-      "title": "PIE / DONUT",
-      "x": 360,
-      "y": 215,
-      "width": 300,
-      "height": 175,
-      "designPreset": "supporting"
     }
   ],
   "scenes": [
     {
       "id": "scene-1",
-      "blockId": "funnel-1784230236744",
+      "blockId": "journey",
       "title": "Research & Budget",
-      "animation": "spotlight",
+      "animation": "focus",
       "durationSeconds": 4
     },
     {
       "id": "scene-2",
       "blockId": "journey",
       "title": "Funnel Journey",
-      "animation": "spotlight",
+      "animation": "reveal",
       "durationSeconds": 4.5
     },
     {
       "id": "scene-3",
       "blockId": "performance",
       "title": "Channel Metrics",
-      "animation": "spotlight",
+      "animation": "build",
       "durationSeconds": 4
     },
     {

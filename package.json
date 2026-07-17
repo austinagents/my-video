@@ -6,8 +6,12 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@antv/g-svg": "^2.1.1",
+    "@antv/g2": "^5.4.8",
+    "@antv/g6": "^5.1.1",
     "@antv/infographic": "0.2.19",
     "@antv/infographic-jsx": "^0.0.1-beta.5",
+    "@antv/s2": "^2.7.2",
     "@remotion/cli": "4.0.489",
     "@remotion/player": "4.0.489",
     "@remotion/tailwind-v4": "4.0.489",
@@ -38,7 +42,7 @@
     "studio": "vite --config vite.studio.config.ts",
     "studio:build": "vite build --config vite.studio.config.ts",
     "render:explainer": "remotion render src/index.ts ExplainerVideo output/explainer.mp4 --props=public/project.json --overwrite",
-    "verify:studio": "tsc --noEmit && vite build --config vite.studio.config.ts"
+    "verify:studio": "node scripts/validate-antv-studio.mjs && tsc --noEmit && vite build --config vite.studio.config.ts"
   },
   "sideEffects": [
     "*.css"

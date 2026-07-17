@@ -11,120 +11,31 @@ import {
   getRemotionEnvironment,
 } from "remotion";
 import type {StudioBlock} from "./project";
-import {resolveAntVBlock} from "./antv/resolve";
-import {buildAntVSyntax} from "./antv/syntax";
+import {resolveAntVRenderInput} from "./antv/input";
+import {prepareStaticSvg} from "./antv/svg";
 
-const normalizeSvg = (
-  container: HTMLDivElement,
-  block: StudioBlock,
-) => {
-  const svg = container.querySelector<SVGSVGElement>("svg");
-
-  if (!svg) {
-    return false;
-  }
-
-  svg.setAttribute("width", "100%");
-  svg.setAttribute("height", "100%");
-  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-
-  svg.style.display = "block";
-  svg.style.width = "100%";
-  svg.style.height = "100%";
-  svg.style.maxWidth = "100%";
-  svg.style.maxHeight = "100%";
-  svg.style.overflow = "visible";
-
-  const firstGroup = svg.querySelector<SVGGElement>("g");
-
-  if (firstGroup) {
-    try {
-      const box = firstGroup.getBBox();
-
-      if (
-        Number.isFinite(box.x) &&
-        Number.isFinite(box.y) &&
-        Number.isFinite(box.width) &&
-        Number.isFinite(box.height) &&
-        box.width > 1 &&
-        box.height > 1
-      ) {
-        const horizontalPadding = Math.max(
-          14,
-          box.width * 0.045,
-        );
-
-        const verticalPadding = Math.max(
-          12,
-          box.height * 0.07,
-        );
-
-        svg.setAttribute(
-          "viewBox",
-          [
-            box.x - horizontalPadding,
-            box.y - verticalPadding,
-            box.width + horizontalPadding * 2,
-            box.height + verticalPadding * 2,
-          ].join(" "),
-        );
-      }
-    } catch {
-      // The second animation frame will retry after browser layout.
-    }
-  }
-
-  const textNodes =
-    svg.querySelectorAll<SVGTextElement>("text");
-
-  textNodes.forEach((text) => {
-    text.style.fontFamily =
-      'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-
-    text.style.fontKerning = "normal";
-    text.style.textRendering = "geometricPrecision";
-  });
-
-  svg
-    .querySelectorAll<SVGGraphicsElement>(
-      "path, rect, circle, line, polyline, polygon",
-    )
-    .forEach((element) => {
-      element.style.vectorEffect = "non-scaling-stroke";
-    });
-
-  /*
-   * AntV sometimes emits literal NaN labels when a template receives
-   * incompatible source data. Hide only those invalid text nodes.
-   */
-  textNodes.forEach((text) => {
-    if (text.textContent?.includes("NaN")) {
-      text.style.display = "none";
-    }
-  });
-
-  return true;
-};
+const getRenderedRootSvg = (container: HTMLDivElement) =>
+  container.querySelector<SVGSVGElement>("svg");
 
 export const AntVBlock: React.FC<{
   block: StudioBlock;
 }> = ({block}) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const environment = getRemotionEnvironment();
+  const isRendering = environment.isRendering;
   const [error, setError] = useState<string | null>(null);
+  const [staticSvg, setStaticSvg] = useState<string | null>(null);
 
-  const resolved = useMemo(
-    () => resolveAntVBlock(block),
+  const antvInput = useMemo(
+    () => resolveAntVRenderInput(block),
     [
       block.type,
       block.designPreset,
       block.width,
       block.height,
+      block.title,
+      block.syntax,
     ],
-  );
-
-  const syntax = useMemo(
-    () => buildAntVSyntax(block, resolved.template),
-    [block, resolved.template],
   );
 
   useEffect(() => {
@@ -136,16 +47,13 @@ export const AntVBlock: React.FC<{
 
     container.innerHTML = "";
     setError(null);
+    setStaticSvg(null);
 
     let disposed = false;
-    let firstFrame = 0;
-    let secondFrame = 0;
-    let thirdFrame = 0;
     let completed = false;
+    const animationFrames: number[] = [];
 
-    const environment = getRemotionEnvironment();
-
-    const renderHandle = environment.isRendering
+    const renderHandle = isRendering
       ? delayRender(`AntV block: ${block.id}`)
       : null;
 
@@ -163,33 +71,45 @@ export const AntVBlock: React.FC<{
 
     const infographic = new Infographic({
       container,
-      width: resolved.internalWidth,
-      height: resolved.internalHeight,
+      width: antvInput.width,
+      height: antvInput.height,
     });
 
-    Promise.resolve(infographic.render(syntax))
-      .then(() => {
+    const fail = (reason: unknown) => {
+      console.error(
+        `AntV render failed for "${block.id}" using "${antvInput.template}"`,
+        reason,
+      );
+
+      if (!disposed) {
+        setError(
+          reason instanceof Error
+            ? reason.message
+            : "AntV could not render this block.",
+        );
+      }
+
+      finish();
+    };
+
+    const prepareSvg = () => {
+      try {
         if (disposed) {
           finish();
           return;
         }
 
-        firstFrame = requestAnimationFrame(() => {
-          normalizeSvg(container, block);
+        const svg = getRenderedRootSvg(container);
 
-          secondFrame = requestAnimationFrame(() => {
-            normalizeSvg(container, block);
+        if (!svg) {
+          throw new Error("AntV rendered without a root SVG.");
+        }
 
-            thirdFrame = requestAnimationFrame(() => {
-              normalizeSvg(container, block);
-              finish();
-            });
-          });
-        });
-      })
-      .catch((reason: unknown) => {
+        setStaticSvg(prepareStaticSvg(svg));
+        animationFrames.push(requestAnimationFrame(finish));
+      } catch (reason: unknown) {
         console.error(
-          `AntV render failed for "${block.id}" using "${resolved.template}"`,
+          `AntV SVG preparation failed for "${block.id}" using "${antvInput.template}"`,
           reason,
         );
 
@@ -197,19 +117,40 @@ export const AntVBlock: React.FC<{
           setError(
             reason instanceof Error
               ? reason.message
-              : "AntV could not render this block.",
+              : "AntV could not prepare this block.",
           );
         }
 
         finish();
-      });
+      }
+    };
+
+    const onRendered = () => {
+      animationFrames.push(requestAnimationFrame(prepareSvg));
+    };
+
+    const onError = (reason: unknown) => {
+      fail(reason);
+    };
+
+    infographic.on("rendered", onRendered);
+    infographic.on("error", onError);
+
+    try {
+      infographic.render(antvInput.syntax);
+    } catch (reason: unknown) {
+      fail(reason);
+    }
 
     return () => {
       disposed = true;
 
-      cancelAnimationFrame(firstFrame);
-      cancelAnimationFrame(secondFrame);
-      cancelAnimationFrame(thirdFrame);
+      infographic.off("rendered", onRendered);
+      infographic.off("error", onError);
+
+      animationFrames.forEach((animationFrame) => {
+        cancelAnimationFrame(animationFrame);
+      });
 
       infographic.destroy?.();
 
@@ -224,29 +165,46 @@ export const AntVBlock: React.FC<{
     block.width,
     block.height,
     block.syntax,
-    resolved.template,
-    resolved.internalWidth,
-    resolved.internalHeight,
-    syntax,
+    antvInput.template,
+    antvInput.width,
+    antvInput.height,
+    antvInput.syntax,
+    isRendering,
   ]);
 
   return (
     <div
       style={{
         position: "absolute",
-        inset: resolved.padding,
+        inset: antvInput.padding,
         overflow: "hidden",
         pointerEvents: "none",
       }}
     >
+      {staticSvg ? (
+        <div
+          data-antv-block={block.id}
+          data-antv-template={antvInput.template}
+          dangerouslySetInnerHTML={{__html: staticSvg}}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+        />
+      ) : null}
+
       <div
         ref={containerRef}
         data-antv-block={block.id}
-        data-antv-template={resolved.template}
+        data-antv-template={antvInput.template}
+        aria-hidden="true"
         style={{
-          width: "100%",
-          height: "100%",
+          position: "absolute",
+          width: 0,
+          height: 0,
           overflow: "hidden",
+          opacity: 0,
+          pointerEvents: "none",
         }}
       />
 
