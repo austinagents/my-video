@@ -1,15 +1,38 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "jsx": "react-jsx",
+
     "strict": true,
     "noEmit": true,
-    "lib": ["es2015"],
-    "esModuleInterop": true,
     "skipLibCheck": true,
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true
+
+    "types": ["node", "vite/client"]
   },
-  "exclude": ["remotion.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "shared/**/*.ts",
+    "shared/**/*.tsx",
+    "studio/src/**/*.ts",
+    "studio/src/**/*.tsx",
+    "vite.studio.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "output",
+    "src/MyComp.tsx",
+    "**/*.backup.ts",
+    "**/*.backup.tsx"
+  ]
 }

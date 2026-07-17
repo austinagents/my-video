@@ -1,15 +1,24 @@
 import {Composition} from "remotion";
-import {MyComp} from "./MyComp";
+import {ExplainerVideo} from "../shared/ExplainerVideo";
+import {defaultProject} from "../shared/project";
+
+const totalFrames = Math.round(
+  defaultProject.scenes.reduce(
+    (sum, scene) => sum + scene.durationSeconds,
+    0,
+  ) * 30,
+);
 
 export const MyComposition: React.FC = () => {
   return (
     <Composition
-      id="MyComp"
-      component={MyComp}
-      durationInFrames={300}
+      id="ExplainerVideo"
+      component={ExplainerVideo}
+      durationInFrames={totalFrames}
       fps={30}
-      width={1920}
-      height={1080}
+      width={1536}
+      height={1024}
+      defaultProps={defaultProject}
     />
   );
 };

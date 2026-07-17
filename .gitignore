@@ -5,3 +5,15 @@ dist
 
 # Ignore the output video from Git but not videos you import into src/.
 out
+
+build
+
+# Local backups
+.backups/
+
+# Generated outputs
+output/
+data/
+
+# Local backup source files
+*.backup.tsx
