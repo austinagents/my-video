@@ -5,31 +5,18 @@ import {
   ChevronDown,
   Download,
   Film,
-  Folder,
   Frame,
   Fullscreen,
-  Image,
-  Layers3,
-  Music,
   Pause,
   Play,
-  Plus,
-  Radio,
   Ratio,
-  RotateCcw,
-  RotateCw,
-  Scissors,
   Settings,
   Share2,
   SkipBack,
   SkipForward,
-  Sparkles,
   Square,
   Trash2,
-  Type,
   Upload,
-  Video,
-  Volume2,
   Wand2,
   ZoomIn,
 } from "lucide-react";
@@ -55,7 +42,6 @@ import {
   advancedStudioCameraPaths,
   getAdvancedStudioCameraPath,
 } from "../../src/advanced-studio/camera-paths";
-import {advancedStudioG2Templates} from "../../src/advanced-studio/g2-template-library";
 import {antVStudioDesigns} from "../../src/antv-studio/registry";
 import {cloneContent} from "../../src/antv-studio/sample-content";
 import {defaultControls} from "../../src/antv-studio/theme";
@@ -69,19 +55,14 @@ import {defaultProject} from "../../shared/project";
 import type {StudioProject} from "../../shared/project";
 
 const formatOrder: StudioFormatId[] = ["portrait", "square", "vertical"];
-const inspectorTabs = ["Scene", "Camera", "Transition", "Settings"] as const;
-const engineOrder: AntVEngine[] = ["g2", "g6", "s2"];
-
-const navItems = [
-  {label: "Project", icon: Folder},
-  {label: "Scenes", icon: Frame, active: true},
-  {label: "Media", icon: Image},
-  {label: "Graphics", icon: Scissors},
-  {label: "Text", icon: Type},
-  {label: "Music", icon: Music},
-  {label: "Brand", icon: Sparkles},
-  {label: "Settings", icon: Settings},
-];
+const inspectorTabs = ["Scene", "Camera", "Transition"] as const;
+const engineOrder: AntVEngine[] = ["g2", "g6"];
+const appDesigns = antVStudioDesigns.filter((design) =>
+  engineOrder.includes(design.engine),
+);
+const appCategories = Array.from(
+  new Set(appDesigns.map((design) => design.category)),
+).sort();
 
 const copyProject = (project: AdvancedStudioProject): AdvancedStudioProject =>
   JSON.parse(JSON.stringify(project)) as AdvancedStudioProject;
@@ -128,45 +109,16 @@ const animationLabel = (animation?: string) => {
 const designForScene = (scene: AdvancedStudioScene) => {
   if (scene.type === "board") return null;
   const content = scene.content as AdvancedStudioInfographicContent;
-  return antVStudioDesigns.find(
+  return appDesigns.find(
     (design) => design.id === content.designId && design.engine === scene.type,
   );
 };
 
 const firstDesignForEngine = (engine: AntVEngine) => {
-  const design = antVStudioDesigns.find((item) => item.engine === engine);
+  const design = appDesigns.find((item) => item.engine === engine);
   if (!design) throw new Error(`No ${engine} designs registered.`);
   return design;
 };
-
-const newInfographicScene = (engine: AntVEngine): AdvancedStudioScene => {
-  const design = firstDesignForEngine(engine);
-  return {
-    id: `${engine}-${Date.now()}`,
-    type: engine,
-    title: design.name,
-    durationFrames: 150,
-    content: createAdvancedStudioInfographicContent(design),
-    transitionIn: {preset: "crossfade", durationFrames: 18},
-    transitionOut: {preset: "crossfade", durationFrames: 18},
-    cameraPath: {preset: "push-in"},
-  };
-};
-
-const newBoardScene = (): AdvancedStudioScene => ({
-  id: `board-${Date.now()}`,
-  type: "board",
-  title: "Board Focus",
-  durationFrames: 120,
-  content: {
-    project: boardProjectCopy(),
-    activeBlockId: "budget",
-    animation: "focus",
-  },
-  transitionIn: {preset: "crossfade", durationFrames: 18},
-  transitionOut: {preset: "crossfade", durationFrames: 18},
-  cameraPath: {preset: "overview-sweep"},
-});
 
 export const AdvancedStudioApp: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
@@ -182,7 +134,6 @@ export const AdvancedStudioApp: React.FC = () => {
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [inspectorTab, setInspectorTab] =
     React.useState<(typeof inspectorTabs)[number]>("Scene");
-  const [addSceneOpen, setAddSceneOpen] = React.useState(false);
   const [zoomLabel, setZoomLabel] = React.useState("100%");
   const [renderStatus, setRenderStatus] = React.useState<
     "idle" | "rendering" | "complete" | "error"
@@ -263,23 +214,6 @@ export const AdvancedStudioApp: React.FC = () => {
     }));
   };
 
-  const addScene = (scene: AdvancedStudioScene) => {
-    const nextProject = {...project, scenes: [...project.scenes, scene]};
-    const start =
-      getAdvancedStudioTimedScenes(nextProject).find(
-        (item) => item.id === scene.id,
-      )?.startFrame ?? 0;
-
-    setProject(nextProject);
-    setSelectedSceneId(scene.id);
-    setCurrentFrame(start);
-    setAddSceneOpen(false);
-    window.setTimeout(() => {
-      playerRef.current?.seekTo(start);
-      setCurrentFrame(start);
-    }, 50);
-  };
-
   const deleteScene = (id: string) => {
     if (project.scenes.length <= 1) return;
     const index = project.scenes.findIndex((scene) => scene.id === id);
@@ -325,6 +259,18 @@ export const AdvancedStudioApp: React.FC = () => {
 
   const previewSelectedScene = () => {
     if (!selectedScene) return;
+    seekToFrame(selectedScene.startFrame);
+    requestAnimationFrame(() => playerRef.current?.play());
+  };
+
+  const applyDesignToSelectedScene = (design: AntVStudioDesign) => {
+    if (!selectedScene) return;
+    updateScene(selectedScene.id, (current) => ({
+      ...current,
+      type: design.engine,
+      title: design.name,
+      content: createAdvancedStudioInfographicContent(design),
+    }));
     seekToFrame(selectedScene.startFrame);
     requestAnimationFrame(() => playerRef.current?.play());
   };
@@ -407,85 +353,30 @@ export const AdvancedStudioApp: React.FC = () => {
         </div>
       </header>
 
-      <aside className="left-rail">
-        <div className="nav-stack">
-          {navItems.map(({label, icon: Icon, active}) => (
-            <button
-              key={label}
-              className={`nav-button ${active ? "active" : ""}`}
-              type="button"
-              disabled={!active}
-            >
-              <Icon size={22} />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="rail-history">
-          <button className="icon-button" type="button" disabled aria-label="Undo">
-            <RotateCcw size={17} />
-          </button>
-          <button className="icon-button" type="button" disabled aria-label="Redo">
-            <RotateCw size={17} />
-          </button>
-        </div>
-      </aside>
-
       <aside className="scene-browser">
         <div className="panel-heading">
-          <h1>Scenes</h1>
-          <div className="add-scene-wrap">
-            <button
-              className="secondary-button"
-              type="button"
-              onClick={() => setAddSceneOpen((open) => !open)}
-            >
-              <Plus size={16} /> Add Scene
-            </button>
-            {addSceneOpen ? (
-              <div className="add-popover">
-                <button type="button" onClick={() => addScene(newBoardScene())}>
-                  Board Scene <span>Original Studio board</span>
-                </button>
-                {engineOrder.map((engine) => (
-                  <button
-                    key={engine}
-                    type="button"
-                    onClick={() => addScene(newInfographicScene(engine))}
-                  >
-                    {engine.toUpperCase()} Infographic
-                    <span>{firstDesignForEngine(engine).name}</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
+          <h1>Templates</h1>
         </div>
 
-        <div className="scene-list">
-          {timedScenes.map((scene, index) => (
-            <button
-              key={scene.id}
-              className={`scene-card ${scene.id === selectedSceneId ? "selected" : ""}`}
-              type="button"
-              onClick={() => selectScene(scene)}
-            >
-              <span className="scene-index">{index + 1}</span>
-              <SceneThumbnail tone={sceneTone(scene)} />
-              <span className="scene-summary">
-                <strong>{titleForScene(scene)}</strong>
-                <small>{subtitleForScene(scene)}</small>
-                <em>
-                  {formatRange(scene)} ({scene.durationFrames}f)
-                </em>
-              </span>
-              <span className="scene-more">•••</span>
-            </button>
-          ))}
+        <div className="left-template-browser">
+          <UniversalTemplateBrowser
+            selectedDesignId={
+              selectedScene?.type === "board"
+                ? undefined
+                : (selectedScene?.content as AdvancedStudioInfographicContent | undefined)
+                    ?.designId
+            }
+            selectedEngine={
+              selectedScene && selectedScene.type !== "board"
+                ? (selectedScene.type as AntVEngine)
+                : undefined
+            }
+            onApply={applyDesignToSelectedScene}
+          />
         </div>
 
         <div className="scene-total">
-          <span>Total Duration</span>
+          <span>Project Duration</span>
           <strong>
             {formatFrameTime(duration).slice(0, 5)} ({duration} frames)
           </strong>
@@ -592,12 +483,6 @@ export const AdvancedStudioApp: React.FC = () => {
       </aside>
 
       <section className="timeline">
-        <div className="timeline-labels">
-          <TrackLabel icon={Video} label="Video" />
-          <TrackLabel icon={Radio} label="Camera" />
-          <TrackLabel icon={Volume2} label="Audio" />
-          <TrackLabel icon={Music} label="Music" />
-        </div>
         <div className="timeline-board">
           <div className="ruler" ref={rulerRef} onPointerDown={scrubTimeline}>
             {Array.from({length: Math.floor(duration / 30) + 1}).map(
@@ -705,16 +590,6 @@ const SceneThumbnail: React.FC<{
   </span>
 );
 
-const TrackLabel: React.FC<{
-  icon: React.ComponentType<{size?: number}>;
-  label: string;
-}> = ({icon: Icon, label}) => (
-  <div className="track-label">
-    <Icon size={17} />
-    <span>{label}</span>
-  </div>
-);
-
 const InspectorBody: React.FC<{
   scene?: AdvancedStudioTimedScene;
   tab: (typeof inspectorTabs)[number];
@@ -742,32 +617,6 @@ const InspectorBody: React.FC<{
     return (
       <div className="inspector-body">
         <TransitionInspector scene={scene} onUpdate={onUpdate} />
-      </div>
-    );
-  }
-
-  if (tab === "Settings") {
-    return (
-      <div className="inspector-body">
-        <G2TemplateLibraryInspector
-          selectedTemplateId={
-            scene.type === "g2"
-              ? (scene.content as AdvancedStudioInfographicContent).designId
-              : undefined
-          }
-          onChange={(templateId) => {
-            const design = antVStudioDesigns.find(
-              (item) => item.id === templateId && item.engine === "g2",
-            );
-            if (!design) return;
-            onUpdate((current) => ({
-              ...current,
-              type: "g2",
-              title: design.name,
-              content: createAdvancedStudioInfographicContent(design),
-            }));
-          }}
-        />
       </div>
     );
   }
@@ -834,7 +683,6 @@ const InspectorBody: React.FC<{
           <option value="board">Board Scene</option>
           <option value="g2">G2 Infographic</option>
           <option value="g6">G6 Infographic</option>
-          <option value="s2">S2 Infographic</option>
         </select>
       </InspectorField>
 
@@ -1028,43 +876,104 @@ const TransitionInspector: React.FC<{
   </InspectorField>
 );
 
-const G2TemplateLibraryInspector: React.FC<{
-  selectedTemplateId?: string;
-  onChange: (templateId: string) => void;
-}> = ({selectedTemplateId, onChange}) => (
-  <InspectorField label="AntV G2 Template Library">
-    <select
-      className="advanced-input"
-      value={selectedTemplateId ?? ""}
-      onChange={(event) => event.target.value && onChange(event.target.value)}
-    >
-      <option value="">Choose a G2 template</option>
-      {advancedStudioG2Templates.map((template) => (
-        <option key={template.id} value={template.id}>
-          {template.label} · {template.category}
-        </option>
-      ))}
-    </select>
-    <div className="template-library-grid">
-      {advancedStudioG2Templates.map((template) => (
-        <button
-          key={template.id}
-          type="button"
-          className={selectedTemplateId === template.id ? "active" : ""}
-          onClick={() => onChange(template.id)}
-        >
-          <G2TemplateThumbnail templateId={template.id} />
-          <span className="template-card-copy">
-            <strong>{template.label}</strong>
-            <small>{template.category} · {animationLabel(template.animation)}</small>
-          </span>
-        </button>
-      ))}
-    </div>
-  </InspectorField>
-);
+const UniversalTemplateBrowser: React.FC<{
+  selectedDesignId?: string;
+  selectedEngine?: AntVEngine;
+  onApply: (design: AntVStudioDesign) => void;
+}> = ({selectedDesignId, selectedEngine, onApply}) => {
+  const [engine, setEngine] = React.useState<AntVEngine | "all">(
+    selectedEngine ?? "all",
+  );
+  const [category, setCategory] = React.useState("all");
+  const [search, setSearch] = React.useState("");
 
-const G2TemplateThumbnail: React.FC<{
+  React.useEffect(() => {
+    if (selectedEngine) setEngine(selectedEngine);
+  }, [selectedEngine]);
+
+  const visibleDesigns = appDesigns.filter((design) => {
+    if (engine !== "all" && design.engine !== engine) return false;
+    if (category !== "all" && design.category !== category) return false;
+    const query = search.trim().toLowerCase();
+    if (!query) return true;
+    return [
+      design.name,
+      design.category,
+      design.description,
+      design.engine,
+      design.industryExample,
+    ].some((value) => value.toLowerCase().includes(query));
+  });
+
+  return (
+    <InspectorField label="Universal Template Browser">
+      <div className="template-browser-controls">
+        <input
+          className="advanced-input"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search G2 or G6 templates"
+        />
+        <div className="engine-filter-row">
+          <button
+            type="button"
+            className={engine === "all" ? "active" : ""}
+            onClick={() => setEngine("all")}
+          >
+            All
+          </button>
+          {engineOrder.map((item) => (
+            <button
+              key={item}
+              type="button"
+              className={engine === item ? "active" : ""}
+              onClick={() => setEngine(item)}
+            >
+              {item.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <select
+          className="advanced-input"
+          value={category}
+          onChange={(event) => setCategory(event.target.value)}
+        >
+          <option value="all">All categories</option>
+          {appCategories.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+        <div className="template-browser-count">
+          {visibleDesigns.length} visible / {appDesigns.length} total
+        </div>
+      </div>
+
+      <div className="template-library-grid">
+        {visibleDesigns.map((design) => (
+          <button
+            key={design.id}
+            type="button"
+            className={selectedDesignId === design.id ? "active" : ""}
+            onClick={() => onApply(design)}
+          >
+            <TemplateThumbnail templateId={design.id} />
+            <span className="template-card-copy">
+              <strong>{design.name}</strong>
+              <small>
+                {design.engine.toUpperCase()} · {design.category} ·{" "}
+                {animationLabel(design.animation)}
+              </small>
+            </span>
+          </button>
+        ))}
+      </div>
+    </InspectorField>
+  );
+};
+
+const TemplateThumbnail: React.FC<{
   templateId: string;
 }> = ({templateId}) => (
   <span className="g2-template-thumbnail">
@@ -1176,7 +1085,7 @@ const InfographicInspector: React.FC<{
 }) => {
   const sceneContent = scene.content as AdvancedStudioInfographicContent;
   const controls = sceneContent.controls ?? defaultControls;
-  const designs = antVStudioDesigns.filter((item) => item.engine === scene.type);
+  const designs = appDesigns.filter((item) => item.engine === scene.type);
 
   return (
     <>
@@ -1185,7 +1094,7 @@ const InfographicInspector: React.FC<{
           className="advanced-input"
           value={design.id}
           onChange={(event) => {
-            const next = antVStudioDesigns.find(
+            const next = appDesigns.find(
               (item) => item.id === event.target.value,
             );
             if (next) onDesign(next);
