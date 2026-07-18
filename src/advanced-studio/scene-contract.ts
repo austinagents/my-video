@@ -32,6 +32,7 @@ export type AdvancedStudioSceneType = "board" | "g2" | "g6" | "s2";
 
 export type AdvancedStudioInfographicContent = {
   designId: string;
+  objectMotion?: "focus";
   content?: StudioContent;
   controls?: StudioControls;
 };

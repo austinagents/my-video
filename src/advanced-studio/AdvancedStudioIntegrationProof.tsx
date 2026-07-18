@@ -7,9 +7,14 @@ import {
 } from "remotion";
 import {antVStudioDesigns} from "../antv-studio/registry";
 import {cloneContent} from "../antv-studio/sample-content";
-import {STUDIO_FORMATS, type StudioFormatId} from "../antv-studio/studio-formats";
+import {
+  getStudioLayout,
+  STUDIO_FORMATS,
+  type StudioFormatId,
+} from "../antv-studio/studio-formats";
 import {defaultControls} from "../antv-studio/theme";
 import {studioTheme} from "../antv-studio/theme";
+import {getBoardSemanticMotion} from "../../shared/board-motion";
 import type {AntVEngine, AntVStudioDesign} from "../antv-studio/types";
 import {
   BoardSceneRenderer,
@@ -184,6 +189,41 @@ const shouldRenderScene = (scene: AdvancedStudioTimedScene, frame: number) => {
   return frame >= visibleStart && frame < scene.endFrame;
 };
 
+const infographicCanvasObjectFocusStyle = ({
+  scene,
+  bounds,
+  format,
+  localFrame,
+  fpsValue,
+}: {
+  scene: AdvancedStudioTimedScene;
+  bounds: SceneBounds;
+  format: (typeof STUDIO_FORMATS)[StudioFormatId];
+  localFrame: number;
+  fpsValue: number;
+}): React.CSSProperties => {
+  const content = scene.content as AdvancedStudioInfographicContent;
+  if (content.objectMotion !== "focus") return {};
+
+  const layout = getStudioLayout(format, bounds.width, bounds.height);
+  return getBoardSemanticMotion({
+    activeTarget: {
+      id: `${scene.id}-infographic-canvas-object`,
+      x: layout.contentLeft,
+      y: layout.contentTop,
+      width: layout.contentWidth,
+      height: layout.contentHeight,
+    },
+    animation: "focus",
+    frame: localFrame,
+    sceneStartFrame: 0,
+    sceneEndFrame: scene.durationFrames,
+    fps: fpsValue,
+    viewportWidth: bounds.width,
+    viewportHeight: bounds.height,
+  }).style;
+};
+
 const renderScene = ({
   scene,
   formatId,
@@ -234,6 +274,13 @@ const renderScene = ({
       content: content.content,
       controls: content.controls,
     };
+    const focusStyle = infographicCanvasObjectFocusStyle({
+      scene,
+      bounds,
+      format,
+      localFrame,
+      fpsValue,
+    });
     return (
       <div
         style={{
@@ -243,10 +290,18 @@ const renderScene = ({
           ...pathStyle,
         }}
       >
-        <InfographicSceneRenderer
-          {...rendererProps}
-          content={infographicContent}
-        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            ...focusStyle,
+          }}
+        >
+          <InfographicSceneRenderer
+            {...rendererProps}
+            content={infographicContent}
+          />
+        </div>
       </div>
     );
   }

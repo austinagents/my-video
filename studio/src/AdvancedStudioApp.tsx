@@ -787,16 +787,26 @@ const AnimationReviewCameraInspector: React.FC<{
 }> = ({scene, onUpdate}) => {
   const isBoard = scene.type === "board";
   const boardContent = isBoard ? (scene.content as BoardSceneContent) : null;
-  const currentAnimation = boardContent?.animation;
-  const hasBoardTarget = Boolean(boardContent?.activeBlockId);
+  const infographicContent = isBoard
+    ? null
+    : (scene.content as AdvancedStudioInfographicContent);
+  const currentAnimation =
+    boardContent?.animation ?? infographicContent?.objectMotion;
   const applyAnimation = (animation: BoardSceneContent["animation"]) =>
     onUpdate((current) => {
       if (current.type !== "board") {
-        return current;
+        if (animation !== "focus") return current;
+
+        return {
+          ...current,
+          content: {
+            ...(current.content as AdvancedStudioInfographicContent),
+            objectMotion: "focus",
+          },
+        };
       }
 
       const content = current.content as BoardSceneContent;
-      if (animation !== "overview" && !content.activeBlockId) return current;
 
       return {
         ...current,
@@ -811,38 +821,29 @@ const AnimationReviewCameraInspector: React.FC<{
   return (
     <InspectorField label="Animation Presets">
       <div className="panel-subheading">
-        {isBoard
-          ? "Apply proven motion behavior"
-          : "Board-only until infographic element targeting is added."}
+        Focus targets the selected scene object. Infographics use the whole scene
+        as the target for now.
       </div>
       <div className="animation-preset-grid">
-        {animationPresets.map((preset) => {
-          const disabled =
-            !isBoard || (preset.id !== "overview" && !hasBoardTarget);
-
-          return (
-            <button
-              key={preset.id}
-              type="button"
-              className={currentAnimation === preset.id ? "active" : ""}
-              disabled={disabled}
-              title={
-                !isBoard
-                  ? "Board-only until infographic element targeting is added."
-                  : disabled
-                    ? "Choose a Board Focus target before applying this preset."
-                    : undefined
-              }
-              onClick={() => applyAnimation(preset.id)}
-            >
-              <AnimationPresetIcon preset={preset.id} />
-              <span>
-                <strong>{preset.label}</strong>
-                <small>{preset.description}</small>
-              </span>
-            </button>
-          );
-        })}
+        {animationPresets.map((preset) => (
+          <button
+            key={preset.id}
+            type="button"
+            className={currentAnimation === preset.id ? "active" : ""}
+            title={
+              preset.id === "focus"
+                ? "Apply focus motion to the selected scene object."
+                : "Only Focus is wired for infographic canvas objects in this slice."
+            }
+            onClick={() => applyAnimation(preset.id)}
+          >
+            <AnimationPresetIcon preset={preset.id} />
+            <span>
+              <strong>{preset.label}</strong>
+              <small>{preset.description}</small>
+            </span>
+          </button>
+        ))}
       </div>
     </InspectorField>
   );

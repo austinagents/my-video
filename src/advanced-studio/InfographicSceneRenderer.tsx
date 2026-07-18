@@ -235,7 +235,6 @@ export const InfographicSceneRenderer: React.FC<
           />
         )}
       </div>
-
     </div>
   );
 };

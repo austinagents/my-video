@@ -15,15 +15,23 @@ const semanticFocusAnimations: AnimationPreset[] = [
 ];
 
 export type BoardSemanticMotionInput = {
-  project: StudioProject;
-  activeBlockId: string | null;
+  project?: StudioProject;
+  activeBlockId?: string | null;
+  activeTarget?: SemanticMotionTarget | null;
   animation: AnimationPreset;
   frame: number;
   sceneStartFrame: number;
   sceneEndFrame: number;
   fps: number;
   outputScale?: number;
+  viewportWidth?: number;
+  viewportHeight?: number;
 };
+
+export type SemanticMotionTarget = Pick<
+  StudioBlock,
+  "id" | "x" | "y" | "width" | "height"
+>;
 
 export type BoardSemanticMotion = {
   activeBlock: StudioBlock | null;
@@ -37,17 +45,21 @@ export type BoardSemanticMotion = {
 export const getBoardSemanticMotion = ({
   project,
   activeBlockId,
+  activeTarget: explicitTarget,
   animation,
   frame,
   sceneStartFrame,
   sceneEndFrame,
   fps,
   outputScale = 1,
+  viewportWidth = 1000,
+  viewportHeight = 640,
 }: BoardSemanticMotionInput): BoardSemanticMotion => {
   const activeBlock =
-    activeBlockId === null
+    activeBlockId === null || activeBlockId === undefined || !project
       ? null
       : project.blocks.find((block) => block.id === activeBlockId) ?? null;
+  const activeTarget = explicitTarget ?? activeBlock;
 
   const intro = interpolate(
     frame,
@@ -67,7 +79,7 @@ export const getBoardSemanticMotion = ({
   );
 
   const shouldFocus =
-    Boolean(activeBlock) && semanticFocusAnimations.includes(animation);
+    Boolean(activeTarget) && semanticFocusAnimations.includes(animation);
 
   const targetScale =
     animation === "spotlight"
@@ -81,16 +93,16 @@ export const getBoardSemanticMotion = ({
             : 1;
 
   const scale = interpolate(intro, [0, 1], [1, targetScale]) * outro;
-  const boardCenterX = 500;
-  const boardCenterY = 320;
-  const blockCenterX = activeBlock
-    ? activeBlock.x + activeBlock.width / 2
-    : boardCenterX;
-  const blockCenterY = activeBlock
-    ? activeBlock.y + activeBlock.height / 2
-    : boardCenterY;
-  const targetX = shouldFocus ? (boardCenterX - blockCenterX) * 0.32 : 0;
-  const targetY = shouldFocus ? (boardCenterY - blockCenterY) * 0.32 : 0;
+  const viewportCenterX = viewportWidth / 2;
+  const viewportCenterY = viewportHeight / 2;
+  const targetCenterX = activeTarget
+    ? activeTarget.x + activeTarget.width / 2
+    : viewportCenterX;
+  const targetCenterY = activeTarget
+    ? activeTarget.y + activeTarget.height / 2
+    : viewportCenterY;
+  const targetX = shouldFocus ? (viewportCenterX - targetCenterX) * 0.32 : 0;
+  const targetY = shouldFocus ? (viewportCenterY - targetCenterY) * 0.32 : 0;
   const translateX = interpolate(intro, [0, 1], [0, targetX]);
   const translateY = interpolate(intro, [0, 1], [0, targetY]);
   const opacity =
@@ -104,7 +116,7 @@ export const getBoardSemanticMotion = ({
 
   return {
     activeBlock,
-    activeBlockId: activeBlock?.id ?? null,
+    activeBlockId: activeTarget?.id ?? null,
     dimInactive: animation === "spotlight",
     opacity,
     transform,
