@@ -3,10 +3,12 @@ import {Player, type PlayerRef} from "@remotion/player";
 import {
   BarChart3,
   ChevronDown,
+  Crosshair,
   Download,
+  Eye,
   Film,
-  Frame,
   Fullscreen,
+  GitCompareArrows,
   Pause,
   Play,
   Ratio,
@@ -14,10 +16,12 @@ import {
   Share2,
   SkipBack,
   SkipForward,
+  Sparkles,
   Square,
   Trash2,
   Upload,
   Wand2,
+  WandSparkles,
   ZoomIn,
 } from "lucide-react";
 import {
@@ -39,10 +43,7 @@ import type {
   AdvancedStudioSceneType,
   AdvancedStudioTimedScene,
 } from "../../src/advanced-studio/scene-contract";
-import {
-  advancedStudioCameraPaths,
-  getAdvancedStudioCameraPath,
-} from "../../src/advanced-studio/camera-paths";
+import {getAdvancedStudioCameraPath} from "../../src/advanced-studio/camera-paths";
 import {antVStudioDesigns} from "../../src/antv-studio/registry";
 import {cloneContent} from "../../src/antv-studio/sample-content";
 import {defaultControls} from "../../src/antv-studio/theme";
@@ -105,6 +106,20 @@ const animationLabel = (animation?: string) => {
     .split("-")
     .map((word) => word[0]?.toUpperCase() + word.slice(1))
     .join(" ");
+};
+
+const AnimationPresetIcon = ({
+  preset,
+}: {
+  preset: (typeof animationPresets)[number]["id"];
+}) => {
+  if (preset === "focus") return <Crosshair size={18} />;
+  if (preset === "reveal") return <Eye size={18} />;
+  if (preset === "compare") return <GitCompareArrows size={18} />;
+  if (preset === "overview") return <Fullscreen size={18} />;
+  if (preset === "spotlight") return <Wand2 size={18} />;
+  if (preset === "build" || preset === "count") return <WandSparkles size={18} />;
+  return <Sparkles size={18} />;
 };
 
 const designForScene = (scene: AdvancedStudioScene) => {
@@ -609,7 +624,10 @@ const InspectorBody: React.FC<{
   if (tab === "Camera") {
     return (
       <div className="inspector-body">
-        <CameraLibraryInspector scene={scene} onUpdate={onUpdate} />
+        <AnimationReviewCameraInspector
+          scene={scene}
+          onUpdate={onUpdate}
+        />
       </div>
     );
   }
@@ -763,73 +781,72 @@ const InspectorBody: React.FC<{
   );
 };
 
-const CameraLibraryInspector: React.FC<{
+const AnimationReviewCameraInspector: React.FC<{
   scene: AdvancedStudioScene;
   onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
-}> = ({scene, onUpdate}) => (
-  <InspectorField label="Camera Path">
-    <div className="asset-row compact">
-      <Frame size={18} />
-      <select
-        className="advanced-input"
-        value={scene.cameraPath?.preset ?? scene.cameraPreset ?? "static"}
-        onChange={(event) =>
-          onUpdate((current) => ({
-            ...current,
-            cameraPath: {
-              preset: event.target
-                .value as NonNullable<AdvancedStudioScene["cameraPath"]>["preset"],
-            },
-            cameraPreset: undefined,
-          }))
-        }
-      >
-        {advancedStudioCameraPaths.map((path) => (
-          <option key={path.id} value={path.id}>
-            {path.label}
-          </option>
-        ))}
-      </select>
-    </div>
-    <div className="camera-path-grid">
-      {advancedStudioCameraPaths.map((path) => (
-        <button
-          key={path.id}
-          type="button"
-          className={
-            (scene.cameraPath?.preset ?? scene.cameraPreset ?? "static") ===
-            path.id
-              ? "active"
-              : ""
-          }
-          onClick={() =>
-            onUpdate((current) => ({
-              ...current,
-              cameraPath: {preset: path.id},
-              cameraPreset: undefined,
-            }))
-          }
-        >
-          <span>
-            <i
-              style={{
-                left: `${50 + path.points[0].x}%`,
-                top: `${50 + path.points[0].y}%`,
-              }}
-            />
-            <b
-              style={{
-                left: `${50 + path.points[1].x}%`,
-                top: `${50 + path.points[1].y}%`,
-              }}
-            />
-          </span>
-          <strong>{path.label}</strong>
-        </button>
-      ))}
-    </div>
-  </InspectorField>
-);
+}> = ({scene, onUpdate}) => {
+  const isBoard = scene.type === "board";
+  const boardContent = isBoard ? (scene.content as BoardSceneContent) : null;
+  const currentAnimation = boardContent?.animation;
+  const hasBoardTarget = Boolean(boardContent?.activeBlockId);
+  const applyAnimation = (animation: BoardSceneContent["animation"]) =>
+    onUpdate((current) => {
+      if (current.type !== "board") {
+        return current;
+      }
+
+      const content = current.content as BoardSceneContent;
+      if (animation !== "overview" && !content.activeBlockId) return current;
+
+      return {
+        ...current,
+        content: {
+          ...content,
+          animation,
+          activeBlockId: animation === "overview" ? null : content.activeBlockId,
+        },
+      };
+    });
+
+  return (
+    <InspectorField label="Animation Presets">
+      <div className="panel-subheading">
+        {isBoard
+          ? "Apply proven motion behavior"
+          : "Board-only until infographic element targeting is added."}
+      </div>
+      <div className="animation-preset-grid">
+        {animationPresets.map((preset) => {
+          const disabled =
+            !isBoard || (preset.id !== "overview" && !hasBoardTarget);
+
+          return (
+            <button
+              key={preset.id}
+              type="button"
+              className={currentAnimation === preset.id ? "active" : ""}
+              disabled={disabled}
+              title={
+                !isBoard
+                  ? "Board-only until infographic element targeting is added."
+                  : disabled
+                    ? "Choose a Board Focus target before applying this preset."
+                    : undefined
+              }
+              onClick={() => applyAnimation(preset.id)}
+            >
+              <AnimationPresetIcon preset={preset.id} />
+              <span>
+                <strong>{preset.label}</strong>
+                <small>{preset.description}</small>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </InspectorField>
+  );
+};
 
 const TransitionInspector: React.FC<{
   scene: AdvancedStudioScene;
@@ -1049,20 +1066,8 @@ const BoardInspector: React.FC<{
             </option>
           ))}
         </select>
-        <select
-          className="advanced-input"
-          value={content.animation}
-          onChange={(event) =>
-            onChange({...content, animation: event.target.value as BoardSceneContent["animation"]})
-          }
-        >
-          {animationPresets.map((preset) => (
-            <option key={preset.id} value={preset.id}>
-              {preset.label}
-            </option>
-          ))}
-        </select>
       </InspectorField>
+
     </>
   );
 };
