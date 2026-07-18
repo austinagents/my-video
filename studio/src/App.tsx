@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import {Board} from "../../shared/Board";
 import {ExplainerVideo} from "../../shared/ExplainerVideo";
+import {animationPresets} from "../../shared/animation-presets";
 import {
   blockDefinitions,
   defaultProject,
@@ -52,21 +53,6 @@ const designPresets: Array<{
   {id: "technical", label: "Technical Callout"},
   {id: "balanced", label: "Balanced Grid"},
   {id: "editorial", label: "Editorial Spread"},
-];
-
-const animationPresets: Array<{
-  id: AnimationPreset;
-  label: string;
-  description: string;
-}> = [
-  {id: "focus", label: "Focus", description: "Zoom and direct attention"},
-  {id: "reveal", label: "Reveal", description: "Fade and slide into view"},
-  {id: "build", label: "Build", description: "Sequential content build"},
-  {id: "trace", label: "Trace", description: "Follow a visual path"},
-  {id: "compare", label: "Compare", description: "Highlight two ideas"},
-  {id: "count", label: "Count", description: "Emphasize metric data"},
-  {id: "spotlight", label: "Spotlight", description: "Dim inactive blocks"},
-  {id: "overview", label: "Overview", description: "Return to full board"},
 ];
 
 const presetSize: Record<

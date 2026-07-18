@@ -30,6 +30,7 @@ import {
   getAdvancedStudioSceneAtFrame,
   getAdvancedStudioTimedScenes,
 } from "../../src/advanced-studio/AdvancedStudioIntegrationProof";
+import {animationPresets} from "../../shared/animation-presets";
 import type {BoardSceneContent} from "../../src/advanced-studio/BoardSceneRenderer";
 import type {
   AdvancedStudioInfographicContent,
@@ -766,7 +767,7 @@ const CameraLibraryInspector: React.FC<{
   scene: AdvancedStudioScene;
   onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
 }> = ({scene, onUpdate}) => (
-  <InspectorField label="Camera Library">
+  <InspectorField label="Camera Path">
     <div className="asset-row compact">
       <Frame size={18} />
       <select
@@ -1055,13 +1056,11 @@ const BoardInspector: React.FC<{
             onChange({...content, animation: event.target.value as BoardSceneContent["animation"]})
           }
         >
-          {["focus", "reveal", "build", "trace", "compare", "count", "spotlight", "overview"].map(
-            (item) => (
-              <option key={item} value={item}>
-                {animationLabel(item)}
-              </option>
-            ),
-          )}
+          {animationPresets.map((preset) => (
+            <option key={preset.id} value={preset.id}>
+              {preset.label}
+            </option>
+          ))}
         </select>
       </InspectorField>
     </>
