@@ -125,10 +125,6 @@ const AnimationPresetIcon = ({
   return <Sparkles size={18} />;
 };
 
-const semanticMotionLabel = (animation?: string) =>
-  animationPresets.find((preset) => preset.id === animation)?.label ??
-  animationLabel(animation);
-
 const nonDistinctBoardSemantics = new Set(["build", "trace", "compare"]);
 
 const designForScene = (scene: AdvancedStudioScene) => {
@@ -143,50 +139,6 @@ const firstDesignForEngine = (engine: AntVEngine) => {
   const design = appDesigns.find((item) => item.engine === engine);
   if (!design) throw new Error(`No ${engine} designs registered.`);
   return design;
-};
-
-const transitionLabel = (scene: AdvancedStudioScene) => {
-  const items = [
-    scene.transitionIn ? `In ${scene.transitionIn.durationFrames}f` : null,
-    scene.transitionOut ? `Out ${scene.transitionOut.durationFrames}f` : null,
-  ].filter(Boolean);
-  return items.length ? items.join(" / ") : "None";
-};
-
-const cameraPathLabel = (scene: AdvancedStudioScene) =>
-  getAdvancedStudioCameraPath(
-    scene.cameraPath?.preset ?? scene.cameraPreset ?? "static",
-  ).label;
-
-const boardTargetLabel = (content: BoardSceneContent) => {
-  const project = content.project ?? defaultProject;
-  if (!content.activeBlockId) return "Full Overview";
-  return (
-    project.blocks.find((block) => block.id === content.activeBlockId)?.title ??
-    content.activeBlockId
-  );
-};
-
-const sceneMetadata = (scene: AdvancedStudioScene) => {
-  if (scene.type === "board") {
-    const content = scene.content as BoardSceneContent;
-    return [
-      `Type: Board`,
-      `Target: ${boardTargetLabel(content)}`,
-      `Semantic: ${semanticMotionLabel(content.animation)}`,
-      `Camera: ${cameraPathLabel(scene)}`,
-      `Transition: ${transitionLabel(scene)}`,
-    ];
-  }
-
-  const design = designForScene(scene);
-  return [
-    `Type: ${scene.type.toUpperCase()}`,
-    `Template: ${design?.name ?? "Missing design"}`,
-    `Internal: ${animationLabel(design?.animation)}`,
-    `Camera: ${cameraPathLabel(scene)}`,
-    `Transition: ${transitionLabel(scene)}`,
-  ];
 };
 
 export const AdvancedStudioApp: React.FC = () => {
@@ -489,21 +441,6 @@ export const AdvancedStudioApp: React.FC = () => {
 
       <main className="preview-pane">
         <div className="preview-toolbar">
-          <div>
-            <span>Current Scene</span>
-            <button type="button" onClick={() => selectedScene && selectScene(selectedScene)}>
-              {selectedScene ? titleForScene(selectedScene) : "None"}{" "}
-              <small>{selectedScene ? `(${subtitleForScene(selectedScene)})` : ""}</small>
-              <ChevronDown size={14} />
-            </button>
-          </div>
-          {selectedScene ? (
-            <div className="scene-meta-row">
-              {sceneMetadata(selectedScene).map((item) => (
-                <span key={item}>{item}</span>
-              ))}
-            </div>
-          ) : null}
           <button
             className="zoom-button"
             type="button"
@@ -731,7 +668,7 @@ const InspectorBody: React.FC<{
   if (tab === "Transition") {
     return (
       <div className="inspector-body">
-        <TransitionInspector scene={scene} onUpdate={onUpdate} />
+        <TransitionInspector />
       </div>
     );
   }
@@ -1005,49 +942,11 @@ const SemanticMotionInspector: React.FC<{
   </InspectorField>
 );
 
-const TransitionInspector: React.FC<{
-  scene: AdvancedStudioScene;
-  onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
-}> = ({scene, onUpdate}) => (
-  <InspectorField label="Transitions">
-    <div className="transition-row">
-      <Share2 size={16} />
-      <span>Crossfade In</span>
-      <input
-        className="advanced-input compact-number"
-        type="number"
-        min={0}
-        value={scene.transitionIn?.durationFrames ?? 0}
-        onChange={(event) =>
-          onUpdate((current) => ({
-            ...current,
-            transitionIn:
-              Number(event.target.value) > 0
-                ? {preset: "crossfade", durationFrames: Number(event.target.value)}
-                : undefined,
-          }))
-        }
-      />
-    </div>
-    <div className="transition-row">
-      <Share2 size={16} />
-      <span>Crossfade Out</span>
-      <input
-        className="advanced-input compact-number"
-        type="number"
-        min={0}
-        value={scene.transitionOut?.durationFrames ?? 0}
-        onChange={(event) =>
-          onUpdate((current) => ({
-            ...current,
-            transitionOut:
-              Number(event.target.value) > 0
-                ? {preset: "crossfade", durationFrames: Number(event.target.value)}
-                : undefined,
-          }))
-        }
-      />
-    </div>
+const TransitionInspector: React.FC = () => (
+  <InspectorField label="Transition">
+    <button className="behavior-template-button active" type="button">
+      Template 1
+    </button>
   </InspectorField>
 );
 

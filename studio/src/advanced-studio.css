@@ -740,38 +740,10 @@ textarea.advanced-input {
 }
 
 .preview-toolbar {
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 10px 4px 8px;
   color: #c5ccd3;
   font-size: 13px;
-}
-
-.preview-toolbar > div {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.scene-meta-row {
-  min-width: 0;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow: hidden;
-}
-
-.scene-meta-row span {
-  max-width: 150px;
-  overflow: hidden;
-  padding: 4px 7px;
-  border: 1px solid #27313b;
-  border-radius: 999px;
-  color: #aeb7c1;
-  background: #111820;
-  font-size: 10px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .preview-toolbar button {
@@ -782,10 +754,6 @@ textarea.advanced-input {
   padding: 0 10px;
   background: transparent;
   border: 0;
-}
-
-.preview-toolbar small {
-  color: #9ba3ad;
 }
 
 .zoom-button {
@@ -916,7 +884,6 @@ textarea.advanced-input {
 
 .wide-select,
 .asset-row,
-.transition-row,
 .dual-fields span,
 .info-row {
   min-height: 42px;
@@ -979,19 +946,20 @@ textarea.advanced-input {
   background: #1d242d;
 }
 
-.transition-row {
-  justify-content: space-between;
-  padding: 0 13px;
+.behavior-template-button {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #f2c46d;
+  border-radius: 6px;
+  color: #f7e7bf;
+  background: rgba(242, 196, 109, 0.12);
+  font: inherit;
+  font-weight: 750;
+  text-align: center;
 }
 
-.transition-row span {
-  flex: 1;
-  text-transform: capitalize;
-}
-
-.transition-row strong {
-  color: #c9d0d8;
-  font-size: 12px;
+.behavior-template-button.active {
+  box-shadow: inset 0 0 0 1px rgba(242, 196, 109, 0.22);
 }
 
 .advanced-collapse {
