@@ -5,6 +5,7 @@ import {defaultProject} from "../shared/project";
 import {AntVAnimationProof} from "./AntVAnimationProof";
 import {
   AdvancedStudioIntegrationProof,
+  advancedStudioIntegrationProofDuration,
   advancedStudioIntegrationFps,
   advancedStudioIntegrationFormats,
 } from "./advanced-studio/AdvancedStudioIntegrationProof";
@@ -15,7 +16,7 @@ const totalFrames = Math.round(
     0,
   ) * 30,
 );
-const advancedStudioMaxFrames = 1800;
+const advancedStudioMaxFrames = advancedStudioIntegrationProofDuration;
 
 export const MyComposition: React.FC = () => {
   return (

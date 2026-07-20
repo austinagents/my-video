@@ -43,7 +43,10 @@ import type {
   AdvancedStudioSceneType,
   AdvancedStudioTimedScene,
 } from "../../src/advanced-studio/scene-contract";
-import {getAdvancedStudioCameraPath} from "../../src/advanced-studio/camera-paths";
+import {
+  advancedStudioCameraPaths,
+  getAdvancedStudioCameraPath,
+} from "../../src/advanced-studio/camera-paths";
 import {antVStudioDesigns} from "../../src/antv-studio/registry";
 import {cloneContent} from "../../src/antv-studio/sample-content";
 import {defaultControls} from "../../src/antv-studio/theme";
@@ -122,6 +125,12 @@ const AnimationPresetIcon = ({
   return <Sparkles size={18} />;
 };
 
+const semanticMotionLabel = (animation?: string) =>
+  animationPresets.find((preset) => preset.id === animation)?.label ??
+  animationLabel(animation);
+
+const nonDistinctBoardSemantics = new Set(["build", "trace", "compare"]);
+
 const designForScene = (scene: AdvancedStudioScene) => {
   if (scene.type === "board") return null;
   const content = scene.content as AdvancedStudioInfographicContent;
@@ -134,6 +143,50 @@ const firstDesignForEngine = (engine: AntVEngine) => {
   const design = appDesigns.find((item) => item.engine === engine);
   if (!design) throw new Error(`No ${engine} designs registered.`);
   return design;
+};
+
+const transitionLabel = (scene: AdvancedStudioScene) => {
+  const items = [
+    scene.transitionIn ? `In ${scene.transitionIn.durationFrames}f` : null,
+    scene.transitionOut ? `Out ${scene.transitionOut.durationFrames}f` : null,
+  ].filter(Boolean);
+  return items.length ? items.join(" / ") : "None";
+};
+
+const cameraPathLabel = (scene: AdvancedStudioScene) =>
+  getAdvancedStudioCameraPath(
+    scene.cameraPath?.preset ?? scene.cameraPreset ?? "static",
+  ).label;
+
+const boardTargetLabel = (content: BoardSceneContent) => {
+  const project = content.project ?? defaultProject;
+  if (!content.activeBlockId) return "Full Overview";
+  return (
+    project.blocks.find((block) => block.id === content.activeBlockId)?.title ??
+    content.activeBlockId
+  );
+};
+
+const sceneMetadata = (scene: AdvancedStudioScene) => {
+  if (scene.type === "board") {
+    const content = scene.content as BoardSceneContent;
+    return [
+      `Type: Board`,
+      `Target: ${boardTargetLabel(content)}`,
+      `Semantic: ${semanticMotionLabel(content.animation)}`,
+      `Camera: ${cameraPathLabel(scene)}`,
+      `Transition: ${transitionLabel(scene)}`,
+    ];
+  }
+
+  const design = designForScene(scene);
+  return [
+    `Type: ${scene.type.toUpperCase()}`,
+    `Template: ${design?.name ?? "Missing design"}`,
+    `Internal: ${animationLabel(design?.animation)}`,
+    `Camera: ${cameraPathLabel(scene)}`,
+    `Transition: ${transitionLabel(scene)}`,
+  ];
 };
 
 export const AdvancedStudioApp: React.FC = () => {
@@ -154,6 +207,8 @@ export const AdvancedStudioApp: React.FC = () => {
   const [renderStatus, setRenderStatus] = React.useState<
     "idle" | "rendering" | "complete" | "error"
   >("idle");
+  const [renderOutput, setRenderOutput] = React.useState("");
+  const [renderError, setRenderError] = React.useState("");
 
   const timedScenes = React.useMemo(
     () => getAdvancedStudioTimedScenes(project),
@@ -293,15 +348,25 @@ export const AdvancedStudioApp: React.FC = () => {
 
   const renderAdvanced = async () => {
     setRenderStatus("rendering");
+    setRenderOutput("");
+    setRenderError("");
     try {
       const response = await fetch("/api/render-advanced", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({project, formatId}),
       });
-      if (!response.ok) throw new Error("Render failed");
+      const result = (await response.json().catch(() => ({}))) as {
+        output?: string;
+        error?: string;
+      };
+      if (!response.ok) {
+        throw new Error(result.error ?? "Render failed");
+      }
+      setRenderOutput(result.output ?? "");
       setRenderStatus("complete");
-    } catch {
+    } catch (error) {
+      setRenderError(error instanceof Error ? error.message : "Render failed");
       setRenderStatus("error");
     }
   };
@@ -342,10 +407,20 @@ export const AdvancedStudioApp: React.FC = () => {
         </div>
 
         <div className="top-actions">
-          <button className="toolbar-button" type="button" onClick={previewSelectedScene}>
-            <Play size={16} /> Preview
+          <button
+            className="toolbar-button"
+            type="button"
+            onClick={previewSelectedScene}
+            title="Seek to the selected scene and play"
+          >
+            <Play size={16} /> Preview Scene
           </button>
-          <button className="toolbar-button disabled" type="button" disabled>
+          <button
+            className="toolbar-button disabled"
+            type="button"
+            disabled
+            title="Export is not connected in this phase"
+          >
             <Upload size={16} /> Export
           </button>
           <button
@@ -363,6 +438,19 @@ export const AdvancedStudioApp: React.FC = () => {
                   ? "Render Failed"
                   : "Render"}
           </button>
+          {renderStatus !== "idle" ? (
+            <div className={`render-feedback ${renderStatus}`}>
+              <strong>
+                {renderStatus === "rendering"
+                  ? "Rendering"
+                  : renderStatus === "complete"
+                    ? "Render complete"
+                    : "Render failed"}
+              </strong>
+              {renderOutput ? <span>{renderOutput}</span> : null}
+              {renderError ? <span>{renderError}</span> : null}
+            </div>
+          ) : null}
           <button className="icon-button" type="button" aria-label="Settings" disabled>
             <Settings size={18} />
           </button>
@@ -409,6 +497,13 @@ export const AdvancedStudioApp: React.FC = () => {
               <ChevronDown size={14} />
             </button>
           </div>
+          {selectedScene ? (
+            <div className="scene-meta-row">
+              {sceneMetadata(selectedScene).map((item) => (
+                <span key={item}>{item}</span>
+              ))}
+            </div>
+          ) : null}
           <button
             className="zoom-button"
             type="button"
@@ -624,9 +719,10 @@ const InspectorBody: React.FC<{
   if (tab === "Camera") {
     return (
       <div className="inspector-body">
-        <AnimationReviewCameraInspector
+        <CameraPathInspector
           scene={scene}
           onUpdate={onUpdate}
+          onPreview={onPreview}
         />
       </div>
     );
@@ -732,6 +828,7 @@ const InspectorBody: React.FC<{
       {isBoard ? (
         <BoardInspector
           content={boardContent}
+          onPreview={onPreview}
           onChange={(content) =>
             onUpdate((current) => ({...current, content}))
           }
@@ -762,15 +859,27 @@ const InspectorBody: React.FC<{
         />
       ) : null}
 
-      <InspectorField label="Animation">
+      {!isBoard && design ? (
+        <InspectorField label="Internal Object Animation">
+          <div className="asset-row compact">
+            <BarChart3 size={18} />
+            <span>
+              <strong>{animationLabel(design.animation)}</strong>
+              <small>Controlled by the selected AntV template design.</small>
+            </span>
+            <button type="button" onClick={onPreview}>
+              Preview
+            </button>
+          </div>
+        </InspectorField>
+      ) : null}
+
+      <InspectorField label="Preview">
         <div className="asset-row compact">
-          {isBoard ? <Film size={18} /> : <BarChart3 size={18} />}
+          <Film size={18} />
           <span>
-            <strong>
-              {isBoard
-                ? animationLabel(boardContent.animation)
-                : animationLabel(design?.animation)}
-            </strong>
+            <strong>Selected scene</strong>
+            <small>Seek to this scene and play.</small>
           </span>
           <button type="button" onClick={onPreview}>
             Preview
@@ -781,72 +890,120 @@ const InspectorBody: React.FC<{
   );
 };
 
-const AnimationReviewCameraInspector: React.FC<{
+const CameraPathInspector: React.FC<{
   scene: AdvancedStudioScene;
   onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
-}> = ({scene, onUpdate}) => {
-  const isBoard = scene.type === "board";
-  const boardContent = isBoard ? (scene.content as BoardSceneContent) : null;
-  const currentAnimation = boardContent?.animation;
-  const hasBoardTarget = Boolean(boardContent?.activeBlockId);
-  const applyAnimation = (animation: BoardSceneContent["animation"]) =>
-    onUpdate((current) => {
-      if (current.type !== "board") {
-        return current;
-      }
-
-      const content = current.content as BoardSceneContent;
-      if (animation !== "overview" && !content.activeBlockId) return current;
-
-      return {
-        ...current,
-        content: {
-          ...content,
-          animation,
-          activeBlockId: animation === "overview" ? null : content.activeBlockId,
-        },
-      };
-    });
+  onPreview: () => void;
+}> = ({scene, onUpdate, onPreview}) => {
+  const currentPath = getAdvancedStudioCameraPath(
+    scene.cameraPath?.preset ?? scene.cameraPreset ?? "static",
+  );
+  const applyPath = (preset: (typeof advancedStudioCameraPaths)[number]["id"]) => {
+    onUpdate((current) => ({
+      ...current,
+      cameraPath: {preset},
+    }));
+    requestAnimationFrame(onPreview);
+  };
 
   return (
-    <InspectorField label="Animation Presets">
-      <div className="panel-subheading">
-        {isBoard
-          ? "Apply proven motion behavior"
-          : "Board-only until infographic element targeting is added."}
-      </div>
-      <div className="animation-preset-grid">
-        {animationPresets.map((preset) => {
-          const disabled =
-            !isBoard || (preset.id !== "overview" && !hasBoardTarget);
-
-          return (
+    <>
+      <InspectorField label="Camera Path">
+        <select
+          className="advanced-input"
+          value={currentPath.id}
+          onChange={(event) =>
+            applyPath(
+              event.target.value as (typeof advancedStudioCameraPaths)[number]["id"],
+            )
+          }
+        >
+          {advancedStudioCameraPaths.map((path) => (
+            <option key={path.id} value={path.id}>
+              {path.id === "static" ? "Static / None" : path.label}
+            </option>
+          ))}
+        </select>
+        <div className="panel-subheading">{currentPath.description}</div>
+        <div className="camera-path-grid">
+          {advancedStudioCameraPaths.map((path) => (
             <button
-              key={preset.id}
+              key={path.id}
               type="button"
-              className={currentAnimation === preset.id ? "active" : ""}
-              disabled={disabled}
-              title={
-                !isBoard
-                  ? "Board-only until infographic element targeting is added."
-                  : disabled
-                    ? "Choose a Board Focus target before applying this preset."
-                    : undefined
-              }
-              onClick={() => applyAnimation(preset.id)}
+              className={currentPath.id === path.id ? "active" : ""}
+              onClick={() => applyPath(path.id)}
             >
-              <AnimationPresetIcon preset={preset.id} />
               <span>
-                <strong>{preset.label}</strong>
-                <small>{preset.description}</small>
+                <i
+                  style={{
+                    left: `${50 + path.points[0].x}%`,
+                    top: `${50 + path.points[0].y}%`,
+                  }}
+                />
+                <b
+                  style={{
+                    left: `${50 + path.points[1].x}%`,
+                    top: `${50 + path.points[1].y}%`,
+                  }}
+                />
               </span>
+              <strong>{path.id === "static" ? "Static / None" : path.label}</strong>
             </button>
-          );
-        })}
-      </div>
-    </InspectorField>
+          ))}
+        </div>
+      </InspectorField>
+      <InspectorField label="Camera Status">
+        <div className="info-row muted">
+          Camera Path writes only <strong>scene.cameraPath</strong>.
+        </div>
+      </InspectorField>
+    </>
   );
 };
+
+const SemanticMotionInspector: React.FC<{
+  content: BoardSceneContent;
+  onChange: (content: BoardSceneContent) => void;
+  onPreview: () => void;
+}> = ({content, onChange, onPreview}) => (
+  <InspectorField label="Semantic Motion">
+    <div className="panel-subheading">Board scene behavior from Animation Review presets.</div>
+    <div className="animation-preset-grid">
+      {animationPresets.map((preset) => {
+        const needsTarget = preset.id !== "overview";
+        const disabled = needsTarget && !content.activeBlockId;
+        const status = nonDistinctBoardSemantics.has(preset.id)
+          ? "No distinct Board behavior yet"
+          : preset.description;
+
+        return (
+          <button
+            key={preset.id}
+            type="button"
+            className={content.animation === preset.id ? "active" : ""}
+            disabled={disabled}
+            title={disabled ? "Choose a Scene Target before applying this preset." : undefined}
+            onClick={() => {
+              onChange({
+                ...content,
+                animation: preset.id,
+                activeBlockId:
+                  preset.id === "overview" ? null : content.activeBlockId,
+              });
+              requestAnimationFrame(onPreview);
+            }}
+          >
+            <AnimationPresetIcon preset={preset.id} />
+            <span>
+              <strong>{preset.label}</strong>
+              <small>{status}</small>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  </InspectorField>
+);
 
 const TransitionInspector: React.FC<{
   scene: AdvancedStudioScene;
@@ -1005,8 +1162,9 @@ const TemplateThumbnail: React.FC<{
 
 const BoardInspector: React.FC<{
   content: BoardSceneContent;
+  onPreview: () => void;
   onChange: (content: BoardSceneContent) => void;
-}> = ({content, onChange}) => {
+}> = ({content, onPreview, onChange}) => {
   const project = content.project ?? boardProjectCopy();
   const block = content.activeBlockId
     ? project.blocks.find((item) => item.id === content.activeBlockId)
@@ -1047,17 +1205,18 @@ const BoardInspector: React.FC<{
         ) : null}
       </InspectorField>
 
-      <InspectorField label="Board Focus">
+      <InspectorField label="Scene Target">
         <select
           className="advanced-input"
           value={content.activeBlockId ?? "overview"}
-          onChange={(event) =>
+          onChange={(event) => {
             onChange({
               ...content,
               activeBlockId:
                 event.target.value === "overview" ? null : event.target.value,
-            })
-          }
+            });
+            requestAnimationFrame(onPreview);
+          }}
         >
           <option value="overview">Full Overview</option>
           {project.blocks.map((item) => (
@@ -1067,6 +1226,12 @@ const BoardInspector: React.FC<{
           ))}
         </select>
       </InspectorField>
+
+      <SemanticMotionInspector
+        content={content}
+        onChange={onChange}
+        onPreview={onPreview}
+      />
 
     </>
   );
