@@ -946,6 +946,11 @@ textarea.advanced-input {
   background: #1d242d;
 }
 
+.behavior-template-stack {
+  display: grid;
+  gap: 10px;
+}
+
 .behavior-template-button {
   width: 100%;
   min-height: 46px;

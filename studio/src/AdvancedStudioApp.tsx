@@ -57,7 +57,7 @@ import type {
   StudioContent,
 } from "../../src/antv-studio/types";
 import {defaultProject} from "../../shared/project";
-import type {StudioProject} from "../../shared/project";
+import type {AnimationPreset, StudioProject} from "../../shared/project";
 
 const formatOrder: StudioFormatId[] = ["portrait", "square", "vertical"];
 const inspectorTabs = ["Scene", "Camera", "Transition"] as const;
@@ -140,6 +140,240 @@ const firstDesignForEngine = (engine: AntVEngine) => {
   if (!design) throw new Error(`No ${engine} designs registered.`);
   return design;
 };
+
+type SceneCompositionRecipe = {
+  cameraPath: NonNullable<AdvancedStudioScene["cameraPath"]>;
+  transitionIn?: AdvancedStudioScene["transitionIn"];
+  transitionOut?: AdvancedStudioScene["transitionOut"];
+  boardAnimation?: AnimationPreset;
+  boardProject?: StudioProject;
+  designId?: string;
+};
+
+type BehaviorTemplateId = "template-1" | "template-2";
+
+const cloneTransition = (
+  transition?: AdvancedStudioScene["transitionIn"],
+) =>
+  transition
+    ? {
+        ...transition,
+      }
+    : undefined;
+
+const cloneBoardProject = (project: StudioProject) =>
+  JSON.parse(JSON.stringify(project)) as StudioProject;
+
+const createTemplate2BoardProject = (project: StudioProject): StudioProject => {
+  const layout = {
+    hook: {x: 40, y: 72, width: 560, height: 130, designPreset: "hero"},
+    structure: {x: 625, y: 72, width: 320, height: 130, designPreset: "technical"},
+    proof: {x: 40, y: 232, width: 270, height: 170, designPreset: "data"},
+    path: {x: 340, y: 232, width: 300, height: 170, designPreset: "process"},
+    friction: {x: 670, y: 232, width: 275, height: 170, designPreset: "supporting"},
+    decision: {x: 40, y: 438, width: 430, height: 126, designPreset: "editorial"},
+    close: {x: 505, y: 438, width: 440, height: 126, designPreset: "summary"},
+  } satisfies Record<string, Pick<StudioProject["blocks"][number], "x" | "y" | "width" | "height" | "designPreset">>;
+
+  return {
+    ...project,
+    blocks: project.blocks.map((block) => ({
+      ...block,
+      ...(layout[block.id as keyof typeof layout] ?? {}),
+    })),
+  };
+};
+
+const compositionFromScene = (scene: AdvancedStudioScene): SceneCompositionRecipe => ({
+  cameraPath: {
+    preset: scene.cameraPath?.preset ?? scene.cameraPreset ?? "static",
+  },
+  transitionIn: cloneTransition(scene.transitionIn),
+  transitionOut: cloneTransition(scene.transitionOut),
+  boardAnimation:
+    scene.type === "board"
+      ? (scene.content as BoardSceneContent).animation
+      : undefined,
+  boardProject:
+    scene.type === "board"
+      ? cloneBoardProject(
+          (scene.content as BoardSceneContent).project ?? defaultProject,
+        )
+      : undefined,
+  designId:
+    scene.type !== "board"
+      ? (scene.content as AdvancedStudioInfographicContent).designId
+      : undefined,
+});
+
+const template1CompositionBySceneId: Record<string, SceneCompositionRecipe> =
+  Object.fromEntries(
+    advancedStudioDefaultProject.scenes.map((scene) => [
+      scene.id,
+      compositionFromScene(scene),
+    ]),
+  );
+
+const crossfadeTransition = (durationFrames: number) => ({
+  preset: "crossfade" as const,
+  durationFrames,
+});
+
+const template2CompositionBySceneId: Record<string, SceneCompositionRecipe> = {
+  "style-01-cold-open": {
+    boardProject: createTemplate2BoardProject(
+      template1CompositionBySceneId["style-01-cold-open"].boardProject ??
+        defaultProject,
+    ),
+    cameraPath: {preset: "diagonal-in"},
+    transitionOut: crossfadeTransition(4),
+    boardAnimation: "focus",
+  },
+  "style-02-editor-setup": {
+    boardProject: createTemplate2BoardProject(
+      template1CompositionBySceneId["style-02-editor-setup"].boardProject ??
+        defaultProject,
+    ),
+    cameraPath: {preset: "snap-focus"},
+    transitionOut: crossfadeTransition(6),
+    boardAnimation: "reveal",
+  },
+  "style-03-cause-map": {
+    ...template1CompositionBySceneId["style-03-cause-map"],
+  },
+  "style-04-source-breakdown": {
+    designId: "g2-rose-comparison",
+    cameraPath: {preset: "orbit-right"},
+    transitionOut: crossfadeTransition(4),
+  },
+  "style-05-proof-spotlight": {
+    boardProject: createTemplate2BoardProject(
+      template1CompositionBySceneId["style-05-proof-spotlight"].boardProject ??
+        defaultProject,
+    ),
+    cameraPath: {preset: "snap-focus"},
+    transitionIn: crossfadeTransition(4),
+    boardAnimation: "count",
+  },
+  "style-06-scorecard-cutaway": {
+    designId: "s2-before-after-metrics",
+    cameraPath: {preset: "push-left"},
+    transitionOut: crossfadeTransition(6),
+  },
+  "style-07-path-reveal": {
+    boardProject: createTemplate2BoardProject(
+      template1CompositionBySceneId["style-07-path-reveal"].boardProject ??
+        defaultProject,
+    ),
+    cameraPath: {preset: "push-right"},
+    transitionIn: crossfadeTransition(4),
+    transitionOut: crossfadeTransition(4),
+    boardAnimation: "focus",
+  },
+  "style-08-funnel": {
+    designId: "g2-radar-comparison",
+    cameraPath: {preset: "drift-right"},
+  },
+  "style-09-resource-flow": {
+    designId: "g6-clustered-concept-map",
+    cameraPath: {preset: "push-in"},
+    transitionIn: crossfadeTransition(6),
+    transitionOut: crossfadeTransition(4),
+  },
+  "style-10-trend-rise": {
+    designId: "g2-area-growth",
+    cameraPath: {preset: "tilt-up"},
+    transitionOut: crossfadeTransition(4),
+  },
+  "style-11-decision-focus": {
+    boardProject: createTemplate2BoardProject(
+      template1CompositionBySceneId["style-11-decision-focus"].boardProject ??
+        defaultProject,
+    ),
+    cameraPath: {preset: "diagonal-in"},
+    transitionIn: crossfadeTransition(4),
+    boardAnimation: "spotlight",
+  },
+  "style-12-kpi-punch": {
+    designId: "g2-scatter-relationship",
+    cameraPath: {preset: "push-left"},
+    transitionOut: crossfadeTransition(6),
+  },
+  "style-13-decision-tree": {
+    designId: "g6-snake-process",
+    cameraPath: {preset: "snap-focus"},
+    transitionIn: crossfadeTransition(4),
+  },
+  "style-14-final-overview": {
+    boardProject: createTemplate2BoardProject(
+      template1CompositionBySceneId["style-14-final-overview"].boardProject ??
+        defaultProject,
+    ),
+    cameraPath: {preset: "settle-down"},
+    boardAnimation: "reveal",
+  },
+};
+
+const transitionsMatch = (
+  left?: AdvancedStudioScene["transitionIn"],
+  right?: AdvancedStudioScene["transitionIn"],
+) =>
+  (left?.preset ?? null) === (right?.preset ?? null) &&
+  (left?.durationFrames ?? null) === (right?.durationFrames ?? null);
+
+const projectsMatch = (left?: StudioProject, right?: StudioProject) =>
+  JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+
+const sceneMatchesComposition = (
+  scene: AdvancedStudioScene,
+  composition: SceneCompositionRecipe,
+) => {
+  const cameraPreset = scene.cameraPath?.preset ?? scene.cameraPreset ?? "static";
+  const boardContent =
+    scene.type === "board" ? (scene.content as BoardSceneContent) : null;
+  const infographicContent =
+    scene.type !== "board"
+      ? (scene.content as AdvancedStudioInfographicContent)
+      : null;
+
+  return (
+    cameraPreset === composition.cameraPath.preset &&
+    transitionsMatch(scene.transitionIn, composition.transitionIn) &&
+    transitionsMatch(scene.transitionOut, composition.transitionOut) &&
+    boardContent?.animation === composition.boardAnimation &&
+    projectsMatch(boardContent?.project, composition.boardProject) &&
+    infographicContent?.designId === composition.designId
+  );
+};
+
+const applyCompositionRecipe = (
+  scene: AdvancedStudioScene,
+  composition: SceneCompositionRecipe,
+): AdvancedStudioScene => ({
+  ...scene,
+  cameraPath: {
+    ...composition.cameraPath,
+  },
+  transitionIn: cloneTransition(composition.transitionIn),
+  transitionOut: cloneTransition(composition.transitionOut),
+  content:
+    scene.type === "board"
+      ? {
+          ...(scene.content as BoardSceneContent),
+          project: composition.boardProject
+            ? cloneBoardProject(composition.boardProject)
+            : (scene.content as BoardSceneContent).project,
+          animation:
+            composition.boardAnimation ??
+            (scene.content as BoardSceneContent).animation,
+        }
+      : {
+          ...(scene.content as AdvancedStudioInfographicContent),
+          designId:
+            composition.designId ??
+            (scene.content as AdvancedStudioInfographicContent).designId,
+        },
+});
 
 export const AdvancedStudioApp: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
@@ -668,7 +902,11 @@ const InspectorBody: React.FC<{
   if (tab === "Transition") {
     return (
       <div className="inspector-body">
-        <TransitionInspector />
+        <TransitionInspector
+          scene={scene}
+          onUpdate={onUpdate}
+          onPreview={onPreview}
+        />
       </div>
     );
   }
@@ -942,13 +1180,60 @@ const SemanticMotionInspector: React.FC<{
   </InspectorField>
 );
 
-const TransitionInspector: React.FC = () => (
-  <InspectorField label="Transition">
-    <button className="behavior-template-button active" type="button">
-      Template 1
-    </button>
-  </InspectorField>
-);
+const TransitionInspector: React.FC<{
+  scene: AdvancedStudioScene;
+  onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
+  onPreview: () => void;
+}> = ({scene, onUpdate, onPreview}) => {
+  const behaviorOptions: Array<{
+    id: BehaviorTemplateId;
+    label: string;
+    composition: SceneCompositionRecipe;
+  }> = [
+    {
+      id: "template-1",
+      label: "Template 1",
+      composition: template1CompositionBySceneId[scene.id] ?? compositionFromScene(scene),
+    },
+    {
+      id: "template-2",
+      label: "Template 2",
+      composition: template2CompositionBySceneId[scene.id] ?? compositionFromScene(scene),
+    },
+  ];
+  const selectedTemplateId = sceneMatchesComposition(
+    scene,
+    behaviorOptions[0].composition,
+  )
+    ? "template-1"
+    : sceneMatchesComposition(scene, behaviorOptions[1].composition)
+      ? "template-2"
+      : null;
+
+  const applyTemplate = (composition: SceneCompositionRecipe) => {
+    onUpdate((current) => applyCompositionRecipe(current, composition));
+    requestAnimationFrame(onPreview);
+  };
+
+  return (
+    <InspectorField label="Transitions">
+      <div className="behavior-template-stack">
+        {behaviorOptions.map((option) => (
+          <button
+            key={option.id}
+            className={`behavior-template-button ${
+              selectedTemplateId === option.id ? "active" : ""
+            }`}
+            type="button"
+            onClick={() => applyTemplate(option.composition)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </InspectorField>
+  );
+};
 
 const UniversalTemplateBrowser: React.FC<{
   selectedDesignId?: string;
