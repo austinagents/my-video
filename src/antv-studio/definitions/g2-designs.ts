@@ -1,6 +1,14 @@
 import type {G2Spec} from "@antv/g2";
 import {chartPadding, compactChartPadding, studioTheme} from "../theme";
-import type {FactoryContext, G2StudioDesign, StudioRow} from "../types";
+import type {
+  FactoryContext,
+  G2StudioDesign,
+  ProviderDataContract,
+  ProviderDesignCapability,
+  ProviderStructure,
+  StudioRow,
+  StudioRowField,
+} from "../types";
 import {content, industryRows, row} from "../sample-content";
 
 const base = ({content: c, controls, width, height}: FactoryContext) => ({
@@ -47,7 +55,114 @@ const stackedRows = (items: string[], groups: string[]) =>
     ),
   );
 
-export const g2Designs: G2StudioDesign[] = [
+const g2Capability = ({
+  dataContract = "g2-cartesian-series",
+  structures = ["rows", "cartesian-series"],
+  layouts,
+  optionalFields = ["group", "secondaryValue", "target"],
+  minRows = 1,
+}: {
+  dataContract?: ProviderDataContract;
+  structures?: ProviderStructure[];
+  layouts: string[];
+  optionalFields?: StudioRowField[];
+  minRows?: number;
+}): ProviderDesignCapability => ({
+  dataContract,
+  requiredFields: {rows: ["id", "label", "value"]},
+  optionalFields: {rows: optionalFields},
+  structures,
+  layouts,
+  animationModes: [
+    "grow-up",
+    "grow-right",
+    "radial-reveal",
+    "fade-scale",
+    "path-style-reveal",
+  ],
+  aspectRatios: ["portrait", "square", "vertical"],
+  contentLimits: {minRows, maxRows: 24},
+  adapter: "generic-content",
+});
+
+const g2CapabilitiesById: Record<string, ProviderDesignCapability> = {
+  "g2-revenue-ranking": g2Capability({layouts: ["interval", "transpose"]}),
+  "g2-rounded-ranking": g2Capability({layouts: ["interval", "transpose"]}),
+  "g2-service-comparison": g2Capability({
+    layouts: ["interval", "transpose", "dodgeX"],
+  }),
+  "g2-case-shift": g2Capability({
+    layouts: ["interval", "transpose", "diverging"],
+  }),
+  "g2-treatment-breakdown": g2Capability({
+    layouts: ["interval", "transpose", "stackY"],
+  }),
+  "g2-lead-source-share": g2Capability({
+    layouts: ["interval", "transpose", "stackY", "normalizeY"],
+  }),
+  "g2-monthly-performance": g2Capability({layouts: ["interval"]}),
+  "g2-channel-comparison": g2Capability({layouts: ["interval", "dodgeX"]}),
+  "g2-pipeline-breakdown": g2Capability({layouts: ["interval", "stackY"]}),
+  "g2-result-waterfall": g2Capability({layouts: ["interval", "waterfall-style"]}),
+  "g2-goal-tracker": g2Capability({layouts: ["interval", "transpose", "bullet-style"]}),
+  "g2-basic-growth": g2Capability({layouts: ["line"]}),
+  "g2-multi-line": g2Capability({layouts: ["line", "series-color"]}),
+  "g2-smooth-trend": g2Capability({layouts: ["line", "smooth"]}),
+  "g2-area-growth": g2Capability({layouts: ["area"]}),
+  "g2-stacked-area": g2Capability({layouts: ["area", "stackY"]}),
+  "g2-donut-breakdown": g2Capability({
+    dataContract: "g2-polar-series",
+    structures: ["rows", "polar-series"],
+    layouts: ["interval", "theta", "donut"],
+  }),
+  "g2-labeled-pie": g2Capability({
+    dataContract: "g2-polar-series",
+    structures: ["rows", "polar-series"],
+    layouts: ["interval", "theta", "pie"],
+  }),
+  "g2-rose-comparison": g2Capability({
+    dataContract: "g2-polar-series",
+    structures: ["rows", "polar-series"],
+    layouts: ["interval", "polar", "rose"],
+  }),
+  "g2-radial-progress": g2Capability({
+    dataContract: "g2-polar-series",
+    structures: ["rows", "polar-series"],
+    layouts: ["interval", "theta", "radial-progress"],
+  }),
+  "g2-gauge-achievement": g2Capability({
+    dataContract: "g2-polar-series",
+    structures: ["rows", "polar-series"],
+    layouts: ["interval", "theta", "gauge"],
+  }),
+  "g2-conversion-funnel": g2Capability({
+    layouts: ["interval", "transpose", "funnel-style"],
+  }),
+  "g2-pyramid-stages": g2Capability({
+    layouts: ["interval", "transpose", "pyramid-style"],
+  }),
+  "g2-radar-comparison": g2Capability({
+    dataContract: "g2-polar-series",
+    structures: ["rows", "polar-series"],
+    layouts: ["line", "polar", "radar"],
+  }),
+  "g2-scatter-relationship": g2Capability({
+    dataContract: "g2-point-series",
+    structures: ["rows", "point-series"],
+    layouts: ["point", "scatter"],
+  }),
+  "g2-kpi-sparkline": g2Capability({layouts: ["line", "sparkline"]}),
+};
+
+const withG2Capabilities = (
+  designs: Array<Omit<G2StudioDesign, "capabilities">>,
+): G2StudioDesign[] =>
+  designs.map((design) => ({
+    ...design,
+    capabilities: g2CapabilitiesById[design.id] ?? g2Capability({layouts: ["unknown"]}),
+  }));
+
+export const g2Designs: G2StudioDesign[] = withG2Capabilities([
   {
     engine: "g2",
     id: "g2-revenue-ranking",
@@ -364,4 +479,4 @@ export const g2Designs: G2StudioDesign[] = [
     defaultContent: content("Performance Snapshot", "Exam bookings are up week over week", [row("w1", "W1", 18), row("w2", "W2", 21), row("w3", "W3", 20), row("w4", "W4", 29), row("w5", "W5", 34)]),
     createOptions: (ctx) => ({...base(ctx), type: "line", encode: {x: "label", y: "value"}, axis: false, style: {stroke: studioTheme.goldSoft, lineWidth: 5}, labels: ctx.controls.showLabels ? [{text: "value", position: "top", fill: studioTheme.text}] : undefined} as G2Spec),
   },
-];
+]);

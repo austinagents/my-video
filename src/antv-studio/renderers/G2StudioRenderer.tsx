@@ -1,5 +1,9 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Chart} from "@antv/g2";
+import {
+  formatCompatibilityError,
+  validateStudioDesignCompatibility,
+} from "../compatibility";
 import type {G2StudioDesign, StudioContent, StudioControls} from "../types";
 
 type Props = {
@@ -34,6 +38,17 @@ export const G2StudioRenderer: React.FC<Props> = ({
     const container = containerRef.current;
     if (!container) return;
 
+    const compatibility = validateStudioDesignCompatibility({
+      design,
+      content,
+      expectedEngine: "g2",
+    });
+    if (!compatibility.ok) {
+      setErrorMessage(formatCompatibilityError(compatibility));
+      onError(formatCompatibilityError(compatibility));
+      return;
+    }
+
     container.innerHTML = "";
     chartRef.current = new Chart({container, width, height, autoFit: false});
 
@@ -56,6 +71,14 @@ export const G2StudioRenderer: React.FC<Props> = ({
 
     const render = async () => {
       try {
+        const compatibility = validateStudioDesignCompatibility({
+          design,
+          content,
+          expectedEngine: "g2",
+        });
+        if (!compatibility.ok) {
+          throw new Error(formatCompatibilityError(compatibility));
+        }
         const options = design.createOptions({content, controls, width, height});
         chart.options(options);
         await chart.render();

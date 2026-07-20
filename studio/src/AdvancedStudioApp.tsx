@@ -47,6 +47,10 @@ import {
   advancedStudioCameraPaths,
   getAdvancedStudioCameraPath,
 } from "../../src/advanced-studio/camera-paths";
+import {
+  formatCompatibilityError,
+  validateStudioDesignCompatibility,
+} from "../../src/antv-studio/compatibility";
 import {antVStudioDesigns} from "../../src/antv-studio/registry";
 import {cloneContent} from "../../src/antv-studio/sample-content";
 import {defaultControls} from "../../src/antv-studio/theme";
@@ -133,6 +137,19 @@ const designForScene = (scene: AdvancedStudioScene) => {
   return appDesigns.find(
     (design) => design.id === content.designId && design.engine === scene.type,
   );
+};
+
+const compatibilityMessageForDesign = (
+  scene: AdvancedStudioScene,
+  design: AntVStudioDesign,
+  content: StudioContent,
+) => {
+  const compatibility = validateStudioDesignCompatibility({
+    design,
+    content,
+    expectedEngine: scene.type === "board" ? design.engine : scene.type,
+  });
+  return compatibility.ok ? "" : formatCompatibilityError(compatibility);
 };
 
 const firstDesignForEngine = (engine: AntVEngine) => {
@@ -395,6 +412,7 @@ export const AdvancedStudioApp: React.FC = () => {
   >("idle");
   const [renderOutput, setRenderOutput] = React.useState("");
   const [renderError, setRenderError] = React.useState("");
+  const [compatibilityNotice, setCompatibilityNotice] = React.useState("");
 
   const timedScenes = React.useMemo(
     () => getAdvancedStudioTimedScenes(project),
@@ -455,6 +473,7 @@ export const AdvancedStudioApp: React.FC = () => {
   );
 
   const selectScene = (scene: AdvancedStudioTimedScene) => {
+    setCompatibilityNotice("");
     setSelectedSceneId(scene.id);
     seekToFrame(scene.startFrame);
   };
@@ -463,6 +482,7 @@ export const AdvancedStudioApp: React.FC = () => {
     id: string,
     updater: (scene: AdvancedStudioScene) => AdvancedStudioScene,
   ) => {
+    setCompatibilityNotice("");
     setProject((current) => ({
       ...current,
       scenes: current.scenes.map((scene) =>
@@ -522,11 +542,21 @@ export const AdvancedStudioApp: React.FC = () => {
 
   const applyDesignToSelectedScene = (design: AntVStudioDesign) => {
     if (!selectedScene) return;
+    const nextContent = createAdvancedStudioInfographicContent(design);
+    const message = compatibilityMessageForDesign(
+      {...selectedScene, type: design.engine},
+      design,
+      nextContent.content ?? design.defaultContent,
+    );
+    if (message) {
+      setCompatibilityNotice(message);
+      return;
+    }
     updateScene(selectedScene.id, (current) => ({
       ...current,
       type: design.engine,
       title: design.name,
-      content: createAdvancedStudioInfographicContent(design),
+      content: nextContent,
     }));
     seekToFrame(selectedScene.startFrame);
     requestAnimationFrame(() => playerRef.current?.play());
@@ -536,7 +566,26 @@ export const AdvancedStudioApp: React.FC = () => {
     setRenderStatus("rendering");
     setRenderOutput("");
     setRenderError("");
+    setCompatibilityNotice("");
     try {
+      for (const scene of project.scenes) {
+        if (scene.type === "board") continue;
+        const content = scene.content as AdvancedStudioInfographicContent;
+        const design = antVStudioDesigns.find(
+          (item) => item.id === content.designId && item.engine === scene.type,
+        );
+        if (!design) {
+          throw new Error(`Advanced Studio requires registered design ${content.designId}.`);
+        }
+        const compatibility = validateStudioDesignCompatibility({
+          design,
+          content: content.content ?? design.defaultContent,
+          expectedEngine: scene.type,
+        });
+        if (!compatibility.ok) {
+          throw new Error(`${scene.id}: ${formatCompatibilityError(compatibility)}`);
+        }
+      }
       const response = await fetch("/api/render-advanced", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -635,6 +684,12 @@ export const AdvancedStudioApp: React.FC = () => {
               </strong>
               {renderOutput ? <span>{renderOutput}</span> : null}
               {renderError ? <span>{renderError}</span> : null}
+            </div>
+          ) : null}
+          {compatibilityNotice ? (
+            <div className="render-feedback error">
+              <strong>Design incompatible</strong>
+              <span>{compatibilityNotice}</span>
             </div>
           ) : null}
           <button className="icon-button" type="button" aria-label="Settings" disabled>
@@ -759,6 +814,7 @@ export const AdvancedStudioApp: React.FC = () => {
           tab={inspectorTab}
           onPreview={previewSelectedScene}
           onUpdate={(updater) => selectedScene && updateScene(selectedScene.id, updater)}
+          onCompatibilityError={setCompatibilityNotice}
           onDelete={() => selectedScene && deleteScene(selectedScene.id)}
           onMove={(direction) => selectedScene && moveScene(selectedScene.id, direction)}
         />
@@ -877,9 +933,10 @@ const InspectorBody: React.FC<{
   tab: (typeof inspectorTabs)[number];
   onPreview: () => void;
   onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
+  onCompatibilityError: (message: string) => void;
   onDelete: () => void;
   onMove: (direction: -1 | 1) => void;
-}> = ({scene, tab, onPreview, onUpdate, onDelete, onMove}) => {
+}> = ({scene, tab, onPreview, onUpdate, onCompatibilityError, onDelete, onMove}) => {
   if (!scene) return null;
 
   const isBoard = scene.type === "board";
@@ -905,6 +962,7 @@ const InspectorBody: React.FC<{
         <TransitionInspector
           scene={scene}
           onUpdate={onUpdate}
+          onCompatibilityError={onCompatibilityError}
           onPreview={onPreview}
         />
       </div>
@@ -961,11 +1019,21 @@ const InspectorBody: React.FC<{
                 };
               }
               const nextDesign = firstDesignForEngine(type);
+              const nextContent = createAdvancedStudioInfographicContent(nextDesign);
+              const message = compatibilityMessageForDesign(
+                {...current, type},
+                nextDesign,
+                nextContent.content ?? nextDesign.defaultContent,
+              );
+              if (message) {
+                onCompatibilityError(message);
+                return current;
+              }
               return {
                 ...current,
                 type,
                 title: nextDesign.name,
-                content: createAdvancedStudioInfographicContent(nextDesign),
+                content: nextContent,
               };
             });
           }}
@@ -1014,12 +1082,24 @@ const InspectorBody: React.FC<{
           design={design}
           content={infographicContent.content ?? cloneContent(design.defaultContent)}
           onDesign={(nextDesign) =>
-            onUpdate((current) => ({
-              ...current,
-              type: nextDesign.engine,
-              title: nextDesign.name,
-              content: createAdvancedStudioInfographicContent(nextDesign),
-            }))
+            onUpdate((current) => {
+              const nextContent = createAdvancedStudioInfographicContent(nextDesign);
+              const message = compatibilityMessageForDesign(
+                {...current, type: nextDesign.engine},
+                nextDesign,
+                nextContent.content ?? nextDesign.defaultContent,
+              );
+              if (message) {
+                onCompatibilityError(message);
+                return current;
+              }
+              return {
+                ...current,
+                type: nextDesign.engine,
+                title: nextDesign.name,
+                content: nextContent,
+              };
+            })
           }
           onContent={updateContent}
           onControls={(controls) =>
@@ -1183,8 +1263,9 @@ const SemanticMotionInspector: React.FC<{
 const TransitionInspector: React.FC<{
   scene: AdvancedStudioScene;
   onUpdate: (updater: (scene: AdvancedStudioScene) => AdvancedStudioScene) => void;
+  onCompatibilityError: (message: string) => void;
   onPreview: () => void;
-}> = ({scene, onUpdate, onPreview}) => {
+}> = ({scene, onUpdate, onCompatibilityError, onPreview}) => {
   const behaviorOptions: Array<{
     id: BehaviorTemplateId;
     label: string;
@@ -1211,7 +1292,27 @@ const TransitionInspector: React.FC<{
       : null;
 
   const applyTemplate = (composition: SceneCompositionRecipe) => {
-    onUpdate((current) => applyCompositionRecipe(current, composition));
+    onUpdate((current) => {
+      if (current.type !== "board" && composition.designId) {
+        const nextDesign = antVStudioDesigns.find(
+          (design) =>
+            design.id === composition.designId && design.engine === current.type,
+        );
+        if (nextDesign) {
+          const currentContent = current.content as AdvancedStudioInfographicContent;
+          const message = compatibilityMessageForDesign(
+            current,
+            nextDesign,
+            currentContent.content ?? nextDesign.defaultContent,
+          );
+          if (message) {
+            onCompatibilityError(message);
+            return current;
+          }
+        }
+      }
+      return applyCompositionRecipe(current, composition);
+    });
     requestAnimationFrame(onPreview);
   };
 

@@ -1,5 +1,9 @@
 import React, {useEffect, useRef, useState} from "react";
 import {TableSheet} from "@antv/s2";
+import {
+  formatCompatibilityError,
+  validateStudioDesignCompatibility,
+} from "../compatibility";
 import {defaultControls} from "../theme";
 import {cloneContent} from "../sample-content";
 import type {S2StudioDesign, StudioContent, StudioControls} from "../types";
@@ -36,6 +40,17 @@ export const S2StudioRenderer: React.FC<Props> = ({
     const container = containerRef.current;
     if (!container) return;
 
+    const compatibility = validateStudioDesignCompatibility({
+      design,
+      content,
+      expectedEngine: "s2",
+    });
+    if (!compatibility.ok) {
+      setErrorMessage(formatCompatibilityError(compatibility));
+      onError(formatCompatibilityError(compatibility));
+      return;
+    }
+
     container.innerHTML = "";
     const config = design.createSheetConfig({
       content: cloneContent(design.defaultContent),
@@ -64,6 +79,14 @@ export const S2StudioRenderer: React.FC<Props> = ({
 
     const render = async () => {
       try {
+        const compatibility = validateStudioDesignCompatibility({
+          design,
+          content,
+          expectedEngine: "s2",
+        });
+        if (!compatibility.ok) {
+          throw new Error(formatCompatibilityError(compatibility));
+        }
         const config = design.createSheetConfig({content, controls, width, height});
         sheet.setDataCfg(config.dataCfg, true);
         sheet.setOptions(config.options, true);

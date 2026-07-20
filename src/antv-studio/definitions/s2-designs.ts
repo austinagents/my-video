@@ -1,6 +1,11 @@
 import type {S2DataConfig, S2Options} from "@antv/s2";
 import {studioTheme} from "../theme";
-import type {FactoryContext, S2StudioDesign, StudioRow} from "../types";
+import type {
+  FactoryContext,
+  ProviderDesignCapability,
+  S2StudioDesign,
+  StudioRow,
+} from "../types";
 import {content, row} from "../sample-content";
 
 type TableColumn = {key: string; title: string};
@@ -59,19 +64,35 @@ const make = (
   subtitle: string,
   rows: StudioRow[],
   columns: TableColumn[],
-): S2StudioDesign => ({
-  engine: "s2",
-  id,
-  name,
-  category,
-  description,
-  industryExample,
-  animation: "row-reveal",
-  supportsAddRemove: true,
-  supportsSubtitle: true,
-  defaultContent: content(title, subtitle, rows),
-  createSheetConfig: (ctx) => tableConfig(ctx, columns),
-});
+): S2StudioDesign => {
+  const columnKeys = columns.map((column) => column.key);
+  const capability: ProviderDesignCapability = {
+    dataContract: category === "Scorecard" ? "s2-scorecard-table" : "s2-flat-table",
+    requiredFields: {rows: ["id", "label", "value"]},
+    optionalFields: {rows: ["group", "secondaryValue", "target"]},
+    structures: category === "Scorecard" ? ["rows", "scorecard-table"] : ["rows", "flat-table"],
+    layouts: ["table", ...columnKeys],
+    animationModes: ["row-reveal"],
+    aspectRatios: ["portrait", "square", "vertical"],
+    contentLimits: {minRows: 1, maxRows: 24},
+    adapter: "generic-content",
+  };
+
+  return {
+    engine: "s2",
+    id,
+    name,
+    category,
+    description,
+    industryExample,
+    animation: "row-reveal",
+    supportsAddRemove: true,
+    supportsSubtitle: true,
+    capabilities: capability,
+    defaultContent: content(title, subtitle, rows),
+    createSheetConfig: (ctx) => tableConfig(ctx, columns),
+  };
+};
 
 export const s2Designs: S2StudioDesign[] = [
   make(

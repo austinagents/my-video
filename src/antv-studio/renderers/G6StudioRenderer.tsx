@@ -1,5 +1,9 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Graph} from "@antv/g6";
+import {
+  formatCompatibilityError,
+  validateStudioDesignCompatibility,
+} from "../compatibility";
 import {defaultControls} from "../theme";
 import {cloneContent} from "../sample-content";
 import type {G6StudioDesign, StudioContent, StudioControls} from "../types";
@@ -36,9 +40,32 @@ export const G6StudioRenderer: React.FC<Props> = ({
     const container = containerRef.current;
     if (!container) return;
 
+    const defaultContent = cloneContent(design.defaultContent);
+    const compatibility = validateStudioDesignCompatibility({
+      design,
+      content,
+      expectedEngine: "g6",
+    });
+    const defaultCompatibility = validateStudioDesignCompatibility({
+      design,
+      content: defaultContent,
+      expectedEngine: "g6",
+    });
+    const failedCompatibility = compatibility.ok
+      ? defaultCompatibility.ok
+        ? null
+        : defaultCompatibility
+      : compatibility;
+    if (failedCompatibility) {
+      const message = formatCompatibilityError(failedCompatibility);
+      setErrorMessage(message);
+      onError(message);
+      return;
+    }
+
     container.innerHTML = "";
     const config = design.createGraphConfig({
-      content: cloneContent(design.defaultContent),
+      content: defaultContent,
       controls: defaultControls,
       width,
       height,
@@ -64,6 +91,14 @@ export const G6StudioRenderer: React.FC<Props> = ({
 
     const render = async () => {
       try {
+        const compatibility = validateStudioDesignCompatibility({
+          design,
+          content,
+          expectedEngine: "g6",
+        });
+        if (!compatibility.ok) {
+          throw new Error(formatCompatibilityError(compatibility));
+        }
         const config = design.createGraphConfig({content, controls, width, height});
         graph.setData(config.data ?? {});
         await graph.render();

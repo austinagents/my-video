@@ -6,6 +6,10 @@ import {
   useVideoConfig,
 } from "remotion";
 import {antVStudioDesigns} from "../antv-studio/registry";
+import {
+  formatCompatibilityError,
+  validateStudioDesignCompatibility,
+} from "../antv-studio/compatibility";
 import {cloneContent, content, edge, node, row} from "../antv-studio/sample-content";
 import {STUDIO_FORMATS, type StudioFormatId} from "../antv-studio/studio-formats";
 import {defaultControls} from "../antv-studio/theme";
@@ -501,6 +505,36 @@ const clamp = {
   extrapolateRight: "clamp" as const,
 };
 
+const CompatibilityErrorScene: React.FC<{
+  message: string;
+  onReady: () => void;
+  onError: (message: string) => void;
+}> = ({message, onReady, onError}) => {
+  React.useEffect(() => {
+    onError(message);
+    onReady();
+  }, [message, onError, onReady]);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "grid",
+        placeItems: "center",
+        padding: 48,
+        background: studioTheme.canvas,
+        color: "#ffb4b4",
+        fontSize: 22,
+        lineHeight: 1.25,
+        textAlign: "center",
+      }}
+    >
+      {message}
+    </div>
+  );
+};
+
 const sceneOpacity = (scene: AdvancedStudioTimedScene, frame: number) => {
   let opacity = 1;
 
@@ -582,6 +616,21 @@ const renderScene = ({
   if (scene.type === "g2" || scene.type === "g6" || scene.type === "s2") {
     const content = scene.content as AdvancedStudioInfographicContent;
     const design = requireDesign(content.designId, scene.type);
+    const compatibility = validateStudioDesignCompatibility({
+      design,
+      content: content.content ?? design.defaultContent,
+      expectedEngine: scene.type,
+    });
+    if (!compatibility.ok) {
+      const message = formatCompatibilityError(compatibility);
+      return (
+        <CompatibilityErrorScene
+          message={message}
+          onReady={() => onReady(scene.id)}
+          onError={(errorMessage) => onError(scene.id, errorMessage)}
+        />
+      );
+    }
     const infographicContent: InfographicSceneContent = {
       design,
       content: content.content,

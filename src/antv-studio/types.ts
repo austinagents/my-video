@@ -21,6 +21,77 @@ export type AnimationPreset =
   | "path-style-reveal"
   | "row-reveal";
 
+export type ProviderDataContract =
+  | "tabular-rows"
+  | "g2-cartesian-series"
+  | "g2-polar-series"
+  | "g2-point-series"
+  | "g6-generic-graph"
+  | "g6-dag"
+  | "g6-hierarchy-tree"
+  | "s2-flat-table"
+  | "s2-scorecard-table"
+  | "s2-pivot-table";
+
+export type ProviderStructure =
+  | "rows"
+  | "cartesian-series"
+  | "polar-series"
+  | "point-series"
+  | "generic-graph"
+  | "dag"
+  | "hierarchy"
+  | "tree"
+  | "flat-table"
+  | "scorecard-table"
+  | "pivot-table";
+
+export type ProviderAspectRatio = "portrait" | "square" | "vertical";
+
+export type StudioRowField =
+  | "id"
+  | "label"
+  | "value"
+  | "group"
+  | "secondaryValue"
+  | "target";
+
+export type StudioNodeField = "id" | "label" | "group" | "parentId" | "value";
+
+export type StudioEdgeField = "source" | "target" | "label" | "value";
+
+export type ProviderDesignRequiredFields = {
+  rows?: StudioRowField[];
+  nodes?: StudioNodeField[];
+  edges?: StudioEdgeField[];
+};
+
+export type ProviderDesignContentLimits = {
+  minRows?: number;
+  maxRows?: number;
+  minNodes?: number;
+  maxNodes?: number;
+  minEdges?: number;
+  maxEdges?: number;
+};
+
+export type ProviderAdapterStatus =
+  | "generic-content"
+  | "requires-native-contract";
+
+export type ProviderDesignCapability = {
+  dataContract: ProviderDataContract;
+  requiredFields: ProviderDesignRequiredFields;
+  optionalFields?: ProviderDesignRequiredFields;
+  structures: ProviderStructure[];
+  layouts: string[];
+  animationModes: AnimationPreset[];
+  aspectRatios: ProviderAspectRatio[];
+  contentLimits?: ProviderDesignContentLimits;
+  adapter: ProviderAdapterStatus;
+  notes?: string[];
+};
+
 export type StudioRow = {
   id: string;
   label: string;
@@ -77,6 +148,7 @@ type BaseDesign = {
   animation: AnimationPreset;
   supportsAddRemove?: boolean;
   supportsSubtitle?: boolean;
+  capabilities: ProviderDesignCapability;
 };
 
 export type G2StudioDesign = BaseDesign & {
@@ -103,4 +175,3 @@ export type AntVStudioDesign =
   | G6StudioDesign;
 
 export type RenderStatus = "idle" | "loading" | "ready" | "error";
-

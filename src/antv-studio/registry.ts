@@ -1,6 +1,7 @@
 import {g2Designs} from "./definitions/g2-designs";
 import {g6Designs} from "./definitions/g6-designs";
 import {s2Designs} from "./definitions/s2-designs";
+import {validateStudioDesignCompatibility} from "./compatibility";
 import type {AntVEngine, AntVStudioDesign} from "./types";
 
 export const antVStudioDesigns: AntVStudioDesign[] = [
@@ -46,6 +47,31 @@ export const validateRegistry = (): string[] => {
     if (!design.defaultContent?.title || !Array.isArray(design.defaultContent.rows)) {
       errors.push(`Missing default content for ${design.id}.`);
     }
+    if (!design.capabilities) {
+      errors.push(`Missing capability metadata for ${design.id}.`);
+    } else {
+      if (design.capabilities.animationModes.length === 0) {
+        errors.push(`Missing animation capability metadata for ${design.id}.`);
+      }
+      if (design.capabilities.layouts.length === 0) {
+        errors.push(`Missing layout capability metadata for ${design.id}.`);
+      }
+      if (design.capabilities.aspectRatios.length === 0) {
+        errors.push(`Missing aspect-ratio capability metadata for ${design.id}.`);
+      }
+
+      const compatibility = validateStudioDesignCompatibility({
+        design,
+        content: design.defaultContent,
+        expectedEngine: design.engine,
+      });
+      if (
+        !compatibility.ok &&
+        design.capabilities.adapter !== "requires-native-contract"
+      ) {
+        errors.push(`${design.id} default content is incompatible: ${compatibility.reasons.join(" ")}`);
+      }
+    }
     if (design.engine === "g2" && typeof design.createOptions !== "function") {
       errors.push(`Missing G2 factory for ${design.id}.`);
     }
@@ -59,4 +85,3 @@ export const validateRegistry = (): string[] => {
 
   return errors;
 };
-

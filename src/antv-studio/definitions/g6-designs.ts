@@ -1,6 +1,12 @@
 import type {GraphData, GraphOptions} from "@antv/g6";
 import {studioTheme} from "../theme";
-import type {FactoryContext, G6StudioDesign, StudioEdge, StudioNode} from "../types";
+import type {
+  FactoryContext,
+  G6StudioDesign,
+  ProviderDesignCapability,
+  StudioEdge,
+  StudioNode,
+} from "../types";
 import {content, edge, node, row} from "../sample-content";
 
 const dataFrom = (nodes: StudioNode[], edges: StudioEdge[]): GraphData => ({
@@ -60,6 +66,45 @@ const graph = (
 
 const radialEdges = (center: string, ids: string[]) => ids.map((id) => edge(center, id));
 
+const g6Capability = (
+  layout: GraphOptions["layout"],
+  animation: G6StudioDesign["animation"] = "fade-scale",
+): ProviderDesignCapability => {
+  const layoutType =
+    layout && typeof layout === "object" && "type" in layout
+      ? String(layout.type)
+      : "unknown";
+  const isFishbone = layoutType === "fishbone";
+  const isDag = layoutType === "dagre";
+
+  return {
+    dataContract: isFishbone
+      ? "g6-hierarchy-tree"
+      : isDag
+        ? "g6-dag"
+        : "g6-generic-graph",
+    requiredFields: isFishbone
+      ? {nodes: ["id", "label", "parentId"]}
+      : {nodes: ["id", "label"], edges: ["source", "target"]},
+    optionalFields: {nodes: ["group", "value", "parentId"], edges: ["label", "value"]},
+    structures: isFishbone
+      ? ["hierarchy", "tree"]
+      : isDag
+        ? ["generic-graph", "dag"]
+        : ["generic-graph"],
+    layouts: [layoutType],
+    animationModes: [animation],
+    aspectRatios: ["portrait", "square", "vertical"],
+    contentLimits: {minNodes: 1, maxNodes: 24, minEdges: isFishbone ? 0 : 0, maxEdges: 32},
+    adapter: isFishbone ? "requires-native-contract" : "generic-content",
+    notes: isFishbone
+      ? [
+          "The registered fishbone design requires provider-native hierarchy data. The current generic nodes/edges adapter does not construct the tree structure required by AntV G6 fishbone layout.",
+        ]
+      : undefined,
+  };
+};
+
 const design = (
   id: string,
   name: string,
@@ -81,6 +126,7 @@ const design = (
   industryExample,
   animation,
   supportsSubtitle: true,
+  capabilities: g6Capability(layout, animation),
   defaultContent: content(title, subtitle, [row("nodes", "Nodes", nodes.length)], nodes, edges),
   createGraphConfig: (ctx) => graph(ctx, layout),
 });

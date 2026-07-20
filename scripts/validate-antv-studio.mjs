@@ -11,9 +11,10 @@ const bundled = path.join(tempDir, "validate.mjs");
 await writeFile(
   entry,
   `
-    import {antVStudioDesigns, getDesignCounts, validateRegistry} from ${JSON.stringify(path.resolve("src/antv-studio/registry.ts"))};
-    import {cloneContent} from ${JSON.stringify(path.resolve("src/antv-studio/sample-content.ts"))};
-    import {defaultControls} from ${JSON.stringify(path.resolve("src/antv-studio/theme.ts"))};
+	    import {antVStudioDesigns, getDesignCounts, validateRegistry} from ${JSON.stringify(path.resolve("src/antv-studio/registry.ts"))};
+	    import {validateStudioDesignCompatibility} from ${JSON.stringify(path.resolve("src/antv-studio/compatibility.ts"))};
+	    import {cloneContent} from ${JSON.stringify(path.resolve("src/antv-studio/sample-content.ts"))};
+	    import {defaultControls} from ${JSON.stringify(path.resolve("src/antv-studio/theme.ts"))};
 
     if (process.argv.includes("--ids")) {
       console.log(antVStudioDesigns.map((design) => design.id).join("\\n"));
@@ -23,7 +24,7 @@ await writeFile(
     const errors = validateRegistry();
     const counts = getDesignCounts();
 
-    for (const design of antVStudioDesigns) {
+	    for (const design of antVStudioDesigns) {
       const context = {
         content: cloneContent(design.defaultContent),
         controls: defaultControls,
@@ -45,9 +46,24 @@ await writeFile(
       } catch (error) {
         errors.push(\`\${design.id} factory threw: \${error instanceof Error ? error.message : String(error)}\`);
       }
-    }
+	    }
 
-    if (errors.length > 0) {
+	    const fishbone = antVStudioDesigns.find((design) => design.id === "g6-fishbone");
+	    const genericCauseMap = antVStudioDesigns.find((design) => design.id === "g6-why-it-happens");
+	    if (!fishbone || !genericCauseMap) {
+	      errors.push("Missing G6 compatibility sentinel designs.");
+	    } else {
+	      const compatibility = validateStudioDesignCompatibility({
+	        design: fishbone,
+	        content: cloneContent(genericCauseMap.defaultContent),
+	        expectedEngine: "g6",
+	      });
+	      if (compatibility.ok) {
+	        errors.push("g6-fishbone accepted generic graph content; expected hierarchy compatibility rejection.");
+	      }
+	    }
+
+	    if (errors.length > 0) {
       console.error(errors.join("\\n"));
       process.exit(1);
     }
