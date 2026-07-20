@@ -182,7 +182,7 @@ G6 scenes render graph-based infographic scenes such as radial explainers, resou
 
 Data contract:
 
-G6 scenes use `AdvancedStudioInfographicContent`. The meaningful provider data is `StudioContent.nodes` and `StudioContent.edges`:
+G6 scenes use `AdvancedStudioInfographicContent`. Generic graph designs use `StudioContent.nodes` and `StudioContent.edges`:
 
 ```ts
 type StudioNode = {
@@ -201,11 +201,40 @@ type StudioEdge = {
 };
 ```
 
+Hierarchy/tree designs use explicit provider-native hierarchy data under `StudioContent.providerData`:
+
+```ts
+type StudioJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | StudioJsonValue[]
+  | {[key: string]: StudioJsonValue};
+
+type G6HierarchyNode = {
+  id: string;
+  label: string;
+  children?: G6HierarchyNode[];
+  value?: number;
+  category?: string;
+  metadata?: Record<string, StudioJsonValue>;
+};
+
+type G6HierarchyData = {
+  kind: "g6-hierarchy";
+  root: G6HierarchyNode;
+};
+```
+
+The hierarchy contract is distinct from generic graph content. Generic `nodes` and `edges` are not silently converted into hierarchy data.
+
 Owner:
 
 - Scene content contract: `src/advanced-studio/scene-contract.ts`
 - Design registry: `src/antv-studio/registry.ts`
 - G6 design definitions and graph-data conversion: `src/antv-studio/definitions/g6-designs.ts`
+- G6 hierarchy compatibility validation: `src/antv-studio/compatibility.ts`
 
 Renderer:
 
@@ -218,6 +247,7 @@ Editable properties currently exposed:
 - Scene type.
 - Design selection through Advanced UI surfaces where the selected design engine is G6.
 - Node and edge content through infographic content state where wired.
+- Hierarchy content is typed in the provider-native content contract but is not exposed as raw G6 configuration in the current UI.
 - Higher-level authoring controls can apply a different `designId`, `cameraPath`, and transitions by writing existing scene fields.
 
 Animation ownership:
@@ -236,6 +266,7 @@ Transition ownership:
 Common failure modes:
 
 - Some G6 layouts require a specific graph structure beyond generic `nodes` and `edges`.
+- Current hierarchy/tree-compatible G6 designs use the provider-native hierarchy contract and adapter.
 - A safe G6 design switch must preserve compatibility between the design's layout contract and the scene's content structure. Compatibility is represented by provider-design capability metadata and validated before provider renderer execution.
 
 ### S2
@@ -453,11 +484,14 @@ G6 scenes are AntV graph scenes.
 
 ### Graph structures
 
-The local G6 definition helper converts `StudioContent.nodes` and `StudioContent.edges` into AntV G6 `GraphData`.
+The local G6 definition helper supports two data paths:
+
+- Generic graph: converts `StudioContent.nodes` and `StudioContent.edges` into AntV G6 `GraphData`.
+- Hierarchy/tree: converts `StudioContent.providerData.kind === "g6-hierarchy"` into AntV G6 `GraphData` with node `children` ID arrays and generated parent-child edges.
 
 Nodes are mapped into rectangular G6 nodes with label and style data. Edges are mapped into line edges with source, target, optional label, arrow, and style.
 
-The current generic conversion is edge-list oriented. It does not automatically transform edge lists into every possible tree-specific provider shape.
+The generic conversion remains edge-list oriented. It does not automatically transform edge lists into tree-specific provider shapes.
 
 ### Layouts
 
@@ -470,12 +504,18 @@ G6 design definitions select a G6 layout inside each design factory. Current reg
 - dagre left-right
 - snake
 - fishbone
+- compact-box
 
 The layout is owned by the G6 design definition. Scene data selects the design by `designId`; it does not directly provide a layout field.
 
 ### Tree handling
 
-Some registered designs use layouts that are compatible with generic nodes and edges. Others may require hierarchical tree data or provider-specific structure.
+Some registered designs use layouts that are compatible with generic nodes and edges. Hierarchy/tree layouts require `StudioContent.providerData.kind === "g6-hierarchy"` and are validated before provider rendering.
+
+Current hierarchy-backed registered designs include:
+
+- `g6-fishbone`
+- `g6-compact-box-tree`
 
 ### Provider animation
 
@@ -588,7 +628,7 @@ Current behavior-template implementation details are documented in `docs/advance
 | `shared/antv/input.ts` | Board block render input builder | Combines resolved template and generated syntax for `AntVBlock` | `AntVRenderInput`, `resolveAntVRenderInput` |
 | `shared/antv/syntax.ts` | Board block syntax generation | Generates AntV infographic syntax by block type when explicit syntax is absent | `buildAntVSyntax` |
 | `shared/antv/svg.ts` | Static SVG preparation | Prepares provider SVG for deterministic Board block display | `prepareStaticSvg` |
-| `src/antv-studio/types.ts` | AntV Studio type contract | Defines design, content, row, node, edge, controls, factory, and render status types | `AntVEngine`, `AnimationPreset`, `StudioRow`, `StudioNode`, `StudioEdge`, `StudioContent`, `StudioControls`, `FactoryContext`, `G2StudioDesign`, `S2StudioDesign`, `G6StudioDesign`, `AntVStudioDesign`, `RenderStatus` |
+| `src/antv-studio/types.ts` | AntV Studio type contract | Defines design, content, row, node, edge, G6 hierarchy, controls, factory, and render status types | `AntVEngine`, `AnimationPreset`, `StudioRow`, `StudioNode`, `StudioEdge`, `G6HierarchyNode`, `G6HierarchyData`, `StudioContent`, `StudioControls`, `FactoryContext`, `G2StudioDesign`, `S2StudioDesign`, `G6StudioDesign`, `AntVStudioDesign`, `RenderStatus` |
 | `src/antv-studio/registry.ts` | AntV design registry | Combines G2/S2/G6 designs and validates registry shape/counts | `antVStudioDesigns`, `categories`, `getDesignCounts`, `validateRegistry` |
 | `src/antv-studio/compatibility.ts` | Provider compatibility validator | Validates registered design capability metadata against scene content before provider renderer execution | `ProviderCompatibilityResult`, `validateStudioDesignCompatibility`, `formatCompatibilityError` |
 | `src/antv-studio/definitions/g2-designs.ts` | G2 design definitions | Defines G2 chart designs and `createOptions` factories | `g2Designs` |
@@ -770,7 +810,7 @@ AntV's chart provider used for chart-based Advanced infographic scenes. Local de
 
 G6:
 
-AntV's graph provider used for graph-based Advanced infographic scenes. Local design definitions live in `src/antv-studio/definitions/g6-designs.ts`.
+AntV's graph provider used for graph-based Advanced infographic scenes. Local design definitions live in `src/antv-studio/definitions/g6-designs.ts`. Current G6 scene content supports generic graph data through `nodes`/`edges` and hierarchy/tree data through `StudioContent.providerData.kind === "g6-hierarchy"`.
 
 Object:
 

@@ -29,12 +29,12 @@ export const validateRegistry = (): string[] => {
   const ids = new Set<string>();
   const names = new Set<string>();
 
-  if (antVStudioDesigns.length !== 50) {
-    errors.push(`Expected 50 designs, found ${antVStudioDesigns.length}.`);
+  if (antVStudioDesigns.length !== 51) {
+    errors.push(`Expected 51 designs, found ${antVStudioDesigns.length}.`);
   }
   if (counts.g2 !== 26) errors.push(`Expected 26 G2 designs, found ${counts.g2}.`);
   if (counts.s2 !== 8) errors.push(`Expected 8 S2 designs, found ${counts.s2}.`);
-  if (counts.g6 !== 16) errors.push(`Expected 16 G6 designs, found ${counts.g6}.`);
+  if (counts.g6 !== 17) errors.push(`Expected 17 G6 designs, found ${counts.g6}.`);
 
   for (const design of antVStudioDesigns) {
     if (ids.has(design.id)) errors.push(`Duplicate design id: ${design.id}`);

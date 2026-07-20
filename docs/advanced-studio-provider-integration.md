@@ -132,18 +132,20 @@ Current scene data contract:
 - `AdvancedStudioInfographicContent.designId`
 - optional `content: StudioContent`
 - optional `controls: StudioControls`
-- `StudioContent.nodes` and `StudioContent.edges` are the current data path.
+- `StudioContent.nodes` and `StudioContent.edges` are the generic graph data path.
+- `StudioContent.providerData.kind === "g6-hierarchy"` is the provider-native hierarchy/tree data path.
 
 Current adapter:
 
 - `InfographicSceneRenderer` dispatches to `G6StudioRenderer`.
 - `G6StudioRenderer` creates `new Graph({...config, container})`, then on updates calls `design.createGraphConfig`, `graph.setData(config.data ?? {})`, and `graph.render`.
 - `g6-designs.ts` converts generic `StudioNode[]` and `StudioEdge[]` into G6 `GraphData` through `dataFrom`.
+- `g6-designs.ts` converts `G6HierarchyData` into G6 `GraphData` through hierarchy adaptation that emits node `children` ID arrays and generated parent-child edges.
 
 Registered designs:
 
-- 16 G6 designs registered through `g6Designs`.
-- Current layout families include radial, circular, force, dagre left-right, dagre top-bottom, snake, and fishbone.
+- 17 G6 designs registered through `g6Designs`.
+- Current layout families include radial, circular, force, dagre left-right, dagre top-bottom, snake, fishbone, and compact-box.
 
 Provider APIs currently used:
 
@@ -155,8 +157,7 @@ Provider APIs currently used:
 
 Provider capabilities currently unused or only minimally used:
 
-- native tree data structures
-- hierarchy-specific adapters
+- tree-family layouts beyond the currently registered fishbone and compact-box designs
 - combo/group nodes
 - compound graphs
 - custom nodes
@@ -191,15 +192,16 @@ Interaction capabilities relevant to authored video:
 
 Current compatibility assumptions:
 
-- `nodes` and `edges` are enough for every design.
+- Generic graph designs use `nodes` and `edges`.
+- Hierarchy/tree designs require explicit `providerData.kind === "g6-hierarchy"`.
 - Edge endpoints exist.
-- Layouts accept generic graph data.
-- The G6 fishbone failure disproved the universal version of this assumption.
+- Generic graph data is not silently converted into hierarchy data.
 
 Current fallback/error behavior:
 
-- Provider errors are caught in `G6StudioRenderer` and shown as provider error text after renderer execution.
-- The system previously discovered fishbone incompatibility by crashing during provider render with `Tree structure not found for treeKey: tree`.
+- Provider errors are caught in `G6StudioRenderer` and shown as provider error text.
+- Compatibility validation rejects known incompatible design/content pairs before provider render execution.
+- Fishbone with generic graph content now returns a precise compatibility error instead of reaching AntV's `Tree structure not found for treeKey: tree` failure.
 
 #### S2
 
@@ -282,7 +284,7 @@ Current fallback/error behavior:
 | --- | --- | --- | --- | --- | --- | --- |
 | Generic tabular rows | Yes | Primary contract | Not primary | Unused | Yes | Primary contract |
 | Generic graph nodes/edges | Not primary | Unused | Yes | Primary contract | Not primary | Unused |
-| Native hierarchy/tree | Limited through chart transforms, not current path | Unused | Yes | Not safely adapted; fishbone mismatch proves gap | Yes through hierarchical dimensions | Unused |
+| Native hierarchy/tree | Limited through chart transforms, not current path | Unused | Yes | Supported for explicit G6 hierarchy data by fishbone and compact-box designs | Yes through hierarchical dimensions | Unused |
 | DAG/layout graph | Not primary | Unused | Yes | Used through dagre layouts over generic data | Not primary | Unused |
 | Layered marks | Yes | Unused | Not applicable | Unused | Not applicable | Unused |
 | Multi-view/facets | Yes | Unused | Not applicable | Unused | Pivot/cross-sheet equivalent | Unused |
@@ -335,6 +337,7 @@ type ProviderDesignCapability = {
     rows?: Array<"id" | "label" | "value" | "group" | "secondaryValue" | "target">;
     nodes?: Array<"id" | "label" | "group" | "parentId">;
     edges?: Array<"source" | "target" | "label" | "value">;
+    hierarchyNodes?: Array<"id" | "label" | "value" | "category" | "metadata" | "children">;
   };
   optionalFields?: same shape;
   structures: string[];
@@ -348,8 +351,10 @@ type ProviderDesignCapability = {
     maxNodes?: number;
     minEdges?: number;
     maxEdges?: number;
+    minHierarchyNodes?: number;
+    maxHierarchyNodes?: number;
   };
-  adapter: "generic-content" | "requires-native-contract";
+  adapter: "generic-content" | "provider-native-content" | "requires-native-contract";
   notes?: string[];
 };
 ```
@@ -360,7 +365,9 @@ Phase 2 compatibility checks:
 - Required rows/nodes/edges must exist.
 - Required fields must exist and be type-compatible enough for the current adapters.
 - G6 edges must reference existing node IDs.
-- G6 hierarchy/tree designs that require a native tree adapter must be rejected by the current generic adapter with a precise compatibility result.
+- G6 hierarchy/tree designs require `StudioContent.providerData.kind === "g6-hierarchy"`.
+- G6 hierarchy content must include a root node, stable unique IDs, labels, valid child arrays, and no cycles.
+- G6 generic graph designs reject hierarchy content unless they explicitly declare hierarchy support.
 - Content limits should be enforced where declared.
 - The validator should return a structured result, not throw for normal incompatibility.
 
@@ -464,11 +471,23 @@ type G6GenericGraphData = {
 Hierarchy/tree:
 
 ```ts
+type StudioJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | StudioJsonValue[]
+  | {[key: string]: StudioJsonValue};
+
 type G6HierarchyTreeData = {
+  kind: "g6-hierarchy";
   root: {
     id: string;
     label: string;
     children?: G6HierarchyTreeData["root"][];
+    value?: number;
+    category?: string;
+    metadata?: Record<string, StudioJsonValue>;
   };
 };
 ```
@@ -811,10 +830,9 @@ Expected new capability unlocked:
 - The architecture can safely represent provider design requirements and reject incompatible design/content combinations before provider renderer execution.
 - Future provider-native structures have a clear metadata and validation location.
 
-Capabilities still blocked after Phase 2:
+Capabilities still blocked after Phase 2 foundation:
 
 - New G2 layered/multi-view contracts.
-- G6 native tree/fishbone adapters.
 - G6 combo/compound graph adapters.
 - S2 pivot/hierarchy adapters.
 - Board provider-block unification.
@@ -837,6 +855,50 @@ Not implemented in Phase 2:
 - No provider-native scene schema was added to `AdvancedStudioScene`.
 - No new G2/G6/S2 designs were added.
 - No G6 tree/fishbone adapter was added.
+
+## Phase B G6 Hierarchy Foundation Implemented
+
+Implemented G6 hierarchy foundation:
+
+- `StudioContent.providerData` can now carry explicit provider-native G6 hierarchy content through `G6HierarchyData`.
+- `G6HierarchyData.kind` is `"g6-hierarchy"` and its `root` is made of serializable `G6HierarchyNode` objects.
+- `G6HierarchyNode` stores stable `id`, `label`, optional `children`, optional `value`, optional `category`, and optional serializable `metadata`.
+- Generic graph content remains `StudioContent.nodes` and `StudioContent.edges`.
+- Generic graph content and hierarchy content are explicitly distinguishable. The generic adapter does not silently convert nodes/edges into hierarchy data.
+- `validateStudioDesignCompatibility` validates hierarchy root presence, valid child arrays, required labels, unique IDs, cycle-free hierarchy shape, hierarchy content limits, and design/content contract compatibility before provider render execution.
+- `g6-designs.ts` adapts `G6HierarchyData` into AntV G6 `GraphData` with node `children` ID arrays and generated parent-child edges.
+- `g6-fishbone` now uses real hierarchy default content and `provider-native-content` adapter metadata.
+- `g6-compact-box-tree` proves the same hierarchy contract can support a second installed G6 tree-family layout.
+
+Current G6 hierarchy compatibility rules:
+
+- A design with `dataContract: "g6-hierarchy-tree"` requires `StudioContent.providerData.kind === "g6-hierarchy"`.
+- A hierarchy node must include a non-empty `id` and `label`.
+- Hierarchy IDs must be unique.
+- `children`, when present, must be an array.
+- Cycles are rejected before the provider renderer is asked to render.
+- Generic graph-only G6 designs reject hierarchy content unless they explicitly declare hierarchy support.
+- Existing generic graph scenes remain valid through the existing `nodes`/`edges` adapter path.
+
+Layouts now unlocked by the current hierarchy contract:
+
+- fishbone through `g6-fishbone`
+- compact-box through `g6-compact-box-tree`
+
+Capabilities still blocked after G6 Phase B:
+
+- G6 combo/group nodes.
+- G6 compound graphs.
+- G6 clustered graph-native contracts.
+- G6 custom node and custom edge families.
+- G6 ports and explicit edge routing contracts.
+- G6 provider-native animation and interaction-state-to-authored-animation translation.
+- G2 layered/multi-view contracts.
+- S2 pivot/hierarchy adapters.
+- Board provider-block unification.
+
+Unchanged after G6 Phase B:
+
 - No S2 pivot/hierarchy adapter was added.
 - No Board provider-block unification was added.
 - No raw AntV configuration was exposed in UI.

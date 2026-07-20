@@ -60,10 +60,19 @@ export type StudioNodeField = "id" | "label" | "group" | "parentId" | "value";
 
 export type StudioEdgeField = "source" | "target" | "label" | "value";
 
+export type StudioHierarchyNodeField =
+  | "id"
+  | "label"
+  | "value"
+  | "category"
+  | "metadata"
+  | "children";
+
 export type ProviderDesignRequiredFields = {
   rows?: StudioRowField[];
   nodes?: StudioNodeField[];
   edges?: StudioEdgeField[];
+  hierarchyNodes?: StudioHierarchyNodeField[];
 };
 
 export type ProviderDesignContentLimits = {
@@ -73,10 +82,13 @@ export type ProviderDesignContentLimits = {
   maxNodes?: number;
   minEdges?: number;
   maxEdges?: number;
+  minHierarchyNodes?: number;
+  maxHierarchyNodes?: number;
 };
 
 export type ProviderAdapterStatus =
   | "generic-content"
+  | "provider-native-content"
   | "requires-native-contract";
 
 export type ProviderDesignCapability = {
@@ -116,12 +128,37 @@ export type StudioEdge = {
   value?: number;
 };
 
+export type StudioJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | StudioJsonValue[]
+  | {[key: string]: StudioJsonValue};
+
+export type G6HierarchyNode = {
+  id: string;
+  label: string;
+  children?: G6HierarchyNode[];
+  value?: number;
+  category?: string;
+  metadata?: Record<string, StudioJsonValue>;
+};
+
+export type G6HierarchyData = {
+  kind: "g6-hierarchy";
+  root: G6HierarchyNode;
+};
+
+export type StudioProviderData = G6HierarchyData;
+
 export type StudioContent = {
   title: string;
   subtitle?: string;
   rows: StudioRow[];
   nodes?: StudioNode[];
   edges?: StudioEdge[];
+  providerData?: StudioProviderData;
 };
 
 export type StudioControls = {

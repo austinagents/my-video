@@ -2,8 +2,11 @@ import type {GraphData, GraphOptions} from "@antv/g6";
 import {studioTheme} from "../theme";
 import type {
   FactoryContext,
+  G6HierarchyData,
+  G6HierarchyNode,
   G6StudioDesign,
   ProviderDesignCapability,
+  StudioContent,
   StudioEdge,
   StudioNode,
 } from "../types";
@@ -42,29 +45,116 @@ const dataFrom = (nodes: StudioNode[], edges: StudioEdge[]): GraphData => ({
   })),
 });
 
+const hierarchyNodeCount = (node: G6HierarchyNode): number =>
+  1 + (node.children ?? []).reduce((total, child) => total + hierarchyNodeCount(child), 0);
+
+const hierarchyDataFrom = (hierarchy: G6HierarchyData): GraphData => {
+  const nodes: NonNullable<GraphData["nodes"]> = [];
+  const edges: NonNullable<GraphData["edges"]> = [];
+
+  const visit = (item: G6HierarchyNode, depth: number) => {
+    const children = item.children ?? [];
+    const childIds = children.map((child) => child.id);
+
+    nodes.push({
+      id: item.id,
+      depth,
+      children: childIds.length > 0 ? childIds : undefined,
+      data: {
+        label: item.label,
+        value: item.value,
+        category: item.category,
+        metadata: item.metadata,
+      },
+      style: {
+        fill: depth === 0 ? studioTheme.gold : depth === 1 ? "#2c271a" : "#201d16",
+        stroke: depth === 0 ? studioTheme.goldSoft : "rgba(216,173,85,0.5)",
+        lineWidth: depth === 0 ? 2 : 1.4,
+        radius: 12,
+        size: depth === 0 ? [150, 58] : depth === 1 ? [132, 50] : [112, 42],
+        labelText: item.label,
+        labelFill: depth === 0 ? "#17130a" : studioTheme.text,
+        labelFontSize: depth === 0 ? 13 : 11,
+        labelFontWeight: depth <= 1 ? 700 : 600,
+        labelWordWrap: true,
+        labelMaxWidth: depth === 0 ? 124 : 96,
+      },
+    });
+
+    children.forEach((child) => {
+      edges.push({
+        source: item.id,
+        target: child.id,
+        data: {label: child.category},
+        style: {
+          stroke: "rgba(216,173,85,0.42)",
+          lineWidth: depth === 0 ? 1.8 : 1.3,
+          endArrow: false,
+          labelText: child.category,
+          labelFill: studioTheme.muted,
+          labelFontSize: 10,
+        },
+      });
+      visit(child, depth + 1);
+    });
+  };
+
+  visit(hierarchy.root, 0);
+  return {nodes, edges};
+};
+
 const graph = (
   ctx: FactoryContext,
   layout: GraphOptions["layout"],
-): GraphOptions => ({
-  container: undefined,
-  width: ctx.width,
-  height: ctx.height,
-  background: "transparent",
-  autoResize: false,
-  animation: false,
-  data: dataFrom(ctx.content.nodes ?? [], ctx.content.edges ?? []),
-  layout,
-  node: {
-    type: "rect",
-  },
-  edge: {
-    type: "line",
-  },
-  behaviors: [],
-  plugins: [],
-});
+): GraphOptions => {
+  const data =
+    ctx.content.providerData?.kind === "g6-hierarchy"
+      ? hierarchyDataFrom(ctx.content.providerData)
+      : dataFrom(ctx.content.nodes ?? [], ctx.content.edges ?? []);
+
+  return {
+    container: undefined,
+    width: ctx.width,
+    height: ctx.height,
+    background: "transparent",
+    autoResize: false,
+    animation: false,
+    data,
+    layout,
+    node: {
+      type: "rect",
+    },
+    edge: {
+      type: "line",
+    },
+    behaviors: [],
+    plugins: [],
+  };
+};
 
 const radialEdges = (center: string, ids: string[]) => ids.map((id) => edge(center, id));
+
+const hierarchyNode = (
+  id: string,
+  label: string,
+  children?: G6HierarchyNode[],
+  category?: string,
+  value?: number,
+): G6HierarchyNode => ({id, label, children, category, value});
+
+const hierarchyContent = (
+  title: string,
+  subtitle: string,
+  root: G6HierarchyNode,
+): StudioContent => ({
+  title,
+  subtitle,
+  rows: [row("nodes", "Nodes", hierarchyNodeCount(root))],
+  providerData: {
+    kind: "g6-hierarchy",
+    root,
+  },
+});
 
 const g6Capability = (
   layout: GraphOptions["layout"],
@@ -74,20 +164,20 @@ const g6Capability = (
     layout && typeof layout === "object" && "type" in layout
       ? String(layout.type)
       : "unknown";
-  const isFishbone = layoutType === "fishbone";
+  const isHierarchyTree = ["fishbone", "compact-box", "mindmap", "dendrogram", "indented"].includes(layoutType);
   const isDag = layoutType === "dagre";
 
   return {
-    dataContract: isFishbone
+    dataContract: isHierarchyTree
       ? "g6-hierarchy-tree"
       : isDag
         ? "g6-dag"
         : "g6-generic-graph",
-    requiredFields: isFishbone
-      ? {nodes: ["id", "label", "parentId"]}
+    requiredFields: isHierarchyTree
+      ? {hierarchyNodes: ["id", "label"]}
       : {nodes: ["id", "label"], edges: ["source", "target"]},
     optionalFields: {nodes: ["group", "value", "parentId"], edges: ["label", "value"]},
-    structures: isFishbone
+    structures: isHierarchyTree
       ? ["hierarchy", "tree"]
       : isDag
         ? ["generic-graph", "dag"]
@@ -95,11 +185,13 @@ const g6Capability = (
     layouts: [layoutType],
     animationModes: [animation],
     aspectRatios: ["portrait", "square", "vertical"],
-    contentLimits: {minNodes: 1, maxNodes: 24, minEdges: isFishbone ? 0 : 0, maxEdges: 32},
-    adapter: isFishbone ? "requires-native-contract" : "generic-content",
-    notes: isFishbone
+    contentLimits: isHierarchyTree
+      ? {minHierarchyNodes: 1, maxHierarchyNodes: 24}
+      : {minNodes: 1, maxNodes: 24, minEdges: 0, maxEdges: 32},
+    adapter: isHierarchyTree ? "provider-native-content" : "generic-content",
+    notes: isHierarchyTree
       ? [
-          "The registered fishbone design requires provider-native hierarchy data. The current generic nodes/edges adapter does not construct the tree structure required by AntV G6 fishbone layout.",
+          "This design requires provider-native G6 hierarchy data. Advanced Studio adapts explicit hierarchy content into G6 tree graph data before rendering.",
         ]
       : undefined,
   };
@@ -128,6 +220,31 @@ const design = (
   supportsSubtitle: true,
   capabilities: g6Capability(layout, animation),
   defaultContent: content(title, subtitle, [row("nodes", "Nodes", nodes.length)], nodes, edges),
+  createGraphConfig: (ctx) => graph(ctx, layout),
+});
+
+const hierarchyDesign = (
+  id: string,
+  name: string,
+  category: string,
+  description: string,
+  industryExample: G6StudioDesign["industryExample"],
+  title: string,
+  subtitle: string,
+  root: G6HierarchyNode,
+  layout: GraphOptions["layout"],
+  animation: G6StudioDesign["animation"] = "top-down-tree",
+): G6StudioDesign => ({
+  engine: "g6",
+  id,
+  name,
+  category,
+  description,
+  industryExample,
+  animation,
+  supportsSubtitle: true,
+  capabilities: g6Capability(layout, animation),
+  defaultContent: hierarchyContent(title, subtitle, root),
   createGraphConfig: (ctx) => graph(ctx, layout),
 });
 
@@ -197,7 +314,7 @@ export const g6Designs: G6StudioDesign[] = [
     {type: "dagre", rankdir: "LR", ranksep: 74, nodesep: 32},
     "top-down-tree",
   ),
-  design(
+  hierarchyDesign(
     "g6-fishbone",
     "Cause-and-Effect Fishbone",
     "Diagnostic",
@@ -205,10 +322,47 @@ export const g6Designs: G6StudioDesign[] = [
     "Personal Trainer",
     "Cause-and-Effect Fishbone",
     "Why fat-loss progress stalls",
-    [node("root", "Progress Stalls"), node("food", "Inconsistent protein"), node("steps", "Low daily steps"), node("sleep", "Short sleep"), node("program", "No progression"), node("weekend", "Weekend drift")],
-    radialEdges("root", ["food", "steps", "sleep", "program", "weekend"]),
-    {type: "fishbone", direction: "RL"},
+    hierarchyNode("root", "Progress Stalls", [
+      hierarchyNode("nutrition", "Nutrition", [
+        hierarchyNode("protein", "Inconsistent protein"),
+        hierarchyNode("weekend", "Weekend drift"),
+      ]),
+      hierarchyNode("activity", "Activity", [
+        hierarchyNode("steps", "Low daily steps"),
+        hierarchyNode("training", "No progression"),
+      ]),
+      hierarchyNode("recovery", "Recovery", [
+        hierarchyNode("sleep", "Short sleep"),
+        hierarchyNode("stress", "High stress load"),
+      ]),
+    ]),
+    {type: "fishbone", direction: "RL", width: 560, height: 390},
     "path-style-reveal",
+  ),
+  hierarchyDesign(
+    "g6-compact-box-tree",
+    "Compact Box Tree",
+    "Tree",
+    "A compact hierarchy tree for nested educational structure.",
+    "Dentist",
+    "Compact Box Tree",
+    "How a care plan becomes a treatment sequence",
+    hierarchyNode("root", "Care Plan", [
+      hierarchyNode("diagnosis", "Diagnosis", [
+        hierarchyNode("exam", "Exam"),
+        hierarchyNode("imaging", "Imaging"),
+      ]),
+      hierarchyNode("options", "Options", [
+        hierarchyNode("phased", "Phased plan"),
+        hierarchyNode("same-day", "Same-day work"),
+      ]),
+      hierarchyNode("followup", "Follow-up", [
+        hierarchyNode("recheck", "Recheck"),
+        hierarchyNode("maintenance", "Maintenance"),
+      ]),
+    ]),
+    {type: "compact-box", direction: "TB", getWidth: () => 132, getHeight: () => 50, getHGap: () => 28, getVGap: () => 62},
+    "top-down-tree",
   ),
   design(
     "g6-decision-tree",
