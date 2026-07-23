@@ -88,7 +88,17 @@ export type ProductTemplateId =
   | "five-beat-film"
   | "worlds-around-object"
   | "living-still"
-  | "tension-release";
+  | "tension-release"
+  | "reverse-reveal"
+  | "false-ending"
+  | "dual-timeline"
+  | "flashbulb-editorial"
+  | "invisible-cut"
+  | "speed-ramp"
+  | "call-response"
+  | "the-interruption"
+  | "palindrome"
+  | "the-callback";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -122,7 +132,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
   accent: string;
   background: string;
   surface: string;
@@ -1900,6 +1910,196 @@ export const productTemplates: ProductTemplate[] = [
     subheadline: "Pressure builds. The product delivers the release.",
     cta: "Experience the arrival",
   },
+  {
+    id: "reverse-reveal",
+    name: "Reverse Reveal",
+    category: "Reverse Edit",
+    description: "A finished packshot appears first, deconstructs backward, then returns with authority.",
+    batch: 10,
+    accent: "#f04f3d",
+    background: "#efe9de",
+    surface: "#111111",
+    foreground: "#141414",
+    muted: "#6e685f",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "END / BEGIN / END",
+    headline: "The finish was only the beginning.",
+    subheadline: "A complete product story, revealed in reverse.",
+    cta: "Watch it return",
+  },
+  {
+    id: "false-ending",
+    name: "False Ending",
+    category: "Narrative Twist",
+    description: "An early end card gives way to a second, stronger product payoff.",
+    batch: 10,
+    accent: "#f6d54a",
+    background: "#090909",
+    surface: "#262626",
+    foreground: "#ffffff",
+    muted: "#aaa9a4",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "WAIT / THERE IS MORE",
+    headline: "You thought it was over.",
+    subheadline: "The second reveal is the one that stays with you.",
+    cta: "See the real ending",
+  },
+  {
+    id: "dual-timeline",
+    name: "Dual Timeline",
+    category: "Split Narrative",
+    description: "Restrained and energetic versions of one product story converge into one frame.",
+    batch: 10,
+    accent: "#ff5d35",
+    background: "#eee8dd",
+    surface: "#172b52",
+    foreground: "#121419",
+    muted: "#6c675e",
+    layout: "split",
+    imageFit: "contain",
+    imageScale: 0.9,
+    eyebrow: "CALM / ENERGY / ONE",
+    headline: "Two stories. One conclusion.",
+    subheadline: "Different rhythms meet at the same unmistakable product.",
+    cta: "See them converge",
+  },
+  {
+    id: "flashbulb-editorial",
+    name: "Flashbulb Editorial",
+    category: "Fashion Photography",
+    description: "Controlled flashes create a sequence of deliberate campaign photographs.",
+    batch: 10,
+    accent: "#ff496f",
+    background: "#d9d3c8",
+    surface: "#111111",
+    foreground: "#111111",
+    muted: "#68625b",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "CAMPAIGN / FRAME 04",
+    headline: "Every frame is the hero frame.",
+    subheadline: "A photographic sequence built around presence and precision.",
+    cta: "Enter the campaign",
+  },
+  {
+    id: "invisible-cut",
+    name: "Invisible Cut",
+    category: "Continuous Camera",
+    description: "Foreground wipes hide radical composition changes inside one continuous illusion.",
+    batch: 10,
+    accent: "#78e9ca",
+    background: "#0c1818",
+    surface: "#1d3837",
+    foreground: "#f1fff9",
+    muted: "#95aea7",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.95,
+    eyebrow: "ONE MOVE / THREE SCENES",
+    headline: "The cut you never see.",
+    subheadline: "One uninterrupted motion carries the product through every scene.",
+    cta: "Follow the motion",
+  },
+  {
+    id: "speed-ramp",
+    name: "Speed Ramp",
+    category: "Timing Contrast",
+    description: "Long precision holds collide with split-second product repositioning.",
+    batch: 10,
+    accent: "#ff4b25",
+    background: "#f1eadc",
+    surface: "#1928ae",
+    foreground: "#111111",
+    muted: "#6d665c",
+    layout: "technical",
+    imageFit: "contain",
+    imageScale: 0.92,
+    eyebrow: "HOLD / MOVE / HOLD",
+    headline: "Stillness makes speed matter.",
+    subheadline: "Precision timing turns a single movement into an event.",
+    cta: "Feel the shift",
+  },
+  {
+    id: "call-response",
+    name: "Call / Response",
+    category: "Copy Dialogue",
+    description: "Three written claims receive three visual answers from the product.",
+    batch: 10,
+    accent: "#d8ff45",
+    background: "#10120c",
+    surface: "#2d3122",
+    foreground: "#fbffe9",
+    muted: "#a9ad95",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.92,
+    eyebrow: "ASK / ANSWER",
+    headline: "The product answers.",
+    subheadline: "Every statement resolves into visible product confidence.",
+    cta: "Ask for more",
+  },
+  {
+    id: "the-interruption",
+    name: "The Interruption",
+    category: "Disruptive Campaign",
+    description: "A polished conventional ad is interrupted by a graphic event the product controls.",
+    batch: 10,
+    accent: "#ffef38",
+    background: "#f0ede5",
+    surface: "#ff3d35",
+    foreground: "#101010",
+    muted: "#68635b",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "WE INTERRUPT THIS AD",
+    headline: "Some products refuse the background.",
+    subheadline: "A sudden break becomes the strongest product statement.",
+    cta: "Take over the frame",
+  },
+  {
+    id: "palindrome",
+    name: "Palindrome",
+    category: "Seamless Loop",
+    description: "A symmetrical five-second movement reverses perfectly into its opening frame.",
+    batch: 10,
+    accent: "#a996ff",
+    background: "#0f0b19",
+    surface: "#28203d",
+    foreground: "#faf7ff",
+    muted: "#aaa0bd",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "FORWARD / REVERSE",
+    headline: "Made to be watched again.",
+    subheadline: "A complete cinematic loop with no visible beginning or end.",
+    cta: "Stay in the loop",
+  },
+  {
+    id: "the-callback",
+    name: "The Callback",
+    category: "Setup & Payoff",
+    description: "A simple opening motif develops through the film and resolves around the product.",
+    batch: 10,
+    accent: "#ff6348",
+    background: "#e9e2d5",
+    surface: "#183b43",
+    foreground: "#121817",
+    muted: "#68716d",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "REMEMBER THIS",
+    headline: "Every detail comes back.",
+    subheadline: "The opening clue becomes the final product signature.",
+    cta: "See the connection",
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -1917,6 +2117,7 @@ export const productVideoBatch6Duration = 300;
 export const productVideoBatch7Duration = 300;
 export const productVideoBatch8Duration = 300;
 export const productVideoBatch9Duration = 300;
+export const productVideoBatch10Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -1928,5 +2129,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 7) return productVideoBatch7Duration;
   if (batch === 8) return productVideoBatch8Duration;
   if (batch === 9) return productVideoBatch9Duration;
+  if (batch === 10) return productVideoBatch10Duration;
   return productVideoDuration;
 };

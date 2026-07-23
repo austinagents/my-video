@@ -19,6 +19,7 @@ import {
   productVideoBatch7Duration,
   productVideoBatch8Duration,
   productVideoBatch9Duration,
+  productVideoBatch10Duration,
   productVideoDuration,
   productVideoFormats,
   productVideoFps,
@@ -69,6 +70,10 @@ const defaultBatch8ProductVideoProps: ProductVideoProps = {
 const defaultBatch9ProductVideoProps: ProductVideoProps = {
   ...defaultProductVideoProps,
   templateId: "curtain-call",
+};
+const defaultBatch10ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "reverse-reveal",
 };
 
 export const MyComposition: React.FC = () => {
@@ -391,6 +396,36 @@ export const MyComposition: React.FC = () => {
         width={productVideoFormats.vertical.width}
         height={productVideoFormats.vertical.height}
         defaultProps={{...defaultBatch9ProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch10Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch10Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch10ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch10Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch10Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch10ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch10Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch10Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch10ProductVideoProps, formatId: "vertical"}}
       />
     </>
   );
