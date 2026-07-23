@@ -1,12 +1,15 @@
 # Advanced Studio Baseline
 
-Advanced Studio currently has one approved baseline: the original
-`advancedStudioDefaultProject` in
-`src/advanced-studio/AdvancedStudioIntegrationProof.tsx`.
+Advanced Studio currently has two canonical authored project baselines:
 
-The baseline path is:
+- Template 1: `advancedStudioDefaultProject` in
+  `src/advanced-studio/AdvancedStudioIntegrationProof.tsx`
+- Template 2: `advancedStudioTemplate2Project` in
+  `src/advanced-studio/template-2-project.ts`
 
-- `advancedStudioDefaultProject`
+Both projects use the same baseline path:
+
+- a complete `AdvancedStudioProject`
 - `AdvancedStudioIntegrationProof`
 - Board scenes through `BoardSceneRenderer`
 - G2/G6/S2 scenes through `InfographicSceneRenderer` and provider renderers
@@ -15,7 +18,14 @@ The baseline path is:
 - preview through Remotion Player
 - render through `/api/render-advanced`
 
-No additional Advanced Studio template system is currently approved.
+The Advanced Studio UI may load either complete authored project. This selection
+does not add a template registry or alter scene behavior.
+
+Template 1's creation process is documented in
+`docs/advanced-studio-template-1-process.md`. Template 2's initial authored
+process is documented in `docs/advanced-studio-template-2-process.md`.
+
+No additional Advanced Studio template system is approved.
 
 Future reusable-generation work must follow the provider-first and ownership
 paths documented in:

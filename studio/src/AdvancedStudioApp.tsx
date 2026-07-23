@@ -62,6 +62,7 @@ import type {
 } from "../../src/antv-studio/types";
 import {defaultProject} from "../../shared/project";
 import type {StudioProject} from "../../shared/project";
+import {advancedStudioTemplate2Project} from "../../src/advanced-studio/template-2-project";
 
 const formatOrder: StudioFormatId[] = ["portrait", "square", "vertical"];
 const inspectorTabs = ["Scene", "Camera", "Transition"] as const;
@@ -161,6 +162,9 @@ const firstDesignForEngine = (engine: AntVEngine) => {
 export const AdvancedStudioApp: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const rulerRef = React.useRef<HTMLDivElement>(null);
+  const [selectedTemplate, setSelectedTemplate] = React.useState<
+    "template-1" | "template-2"
+  >("template-1");
   const [project, setProject] = React.useState<AdvancedStudioProject>(() =>
     copyProject(advancedStudioDefaultProject),
   );
@@ -306,6 +310,25 @@ export const AdvancedStudioApp: React.FC = () => {
     requestAnimationFrame(() => playerRef.current?.play());
   };
 
+  const loadTemplate = (template: "template-1" | "template-2") => {
+    const nextProject = copyProject(
+      template === "template-1"
+        ? advancedStudioDefaultProject
+        : advancedStudioTemplate2Project,
+    );
+    setSelectedTemplate(template);
+    setProject(nextProject);
+    setSelectedSceneId(nextProject.scenes[0].id);
+    setCurrentFrame(0);
+    setIsPlaying(false);
+    setCompatibilityNotice("");
+    setRenderStatus("idle");
+    setRenderOutput("");
+    setRenderError("");
+    playerRef.current?.pause();
+    playerRef.current?.seekTo(0);
+  };
+
   const applyDesignToSelectedScene = (design: AntVStudioDesign) => {
     if (!selectedScene) return;
     const nextContent = createAdvancedStudioInfographicContent(design);
@@ -381,6 +404,17 @@ export const AdvancedStudioApp: React.FC = () => {
           <button className="studio-title-button" type="button">
             Advanced Studio <ChevronDown size={16} />
           </button>
+          <select
+            className="advanced-input"
+            aria-label="Advanced Studio project"
+            value={selectedTemplate}
+            onChange={(event) =>
+              loadTemplate(event.target.value as "template-1" | "template-2")
+            }
+          >
+            <option value="template-1">Template 1</option>
+            <option value="template-2">Template 2 — Executive Signal</option>
+          </select>
         </div>
 
         <div className="format-switcher" role="group" aria-label="Output format">

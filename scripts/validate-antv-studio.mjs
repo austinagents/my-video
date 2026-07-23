@@ -1,8 +1,32 @@
-import {mkdtemp, writeFile} from "node:fs/promises";
+import {createHash} from "node:crypto";
+import {mkdtemp, readFile, writeFile} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {pathToFileURL} from "node:url";
 import {build} from "esbuild";
+
+const template1Source = await readFile(
+  path.resolve("src/advanced-studio/AdvancedStudioIntegrationProof.tsx"),
+  "utf8",
+);
+const template1Start = template1Source.indexOf(
+  "const styleReferenceBoardProject",
+);
+const template1End = template1Source.indexOf(
+  "export const advancedStudioIntegrationProofDuration",
+);
+if (template1Start < 0 || template1End < 0) {
+  throw new Error("Unable to locate the Template 1 authored project.");
+}
+const template1Digest = createHash("sha256")
+  .update(template1Source.slice(template1Start, template1End))
+  .digest("hex");
+if (
+  template1Digest !==
+  "b44b2b097af7532107ab059d604ce2a6656e57a1a8ee0e0290f3b0cf6c7e7e45"
+) {
+  throw new Error(`Template 1 authored content changed: ${template1Digest}.`);
+}
 
 const tempDir = await mkdtemp(path.join(os.tmpdir(), "antv-studio-"));
 const entry = path.join(tempDir, "entry.ts");
@@ -19,6 +43,7 @@ await writeFile(
 	      getAdvancedStudioProjectDuration,
 	      getAdvancedStudioTimedScenes,
 	    } from ${JSON.stringify(path.resolve("src/advanced-studio/scene-contract.ts"))};
+	    import {advancedStudioTemplate2Project} from ${JSON.stringify(path.resolve("src/advanced-studio/template-2-project.ts"))};
 
     if (process.argv.includes("--ids")) {
       console.log(antVStudioDesigns.map((design) => design.id).join("\\n"));
@@ -253,6 +278,77 @@ await writeFile(
 		    } catch {
 		      // Expected.
 		    }
+
+		    const validateAuthoredProject = ({
+		      label,
+		      project,
+		      expectedDuration,
+		    }) => {
+		      let timedScenes = [];
+		      try {
+		        const duration = getAdvancedStudioProjectDuration(project);
+		        timedScenes = getAdvancedStudioTimedScenes(project);
+		        if (duration !== expectedDuration) {
+		          errors.push(\`\${label} duration was \${duration}; expected \${expectedDuration}.\`);
+		        }
+		      } catch (error) {
+		        errors.push(\`\${label} timing validation threw: \${error instanceof Error ? error.message : String(error)}\`);
+		        return;
+		      }
+
+		      timedScenes.forEach((scene, index) => {
+		        const expectedStart = index === 0 ? 0 : timedScenes[index - 1].endFrame;
+		        if (scene.startFrame !== expectedStart) {
+		          errors.push(\`\${label} scene \${scene.id} starts at \${scene.startFrame}; expected \${expectedStart}.\`);
+		        }
+		        if (scene.endFrame !== scene.startFrame + scene.durationFrames) {
+		          errors.push(\`\${label} scene \${scene.id} has non-canonical end timing.\`);
+		        }
+
+		        if (scene.type === "board") {
+		          const boardProject = scene.content.project;
+		          const activeBlockId = scene.content.activeBlockId;
+		          if (
+		            activeBlockId !== null &&
+		            !boardProject?.blocks.some((block) => block.id === activeBlockId)
+		          ) {
+		            errors.push(\`\${label} scene \${scene.id} references missing Board block \${activeBlockId}.\`);
+		          }
+		          if (boardProject?.blocks.some((block) => block.syntax?.trim())) {
+		            errors.push(\`\${label} scene \${scene.id} uses a StudioBlock.syntax override.\`);
+		          }
+		          return;
+		        }
+
+		        const design = antVStudioDesigns.find(
+		          (item) =>
+		            item.id === scene.content.designId &&
+		            item.engine === scene.type,
+		        );
+		        if (!design) {
+		          errors.push(\`\${label} scene \${scene.id} requires unregistered \${scene.type} design \${scene.content.designId}.\`);
+		          return;
+		        }
+		        const compatibility = validateStudioDesignCompatibility({
+		          design,
+		          content: scene.content.content ?? cloneContent(design.defaultContent),
+		          expectedEngine: scene.type,
+		        });
+		        if (!compatibility.ok) {
+		          errors.push(\`\${label} scene \${scene.id} is incompatible with \${design.id}: \${compatibility.reasons.join(" ")}\`);
+		        }
+		      });
+
+		      if (timedScenes.at(-1)?.endFrame !== expectedDuration) {
+		        errors.push(\`\${label} final scene does not end at frame \${expectedDuration}.\`);
+		      }
+		    };
+
+		    validateAuthoredProject({
+		      label: "Template 2 authored project",
+		      project: advancedStudioTemplate2Project,
+		      expectedDuration: 1170,
+		    });
 
 	    if (errors.length > 0) {
       console.error(errors.join("\\n"));

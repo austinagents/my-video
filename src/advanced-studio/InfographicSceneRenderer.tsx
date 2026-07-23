@@ -96,6 +96,10 @@ export const InfographicSceneRenderer: React.FC<
 }) => {
   const renderHandleRef = React.useRef<number | null>(null);
   const completedRef = React.useRef(false);
+  const onReadyRef = React.useRef(onReady);
+  const onErrorRef = React.useRef(onError);
+  onReadyRef.current = onReady;
+  onErrorRef.current = onError;
   const design = content.design;
   const editableContent = React.useMemo(
     () => cloneContent(content.content ?? design.defaultContent),
@@ -124,8 +128,8 @@ export const InfographicSceneRenderer: React.FC<
       completedRef.current = true;
       continueRender(renderHandleRef.current);
     }
-    onReady?.();
-  }, [onReady]);
+    onReadyRef.current?.();
+  }, []);
 
   const fail = React.useCallback(
     (message: string) => {
@@ -133,9 +137,9 @@ export const InfographicSceneRenderer: React.FC<
         completedRef.current = true;
         continueRender(renderHandleRef.current);
       }
-      onError?.(message);
+      onErrorRef.current?.(message);
     },
-    [onError],
+    [],
   );
 
   return (
