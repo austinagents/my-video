@@ -128,7 +128,17 @@ export type ProductTemplateId =
   | "capillary-campaign"
   | "resonance-surface"
   | "patina-clock"
-  | "continuous-surface";
+  | "continuous-surface"
+  | "rack-focus-authority"
+  | "split-diopter-hero"
+  | "product-wake"
+  | "light-transfer"
+  | "calibration-lock"
+  | "color-capture"
+  | "material-transfer"
+  | "silhouette-portal"
+  | "contact-exposure"
+  | "product-sourced-end-frame";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -162,7 +172,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
   accent: string;
   background: string;
   surface: string;
@@ -2721,6 +2731,86 @@ export const productTemplates: ProductTemplate[] = [
     cta: "Follow the surface",
     polyHavenDefaultAssetId: "oak_veneer_01",
   },
+  {
+    id: "rack-focus-authority", name: "Rack Focus Authority", category: "Optical Focus",
+    description: "Product-derived depth planes hand focus to the definitive hero.", batch: 14,
+    accent: "#e8bd72", background: "#080808", surface: "#25221d", foreground: "#fff9ee", muted: "#aaa49a",
+    layout: "poster", imageFit: "contain", imageScale: 0.98, eyebrow: "FOCUS FINDS THE HERO",
+    headline: "Everything resolves here.", subheadline: "Depth, detail, and attention transfer to one definitive object.",
+    cta: "Take focus", polyHavenDefaultAssetId: "marble_01",
+  },
+  {
+    id: "split-diopter-hero", name: "Split-Diopter Hero", category: "Dual Focus",
+    description: "A product detail and complete hero share one moving optical plane.", batch: 14,
+    accent: "#8ed8ff", background: "#061018", surface: "#173140", foreground: "#f4fbff", muted: "#9eb3bf",
+    layout: "technical", imageFit: "contain", imageScale: 0.98, eyebrow: "DETAIL / WHOLE",
+    headline: "Two distances. One product.", subheadline: "The defining detail and complete form remain equally present.",
+    cta: "See both", polyHavenDefaultAssetId: "blue_metal_plate",
+  },
+  {
+    id: "product-wake", name: "Product Wake", category: "Directional Cinema",
+    description: "The moving product generates the composition that follows behind it.", batch: 14,
+    accent: "#f2c96f", background: "#15100a", surface: "#594329", foreground: "#fff8e9", muted: "#c8b59b",
+    layout: "split", imageFit: "contain", imageScale: 0.98, eyebrow: "MOTION LEAVES EVIDENCE",
+    headline: "The frame follows its lead.", subheadline: "Every line and word is carried into place by the product.",
+    cta: "Follow through", polyHavenDefaultAssetId: "oak_veneer_01",
+  },
+  {
+    id: "light-transfer", name: "Light Transfer", category: "Illumination",
+    description: "A highlight originates on the product and transfers into the campaign message.", batch: 14,
+    accent: "#ff875e", background: "#090b0d", surface: "#2c3035", foreground: "#fff8f3", muted: "#aaa8a6",
+    layout: "editorial", imageFit: "contain", imageScale: 0.98, eyebrow: "THE OBJECT STARTS THE LIGHT",
+    headline: "Attention travels outward.", subheadline: "One highlight moves from form to message without leaving the product story.",
+    cta: "Follow the light", polyHavenDefaultAssetId: "blue_metal_plate",
+  },
+  {
+    id: "calibration-lock", name: "Calibration Lock", category: "Product Precision",
+    description: "The campaign frame measures and locks itself around the uploaded product.", batch: 14,
+    accent: "#d8ff55", background: "#0b0e0d", surface: "#28302c", foreground: "#f8fff2", muted: "#a3afa8",
+    layout: "technical", imageFit: "contain", imageScale: 0.96, eyebrow: "FRAME CALIBRATED",
+    headline: "Built around the object.", subheadline: "Every mark converges on the product before the campaign locks.",
+    cta: "Lock the frame", polyHavenDefaultAssetId: "concrete_floor_worn_001",
+  },
+  {
+    id: "color-capture", name: "Color Capture", category: "Chromatic Product",
+    description: "The product absorbs campaign color as the surrounding world becomes neutral.", batch: 14,
+    accent: "#ff4f72", background: "#171719", surface: "#4c3840", foreground: "#fff7fa", muted: "#baa8ae",
+    layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "COLOR CHOOSES THE OBJECT",
+    headline: "Only one thing keeps the color.", subheadline: "The palette leaves the environment and concentrates on the hero.",
+    cta: "Capture color", polyHavenDefaultAssetId: "painted_plaster_wall",
+  },
+  {
+    id: "material-transfer", name: "Material Transfer", category: "Surface Identity",
+    description: "The selected material initially occupies the product silhouette before revealing its true finish.", batch: 14,
+    accent: "#e9c690", background: "#17120d", surface: "#705438", foreground: "#fff9ef", muted: "#c7b198",
+    layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "SURFACE MEETS IDENTITY",
+    headline: "The material finds its object.", subheadline: "Texture exists only through the product form before the true finish arrives.",
+    cta: "Reveal the finish", polyHavenDefaultAssetId: "sandstone_cracks",
+  },
+  {
+    id: "silhouette-portal", name: "Silhouette Portal", category: "Dimensional Product",
+    description: "The actual product silhouette opens into material depth before returning as the hero.", batch: 14,
+    accent: "#79ddc4", background: "#06120f", surface: "#21493f", foreground: "#f1fff9", muted: "#96b9ae",
+    layout: "poster", imageFit: "contain", imageScale: 0.98, eyebrow: "DEPTH HAS A SHAPE",
+    headline: "The world fits inside it.", subheadline: "The product becomes the only opening into a deeper material space.",
+    cta: "Enter the form", polyHavenDefaultAssetId: "velour_velvet",
+  },
+  {
+    id: "contact-exposure", name: "Contact Exposure", category: "Photographic Object",
+    description: "The product creates its own photographic impression before separating into reality.", batch: 14,
+    accent: "#d7352b", background: "#e5ded2", surface: "#fffaf1", foreground: "#181512", muted: "#6b655d",
+    layout: "editorial", imageFit: "contain", imageScale: 0.98, eyebrow: "OBJECT / LIGHT / EVIDENCE",
+    headline: "The image begins with contact.", subheadline: "A direct exposure records the product before the real object lifts away.",
+    cta: "Develop the image", polyHavenDefaultAssetId: "painted_plaster_wall",
+  },
+  {
+    id: "product-sourced-end-frame", name: "Product-Sourced End Frame", category: "Product Typography",
+    description: "Product-derived image regions construct the campaign frame and final message.", batch: 14,
+    accent: "#f4c95f", background: "#0c0c0e", surface: "#28282d", foreground: "#fffaf0", muted: "#aaa8a2",
+    layout: "poster", imageFit: "contain", imageScale: 0.98, eyebrow: "EVERY FRAME COMES FROM THE OBJECT",
+    headline: "The product authors the ending.", subheadline: "Image, framing, and message are all sourced from one hero.",
+    cta: "Own the frame", polyHavenDefaultAssetId: "terrazzo_tiles",
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -2742,6 +2832,7 @@ export const productVideoBatch10Duration = 300;
 export const productVideoBatch11Duration = 300;
 export const productVideoBatch12Duration = 300;
 export const productVideoBatch13Duration = 300;
+export const productVideoBatch14Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -2757,5 +2848,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 11) return productVideoBatch11Duration;
   if (batch === 12) return productVideoBatch12Duration;
   if (batch === 13) return productVideoBatch13Duration;
+  if (batch === 14) return productVideoBatch14Duration;
   return productVideoDuration;
 };

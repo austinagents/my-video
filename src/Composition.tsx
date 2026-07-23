@@ -23,6 +23,7 @@ import {
   productVideoBatch11Duration,
   productVideoBatch12Duration,
   productVideoBatch13Duration,
+  productVideoBatch14Duration,
   productVideoDuration,
   productVideoFormats,
   productVideoFps,
@@ -89,6 +90,10 @@ const defaultBatch12ProductVideoProps: ProductVideoProps = {
 const defaultBatch13ProductVideoProps: ProductVideoProps = {
   ...defaultProductVideoProps,
   templateId: "anamorphic-reflection",
+};
+const defaultBatch14ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "rack-focus-authority",
 };
 
 export const MyComposition: React.FC = () => {
@@ -531,6 +536,36 @@ export const MyComposition: React.FC = () => {
         width={productVideoFormats.vertical.width}
         height={productVideoFormats.vertical.height}
         defaultProps={{...defaultBatch13ProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch14Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch14Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch14ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch14Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch14Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch14ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch14Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch14Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch14ProductVideoProps, formatId: "vertical"}}
       />
     </>
   );
