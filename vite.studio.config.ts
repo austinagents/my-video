@@ -23,6 +23,10 @@ const studioApi = (): Plugin => ({
 
   configureServer(server) {
     server.middlewares.use(async (request, response, next) => {
+      if (request.url === "/advanced-studio2") {
+        request.url = "/advanced-studio2.html";
+      }
+
       if (request.url?.startsWith("/antv-studio-previews/")) {
         const assetName = decodeURIComponent(
           request.url.replace("/antv-studio-previews/", "").split("?")[0],
@@ -60,6 +64,36 @@ const studioApi = (): Plugin => ({
           return;
         }
 
+        response.statusCode = 200;
+        response.setHeader("Content-Type", "video/mp4");
+        response.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${fileName}"`,
+        );
+        response.setHeader("Content-Length", fs.statSync(filePath).size);
+        fs.createReadStream(filePath).pipe(response);
+        return;
+      }
+
+      if (
+        request.url?.startsWith("/api/export-advanced2/") &&
+        request.method === "GET"
+      ) {
+        const formatId = request.url
+          .replace("/api/export-advanced2/", "")
+          .split("?")[0];
+        if (!["portrait", "square", "vertical"].includes(formatId)) {
+          response.statusCode = 400;
+          response.end("Invalid Advanced Studio 2 format.");
+          return;
+        }
+        const fileName = `advanced-studio2-${formatId}.mp4`;
+        const filePath = path.resolve("output", fileName);
+        if (!fs.existsSync(filePath)) {
+          response.statusCode = 404;
+          response.end("Export not found.");
+          return;
+        }
         response.statusCode = 200;
         response.setHeader("Content-Type", "video/mp4");
         response.setHeader(
@@ -242,6 +276,70 @@ const studioApi = (): Plugin => ({
         return;
       }
 
+      if (request.url === "/api/render-advanced2" && request.method === "POST") {
+        try {
+          const body = await readBody(request);
+          const props = JSON.parse(body);
+          const formatId = props.formatId ?? "portrait";
+          if (!["portrait", "square", "vertical"].includes(formatId)) {
+            throw new Error("Invalid Advanced Studio 2 format.");
+          }
+          const compositionId =
+            formatId === "square"
+              ? "AdvancedStudio2ProductSquare"
+              : formatId === "vertical"
+                ? "AdvancedStudio2ProductVertical"
+                : "AdvancedStudio2ProductPortrait";
+          fs.mkdirSync(path.resolve("output"), {recursive: true});
+          const propsPath = path.resolve("output/advanced-studio2-project.json");
+          fs.writeFileSync(propsPath, JSON.stringify(props, null, 2));
+          const child = spawn(
+            "npx",
+            [
+              "remotion",
+              "render",
+              "src/index.ts",
+              compositionId,
+              `output/advanced-studio2-${formatId}.mp4`,
+              "--props=output/advanced-studio2-project.json",
+              "--overwrite",
+            ],
+            {
+              cwd: process.cwd(),
+              stdio: "inherit",
+              shell: false,
+            },
+          );
+          child.on("close", (code) => {
+            response.statusCode = code === 0 ? 200 : 500;
+            response.setHeader("Content-Type", "application/json");
+            response.end(
+              JSON.stringify({
+                ok: code === 0,
+                downloadUrl: `/api/export-advanced2/${formatId}`,
+                error: code === 0 ? undefined : "Remotion render failed.",
+              }),
+            );
+          });
+          child.on("error", (error) => {
+            response.statusCode = 500;
+            response.setHeader("Content-Type", "application/json");
+            response.end(JSON.stringify({ok: false, error: error.message}));
+          });
+        } catch (error) {
+          response.statusCode = 500;
+          response.setHeader("Content-Type", "application/json");
+          response.end(
+            JSON.stringify({
+              ok: false,
+              error:
+                error instanceof Error ? error.message : "Render failed.",
+            }),
+          );
+        }
+        return;
+      }
+
       next();
     });
   },
@@ -259,6 +357,7 @@ export default defineConfig({
       input: {
         main: path.resolve(__dirname, "studio/index.html"),
         advanced: path.resolve(__dirname, "studio/advanced-studio.html"),
+        advanced2: path.resolve(__dirname, "studio/advanced-studio2.html"),
       },
     },
   },

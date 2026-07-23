@@ -9,6 +9,13 @@ import {
   advancedStudioIntegrationFps,
   advancedStudioIntegrationFormats,
 } from "./advanced-studio/AdvancedStudioIntegrationProof";
+import {
+  ProductVideo,
+  productVideoDuration,
+  productVideoFormats,
+  productVideoFps,
+  type ProductVideoProps,
+} from "./advanced-studio2/ProductVideo";
 
 const totalFrames = Math.round(
   defaultProject.scenes.reduce(
@@ -17,6 +24,12 @@ const totalFrames = Math.round(
   ) * 30,
 );
 const advancedStudioMaxFrames = advancedStudioIntegrationProofDuration;
+const defaultProductVideoProps: ProductVideoProps = {
+  templateId: "obsidian",
+  imageSrc: "",
+  productName: "Aurelia One",
+  formatId: "portrait",
+};
 
 export const MyComposition: React.FC = () => {
   return (
@@ -68,6 +81,36 @@ export const MyComposition: React.FC = () => {
         width={advancedStudioIntegrationFormats.vertical.width}
         height={advancedStudioIntegrationFormats.vertical.height}
         defaultProps={{formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductPortrait"
+        component={ProductVideo}
+        durationInFrames={productVideoDuration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductSquare"
+        component={ProductVideo}
+        durationInFrames={productVideoDuration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductVertical"
+        component={ProductVideo}
+        durationInFrames={productVideoDuration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultProductVideoProps, formatId: "vertical"}}
       />
     </>
   );
