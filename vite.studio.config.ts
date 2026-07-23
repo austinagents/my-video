@@ -5,9 +5,9 @@ import path from "node:path";
 import {spawn} from "node:child_process";
 import {getAdvancedStudioProjectDuration} from "./src/advanced-studio/scene-contract";
 import {
+  getProductTemplate,
   getProductVideoDuration,
-} from "./src/advanced-studio2/ProductVideo";
-import {getProductTemplate} from "./src/advanced-studio2/product-templates";
+} from "./src/advanced-studio2/product-templates";
 
 const readBody = async (request: import("node:http").IncomingMessage) => {
   return await new Promise<string>((resolve, reject) => {
@@ -69,6 +69,10 @@ const studioApi = (): Plugin => ({
   configureServer(server) {
     server.middlewares.use(async (request, response, next) => {
       if (request.url === "/advanced-studio2") {
+        request.url = "/advanced-studio2.html";
+      }
+
+      if (request.url === "/advanced-studio2-experimental") {
         request.url = "/advanced-studio2.html";
       }
 
@@ -399,7 +403,9 @@ const studioApi = (): Plugin => ({
           const durationInFrames = getProductVideoDuration(props.templateId);
           const batch = getProductTemplate(props.templateId).batch;
           const compositionPrefix =
-            batch === 7
+            batch === 8
+              ? "AdvancedStudio2ProductBatch8"
+              : batch === 7
               ? "AdvancedStudio2ProductBatch7"
               : batch === 6
               ? "AdvancedStudio2ProductBatch6"

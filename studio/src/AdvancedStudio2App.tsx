@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Download,
   Folder,
+  Film,
   ImagePlus,
   MonitorPlay,
   Palette,
@@ -23,6 +24,7 @@ import {
 } from "../../src/advanced-studio2/ProductVideo";
 import {
   productTemplates,
+  type ProductMediaSlot,
   type ProductTemplateId,
 } from "../../src/advanced-studio2/product-templates";
 
@@ -35,6 +37,7 @@ const formats: Array<{id: ProductVideoFormat; label: string; meta: string}> = [
 const defaultState: ProductVideoProps = {
   templateId: "obsidian",
   imageSrc: "",
+  media: {},
   productName: "Aurelia One",
   headline: "",
   subheadline: "",
@@ -47,7 +50,7 @@ const defaultState: ProductVideoProps = {
 export const AdvancedStudio2App: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const [project, setProject] = React.useState<ProductVideoProps>(defaultState);
-  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | null>(null);
+  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | null>(null);
   const [isProcessingImage, setIsProcessingImage] = React.useState(false);
   const [imageMessage, setImageMessage] = React.useState("");
   const [renderState, setRenderState] = React.useState<
@@ -102,6 +105,77 @@ export const AdvancedStudio2App: React.FC = () => {
     } catch (error) {
       setImageMessage(
         error instanceof Error ? error.message : "Background removal failed.",
+      );
+    } finally {
+      setIsProcessingImage(false);
+    }
+  };
+
+  const handleMediaUpload = async (
+    slot: ProductMediaSlot,
+    file?: File,
+  ) => {
+    if (!file) return;
+    const acceptedImages = ["image/png", "image/jpeg", "image/webp"];
+    const acceptedVideos = ["video/mp4", "video/webm", "video/quicktime"];
+    const accepted = slot.kind === "image" ? acceptedImages : acceptedVideos;
+    if (!accepted.includes(file.type)) {
+      setImageMessage(
+        slot.kind === "image"
+          ? "Choose a PNG, JPEG, or WebP image."
+          : "Choose an MP4, WebM, or QuickTime video.",
+      );
+      return;
+    }
+    setIsProcessingImage(true);
+    setImageMessage(
+      slot.removeBackground
+        ? `Apple Vision is isolating ${slot.label.toLowerCase()}…`
+        : `Loading ${slot.label.toLowerCase()}…`,
+    );
+    try {
+      let mediaBlob: Blob = file;
+      if (slot.removeBackground) {
+        const response = await fetch(
+          "/api/advanced-studio2/remove-background",
+          {
+            method: "POST",
+            headers: {"Content-Type": file.type},
+            body: file,
+          },
+        );
+        if (!response.ok) {
+          const result = (await response.json()) as {error?: string};
+          throw new Error(result.error || "Background removal failed.");
+        }
+        mediaBlob = await response.blob();
+      }
+      const reader = new FileReader();
+      const src = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(String(reader.result ?? ""));
+        reader.onerror = () => reject(new Error("The media could not be read."));
+        reader.readAsDataURL(mediaBlob);
+      });
+      setProject((current) => ({
+        ...current,
+        imageSrc:
+          slot.id === "hero" ||
+          slot.id === "unpackedImage" ||
+          slot.id === "packageImage"
+            ? src
+            : current.imageSrc,
+        media: {...current.media, [slot.id]: src},
+      }));
+      setRenderState("idle");
+      setRenderMessage("");
+      setImageMessage(
+        slot.removeBackground
+          ? `${slot.label} isolated with Apple Vision.`
+          : `${slot.label} ready.`,
+      );
+    } catch (error) {
+      setImageMessage(
+        error instanceof Error ? error.message : "Media upload failed.",
       );
     } finally {
       setIsProcessingImage(false);
@@ -169,7 +243,7 @@ export const AdvancedStudio2App: React.FC = () => {
 
       <main className="as2-workspace">
         <aside className="as2-library">
-          {([1, 2, 3, 4, 5, 6, 7] as const).map((batch) => (
+          {([1, 2, 3, 4, 5, 6, 7, 8] as const).map((batch) => (
             <React.Fragment key={batch}>
               <button
                 className="as2-template-folder"
@@ -313,31 +387,78 @@ export const AdvancedStudio2App: React.FC = () => {
             </div>
           </div>
 
-          <label className="as2-upload">
-            {project.imageSrc ? (
-              <img src={project.imageSrc} alt="Uploaded product" />
-            ) : (
-              <div>
-                <ImagePlus size={30} />
-                <strong>Upload product image</strong>
-                <span>Apple Vision removes the background on this Mac</span>
-              </div>
-            )}
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              disabled={isProcessingImage}
-              onChange={(event) => handleUpload(event.target.files?.[0])}
-            />
-            <b>
-              <Upload size={15} />{" "}
-              {isProcessingImage
-                ? "Removing background…"
-                : project.imageSrc
-                  ? "Replace image"
-                  : "Choose image"}
-            </b>
-          </label>
+          {selectedTemplate.mediaSlots ? (
+            <div className="as2-media-slots">
+              {selectedTemplate.mediaSlots.map((slot) => {
+                const src = project.media?.[slot.id];
+                return (
+                  <label className="as2-media-slot" key={slot.id}>
+                    <span className="as2-media-slot-preview">
+                      {src && slot.kind === "image" ? (
+                        <img src={src} alt="" />
+                      ) : slot.kind === "video" ? (
+                        <Film size={22} />
+                      ) : (
+                        <ImagePlus size={22} />
+                      )}
+                    </span>
+                    <span>
+                      <strong>{slot.label}</strong>
+                      <small>
+                        {slot.kind === "video"
+                          ? "MP4, WebM, or QuickTime"
+                          : slot.removeBackground
+                            ? "Background removed automatically"
+                            : "Original background preserved"}
+                      </small>
+                    </span>
+                    <b>
+                      <Upload size={14} />
+                      {src ? "Replace" : "Add"}
+                    </b>
+                    <input
+                      type="file"
+                      accept={
+                        slot.kind === "video"
+                          ? "video/mp4,video/webm,video/quicktime"
+                          : "image/png,image/jpeg,image/webp"
+                      }
+                      disabled={isProcessingImage}
+                      onChange={(event) =>
+                        handleMediaUpload(slot, event.target.files?.[0])
+                      }
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          ) : (
+            <label className="as2-upload">
+              {project.imageSrc ? (
+                <img src={project.imageSrc} alt="Uploaded product" />
+              ) : (
+                <div>
+                  <ImagePlus size={30} />
+                  <strong>Upload product image</strong>
+                  <span>Apple Vision removes the background on this Mac</span>
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                disabled={isProcessingImage}
+                onChange={(event) => handleUpload(event.target.files?.[0])}
+              />
+              <b>
+                <Upload size={15} />{" "}
+                {isProcessingImage
+                  ? "Removing background…"
+                  : project.imageSrc
+                    ? "Replace image"
+                    : "Choose image"}
+              </b>
+            </label>
+          )}
           {imageMessage ? (
             <div className="as2-image-message">{imageMessage}</div>
           ) : null}
@@ -413,6 +534,7 @@ export const AdvancedStudio2App: React.FC = () => {
               setProject((current) => ({
                 ...defaultState,
                 imageSrc: current.imageSrc,
+                media: current.media,
                 formatId: current.formatId,
               }))
             }

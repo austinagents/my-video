@@ -150,6 +150,22 @@ button { color: inherit; }
 .as2-image-message {
   margin-top: 8px; color: #9ca5b2; font-size: 10px; line-height: 1.4; text-align: center;
 }
+.as2-media-slots { display: grid; gap: 8px; }
+.as2-media-slot {
+  min-height: 72px; border: 1px dashed #3a424f; background: #12161d; border-radius: 11px;
+  padding: 9px; display: grid; grid-template-columns: 50px 1fr auto; gap: 10px; align-items: center;
+  cursor: pointer;
+}
+.as2-media-slot input { display: none; }
+.as2-media-slot-preview {
+  width: 50px; height: 50px; border-radius: 8px; overflow: hidden; background: #0b0e13;
+  display: grid; place-items: center; color: #697382;
+}
+.as2-media-slot-preview img { width: 100%; height: 100%; object-fit: contain; }
+.as2-media-slot strong, .as2-media-slot small { display: block; }
+.as2-media-slot strong { color: #e9e9e6; font-size: 11px; }
+.as2-media-slot small { margin-top: 4px; color: #7f8997; font-size: 9px; line-height: 1.35; }
+.as2-media-slot b { display: flex; align-items: center; gap: 5px; color: #f0c866; font-size: 10px; }
 .as2-field-group { display: grid; gap: 12px; margin-top: 18px; }
 .as2-field-group label > span { display: block; color: #8b94a2; font-size: 10px; font-weight: 750; margin-bottom: 6px; }
 .as2-field-group input, .as2-field-group textarea {

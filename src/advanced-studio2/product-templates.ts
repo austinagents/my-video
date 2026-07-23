@@ -68,14 +68,51 @@ export type ProductTemplateId =
   | "home-editorial"
   | "outdoor-proven"
   | "retail-impact"
-  | "future-essential";
+  | "future-essential"
+  | "angle-study"
+  | "detail-proof"
+  | "product-in-context"
+  | "live-demonstration"
+  | "before-after"
+  | "colorway-collection"
+  | "package-to-product"
+  | "feature-in-focus"
+  | "human-moment"
+  | "campaign-cut";
+
+export type ProductMediaSlotId =
+  | "hero"
+  | "angleSide"
+  | "angleThreeQuarter"
+  | "detailOne"
+  | "detailTwo"
+  | "lifestyleImage"
+  | "demoVideo"
+  | "beforeImage"
+  | "afterImage"
+  | "variantTwo"
+  | "variantThree"
+  | "packageImage"
+  | "unpackedImage"
+  | "featureOne"
+  | "featureTwo"
+  | "lifestyleVideo"
+  | "campaignImage"
+  | "campaignVideo";
+
+export type ProductMediaSlot = {
+  id: ProductMediaSlotId;
+  label: string;
+  kind: "image" | "video";
+  removeBackground?: boolean;
+};
 
 export type ProductTemplate = {
   id: ProductTemplateId;
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   accent: string;
   background: string;
   surface: string;
@@ -93,6 +130,7 @@ export type ProductTemplate = {
   headline: string;
   subheadline: string;
   cta: string;
+  mediaSlots?: ProductMediaSlot[];
 };
 
 export const productTemplates: ProductTemplate[] = [
@@ -1426,10 +1464,267 @@ export const productTemplates: ProductTemplate[] = [
     subheadline: "A new object for a future that already feels within reach.",
     cta: "Meet what’s next",
   },
+  {
+    id: "angle-study",
+    name: "Angle Study",
+    category: "Multi-Angle",
+    description: "Three real product viewpoints match-cut into one definitive hero portrait.",
+    batch: 8,
+    accent: "#f15a3d",
+    background: "#e9e4da",
+    surface: "#171717",
+    foreground: "#151515",
+    muted: "#6f695f",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "THREE ANGLES / ONE OBJECT",
+    headline: "Every side earns attention.",
+    subheadline: "Front, profile, and form resolve into one unmistakable product.",
+    cta: "See every angle",
+    mediaSlots: [
+      {id: "hero", label: "Front angle", kind: "image", removeBackground: true},
+      {id: "angleSide", label: "Side angle", kind: "image", removeBackground: true},
+      {id: "angleThreeQuarter", label: "Three-quarter angle", kind: "image", removeBackground: true},
+    ],
+  },
+  {
+    id: "detail-proof",
+    name: "Detail Proof",
+    category: "Craft",
+    description: "Real detail photography establishes craftsmanship before the complete product reveal.",
+    batch: 8,
+    accent: "#d3ad62",
+    background: "#080808",
+    surface: "#1a1815",
+    foreground: "#fff9ed",
+    muted: "#aaa196",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "CRAFT / DETAIL / COMPLETE",
+    headline: "The difference is in the details.",
+    subheadline: "Every surface, finish, and decision leads to the complete object.",
+    cta: "Look closer",
+    mediaSlots: [
+      {id: "hero", label: "Hero product", kind: "image", removeBackground: true},
+      {id: "detailOne", label: "Detail image 1", kind: "image"},
+      {id: "detailTwo", label: "Detail image 2", kind: "image"},
+    ],
+  },
+  {
+    id: "product-in-context",
+    name: "Product in Context",
+    category: "Lifestyle",
+    description: "A clean product introduction opens into a real lifestyle environment.",
+    batch: 8,
+    accent: "#ff6b4a",
+    background: "#ece3d6",
+    surface: "#fcf7ef",
+    foreground: "#1b1713",
+    muted: "#70675d",
+    layout: "split",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "OBJECT / PLACE / PURPOSE",
+    headline: "Designed for real life.",
+    subheadline: "A clear product promise, grounded in the place it belongs.",
+    cta: "See it in context",
+    mediaSlots: [
+      {id: "hero", label: "Product image", kind: "image", removeBackground: true},
+      {id: "lifestyleImage", label: "Lifestyle image", kind: "image"},
+    ],
+  },
+  {
+    id: "live-demonstration",
+    name: "Live Demonstration",
+    category: "Product Demo",
+    description: "A genuine demonstration clip proves how the product behaves before the final packshot.",
+    batch: 8,
+    accent: "#95ff45",
+    background: "#080b09",
+    surface: "#142017",
+    foreground: "#f3ffed",
+    muted: "#9cad96",
+    layout: "technical",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "SEE IT WORK",
+    headline: "Performance, demonstrated.",
+    subheadline: "Real motion makes the product promise visible.",
+    cta: "Watch it work",
+    mediaSlots: [
+      {id: "hero", label: "Product image", kind: "image", removeBackground: true},
+      {id: "demoVideo", label: "Demonstration video", kind: "video"},
+    ],
+  },
+  {
+    id: "before-after",
+    name: "Before / After",
+    category: "Transformation",
+    description: "Real before-and-after evidence creates an immediate transformation story.",
+    batch: 8,
+    accent: "#4169ff",
+    background: "#f0eee8",
+    surface: "#ffffff",
+    foreground: "#111318",
+    muted: "#686b73",
+    layout: "split",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "BEFORE / AFTER / PROVEN",
+    headline: "See the change.",
+    subheadline: "A direct comparison makes the product result impossible to miss.",
+    cta: "See the result",
+    mediaSlots: [
+      {id: "hero", label: "Product image", kind: "image", removeBackground: true},
+      {id: "beforeImage", label: "Before image", kind: "image"},
+      {id: "afterImage", label: "After image", kind: "image"},
+    ],
+  },
+  {
+    id: "colorway-collection",
+    name: "Colorway Collection",
+    category: "Collection",
+    description: "Three real product variants move through one controlled campaign system.",
+    batch: 8,
+    accent: "#ff4d75",
+    background: "#f6f1e8",
+    surface: "#222031",
+    foreground: "#17141d",
+    muted: "#746d7c",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "THE COLLECTION / THREE WAYS",
+    headline: "Choose your expression.",
+    subheadline: "One design language, presented in three distinct product finishes.",
+    cta: "Explore the collection",
+    mediaSlots: [
+      {id: "hero", label: "Variant 1", kind: "image", removeBackground: true},
+      {id: "variantTwo", label: "Variant 2", kind: "image", removeBackground: true},
+      {id: "variantThree", label: "Variant 3", kind: "image", removeBackground: true},
+    ],
+  },
+  {
+    id: "package-to-product",
+    name: "Package to Product",
+    category: "Unboxing",
+    description: "Real packaged and unpacked states create an honest premium reveal.",
+    batch: 8,
+    accent: "#e63f2f",
+    background: "#ded7ca",
+    surface: "#f8f3e9",
+    foreground: "#17130f",
+    muted: "#70675c",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.95,
+    eyebrow: "ARRIVAL / OPEN / REVEAL",
+    headline: "The experience starts before it opens.",
+    subheadline: "Packaging and product become one complete arrival.",
+    cta: "Open the experience",
+    mediaSlots: [
+      {id: "packageImage", label: "Packaged product", kind: "image", removeBackground: true},
+      {id: "unpackedImage", label: "Unpacked product", kind: "image", removeBackground: true},
+    ],
+  },
+  {
+    id: "feature-in-focus",
+    name: "Feature in Focus",
+    category: "Feature Story",
+    description: "Real feature imagery connects specific evidence to the complete product.",
+    batch: 8,
+    accent: "#36d8ff",
+    background: "#060a10",
+    surface: "#13202c",
+    foreground: "#f2fbff",
+    muted: "#93a9b7",
+    layout: "technical",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "FEATURE / EVIDENCE / HERO",
+    headline: "Built around what matters.",
+    subheadline: "Two defining capabilities lead back to one complete product.",
+    cta: "Explore the features",
+    mediaSlots: [
+      {id: "hero", label: "Product image", kind: "image", removeBackground: true},
+      {id: "featureOne", label: "Feature image 1", kind: "image"},
+      {id: "featureTwo", label: "Feature image 2", kind: "image"},
+    ],
+  },
+  {
+    id: "human-moment",
+    name: "Human Moment",
+    category: "Lifestyle Film",
+    description: "Real lifestyle footage establishes emotion before a refined product finish.",
+    batch: 8,
+    accent: "#ffd86a",
+    background: "#17120d",
+    surface: "#3d3024",
+    foreground: "#fff8eb",
+    muted: "#c1ac91",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "MADE FOR THE MOMENT",
+    headline: "The product becomes part of the story.",
+    subheadline: "Human context turns a useful object into a meaningful one.",
+    cta: "Enter the moment",
+    mediaSlots: [
+      {id: "hero", label: "Product image", kind: "image", removeBackground: true},
+      {id: "lifestyleVideo", label: "Lifestyle video", kind: "video"},
+    ],
+  },
+  {
+    id: "campaign-cut",
+    name: "Campaign Cut",
+    category: "Campaign Film",
+    description: "Hero, lifestyle, and motion assets combine into one complete campaign edit.",
+    batch: 8,
+    accent: "#ff4438",
+    background: "#111111",
+    surface: "#f0eadf",
+    foreground: "#ffffff",
+    muted: "#b5afa7",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "MASTER CAMPAIGN / LIVE",
+    headline: "One product. A complete campaign.",
+    subheadline: "Product clarity, real context, and motion resolve into one final asset.",
+    cta: "Launch the campaign",
+    mediaSlots: [
+      {id: "hero", label: "Hero product", kind: "image", removeBackground: true},
+      {id: "campaignImage", label: "Campaign image", kind: "image"},
+      {id: "campaignVideo", label: "Campaign video", kind: "video"},
+    ],
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
   const template = productTemplates.find((item) => item.id === id);
   if (!template) throw new Error(`Unknown product template: ${id}`);
   return template;
+};
+
+export const productVideoDuration = 180;
+export const productVideoBatch2Duration = 240;
+export const productVideoBatch3Duration = 240;
+export const productVideoBatch4Duration = 240;
+export const productVideoBatch5Duration = 300;
+export const productVideoBatch6Duration = 300;
+export const productVideoBatch7Duration = 300;
+export const productVideoBatch8Duration = 300;
+
+export const getProductVideoDuration = (templateId: ProductTemplateId) => {
+  const batch = getProductTemplate(templateId).batch;
+  if (batch === 2) return productVideoBatch2Duration;
+  if (batch === 3) return productVideoBatch3Duration;
+  if (batch === 4) return productVideoBatch4Duration;
+  if (batch === 5) return productVideoBatch5Duration;
+  if (batch === 6) return productVideoBatch6Duration;
+  if (batch === 7) return productVideoBatch7Duration;
+  if (batch === 8) return productVideoBatch8Duration;
+  return productVideoDuration;
 };

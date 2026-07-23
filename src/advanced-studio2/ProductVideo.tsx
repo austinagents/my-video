@@ -9,7 +9,20 @@ import {
 } from "remotion";
 import {
   getProductTemplate,
+  productVideoDuration,
+  type ProductMediaSlotId,
   type ProductTemplateId,
+} from "./product-templates";
+export {
+  getProductVideoDuration,
+  productVideoBatch2Duration,
+  productVideoBatch3Duration,
+  productVideoBatch4Duration,
+  productVideoBatch5Duration,
+  productVideoBatch6Duration,
+  productVideoBatch7Duration,
+  productVideoBatch8Duration,
+  productVideoDuration,
 } from "./product-templates";
 import {ProductTemplateBatch2} from "./ProductTemplateBatch2";
 import {ProductTemplateBatch3} from "./ProductTemplateBatch3";
@@ -17,12 +30,14 @@ import {ProductTemplateBatch4} from "./ProductTemplateBatch4";
 import {ProductTemplateBatch5} from "./ProductTemplateBatch5";
 import {ProductTemplateBatch6} from "./ProductTemplateBatch6";
 import {ProductTemplateBatch7} from "./ProductTemplateBatch7";
+import {ProductTemplateBatch8} from "./ProductTemplateBatch8";
 
 export type ProductVideoFormat = "portrait" | "square" | "vertical";
 
 export type ProductVideoProps = {
   templateId: ProductTemplateId;
   imageSrc: string;
+  media?: Partial<Record<ProductMediaSlotId, string>>;
   productName: string;
   headline?: string;
   subheadline?: string;
@@ -32,25 +47,7 @@ export type ProductVideoProps = {
   formatId: ProductVideoFormat;
 };
 
-export const productVideoDuration = 180;
-export const productVideoBatch2Duration = 240;
-export const productVideoBatch3Duration = 240;
-export const productVideoBatch4Duration = 240;
-export const productVideoBatch5Duration = 300;
-export const productVideoBatch6Duration = 300;
-export const productVideoBatch7Duration = 300;
 export const productVideoFps = 30;
-
-export const getProductVideoDuration = (templateId: ProductTemplateId) => {
-  const batch = getProductTemplate(templateId).batch;
-  if (batch === 2) return productVideoBatch2Duration;
-  if (batch === 3) return productVideoBatch3Duration;
-  if (batch === 4) return productVideoBatch4Duration;
-  if (batch === 5) return productVideoBatch5Duration;
-  if (batch === 6) return productVideoBatch6Duration;
-  if (batch === 7) return productVideoBatch7Duration;
-  return productVideoDuration;
-};
 
 export const productVideoFormats = {
   portrait: {width: 1080, height: 1350},
@@ -107,6 +104,9 @@ export const ProductVideo: React.FC<ProductVideoProps> = (props) => {
   }
   if (template.batch === 7) {
     return <ProductTemplateBatch7 {...props} />;
+  }
+  if (template.batch === 8) {
+    return <ProductTemplateBatch8 {...props} />;
   }
   const accent = props.accent || template.accent;
   const vertical = height / width > 1.55;

@@ -13,6 +13,7 @@
     "@antv/infographic-jsx": "^0.0.1-beta.5",
     "@antv/s2": "^2.7.2",
     "@remotion/cli": "4.0.489",
+    "@remotion/media": "4.0.489",
     "@remotion/player": "4.0.489",
     "@remotion/tailwind-v4": "4.0.489",
     "@vitejs/plugin-react": "^6.0.3",
