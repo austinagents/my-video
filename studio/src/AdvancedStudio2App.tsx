@@ -55,7 +55,7 @@ const defaultState: ProductVideoProps = {
 export const AdvancedStudio2App: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const [project, setProject] = React.useState<ProductVideoProps>(defaultState);
-  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | null>(null);
+  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | null>(null);
   const [isProcessingImage, setIsProcessingImage] = React.useState(false);
   const [imageMessage, setImageMessage] = React.useState("");
   const [renderState, setRenderState] = React.useState<
@@ -266,7 +266,7 @@ export const AdvancedStudio2App: React.FC = () => {
 
   React.useEffect(() => {
     if (
-      selectedTemplate.batch !== 12 ||
+      (selectedTemplate.batch !== 12 && selectedTemplate.batch !== 13) ||
       !selectedTemplate.polyHavenDefaultAssetId
     ) {
       return;
@@ -328,13 +328,16 @@ export const AdvancedStudio2App: React.FC = () => {
             disabled={
               renderState === "rendering" ||
               polyHavenState === "downloading" ||
-              (selectedTemplate.batch === 12 && !project.polyHavenTexture)
+              ((selectedTemplate.batch === 12 ||
+                selectedTemplate.batch === 13) &&
+                !project.polyHavenTexture)
             }
           >
             <Sparkles size={18} />
             {renderState === "rendering"
               ? "Rendering…"
-              : selectedTemplate.batch === 12 &&
+              : (selectedTemplate.batch === 12 ||
+                    selectedTemplate.batch === 13) &&
                   (!project.polyHavenTexture ||
                     polyHavenState === "downloading")
                 ? "Preparing material…"
@@ -345,7 +348,7 @@ export const AdvancedStudio2App: React.FC = () => {
 
       <main className="as2-workspace">
         <aside className="as2-library">
-          {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const).map((batch) => (
+          {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as const).map((batch) => (
             <React.Fragment key={batch}>
               <button
                 className="as2-template-folder"
@@ -357,6 +360,9 @@ export const AdvancedStudio2App: React.FC = () => {
                   );
                   if (batch === 12 && selectedTemplate.batch !== 12) {
                     update("templateId", "material-noir");
+                  }
+                  if (batch === 13 && selectedTemplate.batch !== 13) {
+                    update("templateId", "anamorphic-reflection");
                   }
                 }}
               >
@@ -573,7 +579,7 @@ export const AdvancedStudio2App: React.FC = () => {
                 <div>
                   <strong>Material environment</strong>
                   <small>
-                    Browse here · applied by Product Templates 12
+                    Browse here · applied by Product Templates 12–13
                   </small>
                 </div>
                 {project.polyHavenTexture ? (

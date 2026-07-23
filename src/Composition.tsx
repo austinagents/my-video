@@ -22,6 +22,7 @@ import {
   productVideoBatch10Duration,
   productVideoBatch11Duration,
   productVideoBatch12Duration,
+  productVideoBatch13Duration,
   productVideoDuration,
   productVideoFormats,
   productVideoFps,
@@ -84,6 +85,10 @@ const defaultBatch11ProductVideoProps: ProductVideoProps = {
 const defaultBatch12ProductVideoProps: ProductVideoProps = {
   ...defaultProductVideoProps,
   templateId: "material-noir",
+};
+const defaultBatch13ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "anamorphic-reflection",
 };
 
 export const MyComposition: React.FC = () => {
@@ -496,6 +501,36 @@ export const MyComposition: React.FC = () => {
         width={productVideoFormats.vertical.width}
         height={productVideoFormats.vertical.height}
         defaultProps={{...defaultBatch12ProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch13Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch13Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch13ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch13Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch13Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch13ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch13Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch13Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch13ProductVideoProps, formatId: "vertical"}}
       />
     </>
   );

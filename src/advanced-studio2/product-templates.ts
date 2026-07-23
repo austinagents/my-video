@@ -118,7 +118,17 @@ export type ProductTemplateId =
   | "concrete-runway"
   | "velvet-chamber"
   | "timber-ritual"
-  | "studio-archive";
+  | "studio-archive"
+  | "anamorphic-reflection"
+  | "vacuum-reveal"
+  | "pressure-memory"
+  | "precision-etch"
+  | "polish-pass"
+  | "woven-tension"
+  | "capillary-campaign"
+  | "resonance-surface"
+  | "patina-clock"
+  | "continuous-surface";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -152,7 +162,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
   accent: string;
   background: string;
   surface: string;
@@ -2511,6 +2521,206 @@ export const productTemplates: ProductTemplate[] = [
     cta: "View the archive",
     polyHavenDefaultAssetId: "terrazzo_tiles",
   },
+  {
+    id: "anamorphic-reflection",
+    name: "Anamorphic Reflection",
+    category: "Optical Luxury",
+    description: "A distorted material reflection resolves into the product from one precise viewing angle.",
+    batch: 13,
+    accent: "#d8bd82",
+    background: "#090a0b",
+    surface: "#2b2d30",
+    foreground: "#fff9ed",
+    muted: "#aaa69c",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "THE CORRECT ANGLE",
+    headline: "Clarity is a point of view.",
+    subheadline: "A stretched reflection finds its true form in one continuous optical resolve.",
+    cta: "Find the angle",
+    polyHavenDefaultAssetId: "marble_01",
+  },
+  {
+    id: "vacuum-reveal",
+    name: "Vacuum Reveal",
+    category: "Tactile Unveiling",
+    description: "A material membrane conforms to the object before peeling away as one continuous action.",
+    batch: 13,
+    accent: "#f0c6a2",
+    background: "#120b0e",
+    surface: "#5b2739",
+    foreground: "#fff7f2",
+    muted: "#c7a9b2",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "FORM UNDER PRESSURE",
+    headline: "The surface learns the object.",
+    subheadline: "Material tension maps every contour before releasing the finished product.",
+    cta: "Release the form",
+    polyHavenDefaultAssetId: "velour_velvet",
+  },
+  {
+    id: "pressure-memory",
+    name: "Pressure Memory",
+    category: "Material Impression",
+    description: "A compressed surface retains the product impression as the hero rises from it.",
+    batch: 13,
+    accent: "#e4b36a",
+    background: "#241b14",
+    surface: "#9a7856",
+    foreground: "#fff8eb",
+    muted: "#d0bba5",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "MATERIAL REMEMBERS",
+    headline: "Presence leaves an impression.",
+    subheadline: "The surface compresses, holds the form, and becomes lasting evidence of the product.",
+    cta: "See the impression",
+    polyHavenDefaultAssetId: "sandstone_cracks",
+  },
+  {
+    id: "precision-etch",
+    name: "Precision Etch",
+    category: "Machined Detail",
+    description: "A permanent engraved path defines the product and its message directly in the material.",
+    batch: 13,
+    accent: "#ff7a57",
+    background: "#0d1115",
+    surface: "#343a42",
+    foreground: "#f8fafc",
+    muted: "#9ba6b1",
+    layout: "technical",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "CUT WITH INTENT",
+    headline: "Precision becomes permanent.",
+    subheadline: "One continuous toolpath engraves the campaign into the surface around the product.",
+    cta: "Inspect the mark",
+    polyHavenDefaultAssetId: "blue_metal_plate",
+  },
+  {
+    id: "polish-pass",
+    name: "Polish Pass",
+    category: "Finish Transformation",
+    description: "A single polishing pass converts a raw surface into a reflective product stage.",
+    batch: 13,
+    accent: "#f4d58d",
+    background: "#161513",
+    surface: "#67625b",
+    foreground: "#fffaf0",
+    muted: "#bdb5aa",
+    layout: "split",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "RAW TO REFINED",
+    headline: "Finish changes everything.",
+    subheadline: "One uninterrupted pass reveals the reflection, the object, and the final standard.",
+    cta: "See the finish",
+    polyHavenDefaultAssetId: "concrete_floor_worn_001",
+  },
+  {
+    id: "woven-tension",
+    name: "Woven Tension",
+    category: "Textile Structure",
+    description: "Loose material bands pull into alignment and open a precise product silhouette.",
+    batch: 13,
+    accent: "#efaa7e",
+    background: "#1a0911",
+    surface: "#5a1831",
+    foreground: "#fff5f0",
+    muted: "#c89cab",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "TENSION / ALIGNMENT",
+    headline: "Every thread finds its line.",
+    subheadline: "The textile reorganizes from within until structure and product share one silhouette.",
+    cta: "Follow the weave",
+    polyHavenDefaultAssetId: "velour_velvet",
+  },
+  {
+    id: "capillary-campaign",
+    name: "Capillary Campaign",
+    category: "Editorial Ink",
+    description: "A branching ink movement travels through paper and preserves a clean product field.",
+    batch: 13,
+    accent: "#d63d32",
+    background: "#e7dfd2",
+    surface: "#fffaf1",
+    foreground: "#181512",
+    muted: "#6c655d",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "INK FINDS THE STORY",
+    headline: "The campaign spreads by contact.",
+    subheadline: "A continuous capillary line carries the narrative toward one untouched product field.",
+    cta: "Follow the current",
+    polyHavenDefaultAssetId: "painted_plaster_wall",
+  },
+  {
+    id: "resonance-surface",
+    name: "Resonance Surface",
+    category: "Acoustic Form",
+    description: "Surface particles organize into a stable nodal pattern around the product.",
+    batch: 13,
+    accent: "#88ddff",
+    background: "#061017",
+    surface: "#1d3542",
+    foreground: "#f2fbff",
+    muted: "#91aebc",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "FREQUENCY / FORM",
+    headline: "The surface finds its frequency.",
+    subheadline: "Resonance organizes the material into a final field shaped around the object.",
+    cta: "Enter resonance",
+    polyHavenDefaultAssetId: "sandstone_cracks",
+  },
+  {
+    id: "patina-clock",
+    name: "Patina Clock",
+    category: "Time and Finish",
+    description: "An irreversible patina advances across metal while preserving the product silhouette.",
+    batch: 13,
+    accent: "#75d6b2",
+    background: "#101412",
+    surface: "#34443d",
+    foreground: "#f1fff9",
+    muted: "#9bb3a9",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "TIME BECOMES MATERIAL",
+    headline: "Age creates the finish.",
+    subheadline: "The surface records elapsed time and resolves around one protected object.",
+    cta: "Witness the change",
+    polyHavenDefaultAssetId: "blue_metal_plate",
+  },
+  {
+    id: "continuous-surface",
+    name: "Continuous Surface",
+    category: "Seamless Stage",
+    description: "One uninterrupted material plane bends from macro texture into the final product stage.",
+    batch: 13,
+    accent: "#f1c56f",
+    background: "#17100b",
+    surface: "#9e714c",
+    foreground: "#fff8ed",
+    muted: "#d1b89f",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "ONE SURFACE / ONE TAKE",
+    headline: "The material becomes the stage.",
+    subheadline: "A single continuous plane changes perspective without cuts, panels, or replacement scenery.",
+    cta: "Follow the surface",
+    polyHavenDefaultAssetId: "oak_veneer_01",
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -2531,6 +2741,7 @@ export const productVideoBatch9Duration = 300;
 export const productVideoBatch10Duration = 300;
 export const productVideoBatch11Duration = 300;
 export const productVideoBatch12Duration = 300;
+export const productVideoBatch13Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -2545,5 +2756,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 10) return productVideoBatch10Duration;
   if (batch === 11) return productVideoBatch11Duration;
   if (batch === 12) return productVideoBatch12Duration;
+  if (batch === 13) return productVideoBatch13Duration;
   return productVideoDuration;
 };
