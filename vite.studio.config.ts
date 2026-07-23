@@ -18,6 +18,47 @@ const readBody = async (request: import("node:http").IncomingMessage) => {
   });
 };
 
+const readBinaryBody = async (
+  request: import("node:http").IncomingMessage,
+  maxBytes: number,
+) => {
+  return await new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let totalBytes = 0;
+
+    request.on("data", (chunk: Buffer) => {
+      totalBytes += chunk.length;
+      if (totalBytes > maxBytes) {
+        reject(new Error("Product images must be 20 MB or smaller."));
+        request.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+
+    request.on("end", () => resolve(Buffer.concat(chunks)));
+    request.on("error", reject);
+  });
+};
+
+const runProcess = (
+  command: string,
+  args: string[],
+): Promise<{code: number | null; stderr: string}> =>
+  new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: process.cwd(),
+      shell: false,
+    });
+    let stderr = "";
+
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on("close", (code) => resolve({code, stderr}));
+    child.on("error", reject);
+  });
+
 const studioApi = (): Plugin => ({
   name: "studio-api",
 
@@ -102,6 +143,73 @@ const studioApi = (): Plugin => ({
         );
         response.setHeader("Content-Length", fs.statSync(filePath).size);
         fs.createReadStream(filePath).pipe(response);
+        return;
+      }
+
+      if (
+        request.url === "/api/advanced-studio2/remove-background" &&
+        request.method === "POST"
+      ) {
+        let temporaryDirectory = "";
+        try {
+          const contentType = request.headers["content-type"] ?? "";
+          if (!["image/png", "image/jpeg", "image/webp"].includes(contentType)) {
+            throw new Error("Choose a PNG, JPEG, or WebP product image.");
+          }
+
+          const image = await readBinaryBody(request, 20 * 1024 * 1024);
+          if (image.length === 0) {
+            throw new Error("The uploaded product image is empty.");
+          }
+
+          temporaryDirectory = fs.mkdtempSync(
+            path.join(process.cwd(), ".advanced-studio2-background-"),
+          );
+          const extension =
+            contentType === "image/png"
+              ? "png"
+              : contentType === "image/webp"
+                ? "webp"
+                : "jpg";
+          const inputPath = path.join(temporaryDirectory, `input.${extension}`);
+          const outputPath = path.join(temporaryDirectory, "product.png");
+          fs.writeFileSync(inputPath, image);
+
+          const result = await runProcess("xcrun", [
+            "swift",
+            path.resolve("scripts/remove-product-background.swift"),
+            inputPath,
+            outputPath,
+          ]);
+          if (result.code !== 0 || !fs.existsSync(outputPath)) {
+            throw new Error(
+              result.stderr.trim() ||
+                "Apple Vision could not remove this image background.",
+            );
+          }
+
+          const output = fs.readFileSync(outputPath);
+          response.statusCode = 200;
+          response.setHeader("Content-Type", "image/png");
+          response.setHeader("Content-Length", output.length);
+          response.end(output);
+        } catch (error) {
+          response.statusCode = 422;
+          response.setHeader("Content-Type", "application/json");
+          response.end(
+            JSON.stringify({
+              ok: false,
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Background removal failed.",
+            }),
+          );
+        } finally {
+          if (temporaryDirectory) {
+            fs.rmSync(temporaryDirectory, {recursive: true, force: true});
+          }
+        }
         return;
       }
 

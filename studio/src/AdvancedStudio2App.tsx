@@ -46,6 +46,8 @@ const defaultState: ProductVideoProps = {
 export const AdvancedStudio2App: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const [project, setProject] = React.useState<ProductVideoProps>(defaultState);
+  const [isProcessingImage, setIsProcessingImage] = React.useState(false);
+  const [imageMessage, setImageMessage] = React.useState("");
   const [renderState, setRenderState] = React.useState<
     "idle" | "rendering" | "complete" | "error"
   >("idle");
@@ -64,20 +66,43 @@ export const AdvancedStudio2App: React.FC = () => {
     setRenderMessage("");
   };
 
-  const handleUpload = (file?: File) => {
+  const handleUpload = async (file?: File) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setRenderState("error");
-      setRenderMessage("Choose a PNG, JPEG, or WebP product image.");
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      setImageMessage("Choose a PNG, JPEG, or WebP product image.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => update("imageSrc", String(reader.result ?? ""));
-    reader.onerror = () => {
-      setRenderState("error");
-      setRenderMessage("The image could not be read.");
-    };
-    reader.readAsDataURL(file);
+    setIsProcessingImage(true);
+    setImageMessage("Apple Vision is isolating your product…");
+    try {
+      const response = await fetch(
+        "/api/advanced-studio2/remove-background",
+        {
+          method: "POST",
+          headers: {"Content-Type": file.type},
+          body: file,
+        },
+      );
+      if (!response.ok) {
+        const result = (await response.json()) as {error?: string};
+        throw new Error(result.error || "Background removal failed.");
+      }
+      const productImage = await response.blob();
+      const reader = new FileReader();
+      const imageSrc = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(String(reader.result ?? ""));
+        reader.onerror = () => reject(new Error("The product image could not be read."));
+        reader.readAsDataURL(productImage);
+      });
+      update("imageSrc", imageSrc);
+      setImageMessage("Background removed with Apple Vision.");
+    } catch (error) {
+      setImageMessage(
+        error instanceof Error ? error.message : "Background removal failed.",
+      );
+    } finally {
+      setIsProcessingImage(false);
+    }
   };
 
   const renderVideo = async () => {
@@ -264,18 +289,27 @@ export const AdvancedStudio2App: React.FC = () => {
               <div>
                 <ImagePlus size={30} />
                 <strong>Upload product image</strong>
-                <span>PNG with transparent background recommended</span>
+                <span>Apple Vision removes the background on this Mac</span>
               </div>
             )}
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
+              disabled={isProcessingImage}
               onChange={(event) => handleUpload(event.target.files?.[0])}
             />
             <b>
-              <Upload size={15} /> {project.imageSrc ? "Replace image" : "Choose image"}
+              <Upload size={15} />{" "}
+              {isProcessingImage
+                ? "Removing background…"
+                : project.imageSrc
+                  ? "Replace image"
+                  : "Choose image"}
             </b>
           </label>
+          {imageMessage ? (
+            <div className="as2-image-message">{imageMessage}</div>
+          ) : null}
 
           <div className="as2-field-group">
             <label>
