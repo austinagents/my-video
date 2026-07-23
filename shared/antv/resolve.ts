@@ -7,6 +7,7 @@ import type {
 
 const available = getTemplates();
 const availableSet = new Set(available);
+export const antVBlockInternalScale = 2.5;
 
 const choose = (...names: string[]): string => {
   for (const name of names) {
@@ -328,16 +329,16 @@ export const resolveAntVBlock = (
    */
   const internalWidth = Math.max(
     720,
-    Math.round(block.width * 2.5),
+    Math.round(block.width * antVBlockInternalScale),
   );
 
   const internalHeight = Math.max(
     360,
-    Math.round(block.height * 2.5),
+    Math.round(block.height * antVBlockInternalScale),
   );
 
   return {
-    template: choose(...preferred),
+    template: block.template?.trim() || choose(...preferred),
     padding,
     internalWidth,
     internalHeight,

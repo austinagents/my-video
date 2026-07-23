@@ -1196,6 +1196,22 @@ const BoardInspector: React.FC<{
   onPreview: () => void;
   onChange: (content: BoardSceneContent) => void;
 }> = ({content, onPreview, onChange}) => {
+  if (content.infographic) {
+    return (
+      <InspectorField label="AntV Infographic">
+        <div className="asset-row compact">
+          <BarChart3 size={18} />
+          <span>
+            <strong>{content.infographic.title}</strong>
+            <small>
+              {content.infographic.template} · provider-native structured data
+            </small>
+          </span>
+        </div>
+      </InspectorField>
+    );
+  }
+
   const project = content.project ?? boardProjectCopy();
   const block = content.activeBlockId
     ? project.blocks.find((item) => item.id === content.activeBlockId)

@@ -1,4 +1,4 @@
-import type {StudioProject} from "../../shared/project";
+import type {StudioBlock} from "../../shared/project";
 import {content, edge, node, row} from "../antv-studio/sample-content";
 import {defaultControls} from "../antv-studio/theme";
 import type {
@@ -6,62 +6,133 @@ import type {
   AdvancedStudioScene,
 } from "./scene-contract";
 
-const executiveSignalBoardProject: StudioProject = {
-  title: "EXECUTIVE SIGNAL",
-  subtitle: "Turn scattered performance data into a confident growth decision",
-  blocks: [
-    {
-      id: "signal",
-      type: "metric",
-      title: "READ THE SIGNAL",
-      x: 42,
-      y: 112,
-      width: 252,
-      height: 190,
-      designPreset: "hero",
-    },
-    {
-      id: "evidence",
-      type: "bars",
-      title: "WEIGH THE EVIDENCE",
-      x: 318,
-      y: 112,
-      width: 300,
-      height: 190,
-      designPreset: "data",
-    },
-    {
-      id: "decision",
-      type: "comparison",
-      title: "CHOOSE THE MOVE",
-      x: 642,
-      y: 112,
-      width: 316,
-      height: 190,
-      designPreset: "balanced",
-    },
-    {
-      id: "execution",
-      type: "process",
-      title: "ACT IN SEQUENCE",
-      x: 42,
-      y: 330,
-      width: 570,
-      height: 232,
-      designPreset: "process",
-    },
-    {
-      id: "outcome",
-      type: "metrics",
-      title: "MEASURE THE LIFT",
-      x: 636,
-      y: 330,
-      width: 322,
-      height: 232,
-      designPreset: "summary",
-    },
-  ],
-  scenes: [],
+const executiveQuestionInfographic: StudioBlock = {
+  id: "template-2-executive-question",
+  type: "metric",
+  title: "The Executive Question",
+  x: 0,
+  y: 0,
+  width: 1080,
+  height: 1350,
+  designPreset: "hero",
+  template: "list-grid-badge-card",
+  theme: "dark",
+  data: {
+    title: "The Executive Question",
+    desc: "Which move converts the strongest evidence into durable growth?",
+    lists: [
+      {
+        label: "Decision confidence",
+        value: 78,
+        desc: "The evidence must clear the operating threshold",
+      },
+    ],
+  },
+};
+
+const evidenceInfographic: StudioBlock = {
+  id: "template-2-evidence",
+  type: "bars",
+  title: "Focus the Evidence",
+  x: 0,
+  y: 0,
+  width: 1080,
+  height: 1350,
+  designPreset: "data",
+  template: "chart-bar-plain-text",
+  theme: "dark",
+  data: {
+    title: "Focus the Evidence",
+    desc: "Revenue signals carry more decision weight than attention alone",
+    values: [
+      {label: "Reach", value: 38},
+      {label: "Engagement", value: 56},
+      {label: "Pipeline", value: 83},
+      {label: "Retention", value: 91},
+    ],
+  },
+};
+
+const decisionInfographic: StudioBlock = {
+  id: "template-2-decision",
+  type: "comparison",
+  title: "Frame the Decision",
+  x: 0,
+  y: 0,
+  width: 1080,
+  height: 1350,
+  designPreset: "balanced",
+  template: "compare-binary-horizontal-compact-card-vs",
+  theme: "dark",
+  data: {
+    title: "Frame the Decision",
+    desc: "Match the growth move to the evidence and operating readiness",
+    compares: [
+      {
+        label: "Invest now",
+        value: 78,
+        children: [
+          {label: "Demand signal is clear"},
+          {label: "Economics support the move"},
+        ],
+      },
+      {
+        label: "Sequence the work",
+        value: 63,
+        children: [
+          {label: "Capacity remains constrained"},
+          {label: "Handoffs need reinforcement"},
+        ],
+      },
+    ],
+  },
+};
+
+const executionInfographic: StudioBlock = {
+  id: "template-2-execution",
+  type: "process",
+  title: "Sequence the Work",
+  x: 0,
+  y: 0,
+  width: 1080,
+  height: 1350,
+  designPreset: "process",
+  template: "sequence-steps-simple",
+  theme: "dark",
+  data: {
+    title: "Sequence the Work",
+    desc: "A focused operating sequence turns the decision into momentum",
+    sequences: [
+      {label: "Align", desc: "Commit to the signal"},
+      {label: "Enable", desc: "Remove the constraint"},
+      {label: "Launch", desc: "Execute the move"},
+      {label: "Learn", desc: "Measure and adapt"},
+    ],
+  },
+};
+
+const executiveSignalInfographic: StudioBlock = {
+  id: "template-2-executive-signal",
+  type: "metrics",
+  title: "Executive Signal",
+  x: 0,
+  y: 0,
+  width: 1080,
+  height: 1350,
+  designPreset: "summary",
+  template: "list-grid-compact-card",
+  theme: "dark",
+  data: {
+    title: "Executive Signal",
+    desc: "Five connected signals turn evidence into confident action",
+    lists: [
+      {label: "Read the Signal", desc: "Find the evidence that matters"},
+      {label: "Weigh the Evidence", desc: "Separate attention from impact"},
+      {label: "Choose the Move", desc: "Match ambition to readiness"},
+      {label: "Act in Sequence", desc: "Turn the decision into momentum"},
+      {label: "Measure the Lift", desc: "Confirm the result and adapt"},
+    ],
+  },
 };
 
 const crossfade = (durationFrames = 12) => ({
@@ -76,9 +147,10 @@ const template2Scenes: AdvancedStudioScene[] = [
     title: "The Executive Question",
     durationFrames: 90,
     content: {
-      project: executiveSignalBoardProject,
-      activeBlockId: "signal",
-      animation: "spotlight",
+      activeBlockId: null,
+      animation: "overview",
+      stableTextMotion: true,
+      infographic: executiveQuestionInfographic,
     },
     transitionOut: crossfade(),
     cameraPath: {preset: "push-in"},
@@ -147,9 +219,10 @@ const template2Scenes: AdvancedStudioScene[] = [
     title: "Focus the Evidence",
     durationFrames: 75,
     content: {
-      project: executiveSignalBoardProject,
-      activeBlockId: "evidence",
-      animation: "focus",
+      activeBlockId: null,
+      animation: "overview",
+      stableTextMotion: true,
+      infographic: evidenceInfographic,
     },
     transitionIn: crossfade(),
     transitionOut: crossfade(),
@@ -217,9 +290,10 @@ const template2Scenes: AdvancedStudioScene[] = [
     title: "Frame the Decision",
     durationFrames: 75,
     content: {
-      project: executiveSignalBoardProject,
-      activeBlockId: "decision",
-      animation: "spotlight",
+      activeBlockId: null,
+      animation: "overview",
+      stableTextMotion: true,
+      infographic: decisionInfographic,
     },
     transitionIn: crossfade(),
     transitionOut: crossfade(),
@@ -288,9 +362,10 @@ const template2Scenes: AdvancedStudioScene[] = [
     title: "Sequence the Work",
     durationFrames: 75,
     content: {
-      project: executiveSignalBoardProject,
-      activeBlockId: "execution",
-      animation: "reveal",
+      activeBlockId: null,
+      animation: "overview",
+      stableTextMotion: true,
+      infographic: executionInfographic,
     },
     transitionIn: crossfade(),
     transitionOut: crossfade(),
@@ -355,9 +430,10 @@ const template2Scenes: AdvancedStudioScene[] = [
     title: "Executive Signal",
     durationFrames: 105,
     content: {
-      project: executiveSignalBoardProject,
       activeBlockId: null,
       animation: "overview",
+      stableTextMotion: true,
+      infographic: executiveSignalInfographic,
     },
     transitionIn: crossfade(),
     cameraPath: {preset: "overview-sweep"},

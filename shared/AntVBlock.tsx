@@ -5,6 +5,7 @@ import React, {
   useState,
 } from "react";
 import {Infographic} from "@antv/infographic";
+import type {Data} from "@antv/infographic";
 import {
   continueRender,
   delayRender,
@@ -34,7 +35,10 @@ export const AntVBlock: React.FC<{
       block.width,
       block.height,
       block.title,
+      block.template,
       block.syntax,
+      block.data,
+      block.theme,
     ],
   );
 
@@ -137,7 +141,15 @@ export const AntVBlock: React.FC<{
     infographic.on("error", onError);
 
     try {
-      infographic.render(antvInput.syntax);
+      infographic.render(
+        block.data
+          ? {
+              template: antvInput.template,
+              data: block.data as Data,
+              theme: block.theme,
+            }
+          : antvInput.syntax,
+      );
     } catch (reason: unknown) {
       fail(reason);
     }
@@ -165,6 +177,8 @@ export const AntVBlock: React.FC<{
     block.width,
     block.height,
     block.syntax,
+    block.data,
+    block.theme,
     antvInput.template,
     antvInput.width,
     antvInput.height,

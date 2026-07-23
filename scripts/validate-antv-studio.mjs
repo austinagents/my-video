@@ -3,7 +3,10 @@ import {mkdtemp, readFile, writeFile} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {pathToFileURL} from "node:url";
+import {getTemplates} from "@antv/infographic";
 import {build} from "esbuild";
+
+const infographicTemplates = getTemplates();
 
 const template1Source = await readFile(
   path.resolve("src/advanced-studio/AdvancedStudioIntegrationProof.tsx"),
@@ -52,6 +55,7 @@ await writeFile(
 
     const errors = validateRegistry();
     const counts = getDesignCounts();
+	    const infographicTemplates = new Set(${JSON.stringify(infographicTemplates)});
 
 	    for (const design of antVStudioDesigns) {
       const context = {
@@ -308,6 +312,19 @@ await writeFile(
 		        if (scene.type === "board") {
 		          const boardProject = scene.content.project;
 		          const activeBlockId = scene.content.activeBlockId;
+		          const infographic = scene.content.infographic;
+		          if (infographic) {
+		            if (!infographic.template || !infographicTemplates.has(infographic.template)) {
+		              errors.push(\`\${label} scene \${scene.id} requires an unregistered AntV Infographic template.\`);
+		            }
+		            if (!infographic.data || typeof infographic.data !== "object") {
+		              errors.push(\`\${label} scene \${scene.id} is missing provider-native AntV Infographic data.\`);
+		            }
+		            if (infographic.syntax?.trim()) {
+		              errors.push(\`\${label} scene \${scene.id} uses a StudioBlock.syntax override.\`);
+		            }
+		            return;
+		          }
 		          if (
 		            activeBlockId !== null &&
 		            !boardProject?.blocks.some((block) => block.id === activeBlockId)
