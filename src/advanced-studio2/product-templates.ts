@@ -98,7 +98,17 @@ export type ProductTemplateId =
   | "call-response"
   | "the-interruption"
   | "palindrome"
-  | "the-callback";
+  | "the-callback"
+  | "frame-magnet"
+  | "negative-space"
+  | "scale-relay"
+  | "blindside"
+  | "counterweight"
+  | "echo-exit"
+  | "wordmark-passage"
+  | "still-point"
+  | "contour-cut"
+  | "last-one-standing";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -132,7 +142,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
   accent: string;
   background: string;
   surface: string;
@@ -2100,6 +2110,196 @@ export const productTemplates: ProductTemplate[] = [
     subheadline: "The opening clue becomes the final product signature.",
     cta: "See the connection",
   },
+  {
+    id: "frame-magnet",
+    name: "Frame Magnet",
+    category: "Continuous Composition",
+    description: "The product travels through four connected compositions while every element responds to its position.",
+    batch: 11,
+    accent: "#ff5f45",
+    background: "#eee9df",
+    surface: "#172737",
+    foreground: "#14171a",
+    muted: "#6d6961",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "FOLLOW THE OBJECT",
+    headline: "Attention moves with it.",
+    subheadline: "One uninterrupted path turns every position into a deliberate product frame.",
+    cta: "Follow the movement",
+  },
+  {
+    id: "negative-space",
+    name: "Negative Space",
+    category: "Minimal Suspense",
+    description: "An intentionally empty composition builds anticipation until the product occupies the only correct position.",
+    batch: 11,
+    accent: "#d6ff4b",
+    background: "#10120d",
+    surface: "#25291d",
+    foreground: "#f7faed",
+    muted: "#a3aa91",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.92,
+    eyebrow: "SPACE / RESERVED",
+    headline: "This frame was waiting.",
+    subheadline: "Absence creates the tension. Arrival makes the product inevitable.",
+    cta: "Take your place",
+  },
+  {
+    id: "scale-relay",
+    name: "Scale Relay",
+    category: "Editorial Scale",
+    description: "Macro, hero, and miniature product views pass one continuous movement between scales.",
+    batch: 11,
+    accent: "#ffcf4a",
+    background: "#f0eadf",
+    surface: "#20201f",
+    foreground: "#151515",
+    muted: "#6e6860",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.95,
+    eyebrow: "DETAIL / FORM / PRESENCE",
+    headline: "Every scale tells the story.",
+    subheadline: "The closest detail and the complete object belong to the same continuous idea.",
+    cta: "See the whole",
+  },
+  {
+    id: "blindside",
+    name: "Blindside",
+    category: "Foreground Reveal",
+    description: "Oversized product crops pass close to camera and reveal progressively cleaner hero compositions.",
+    batch: 11,
+    accent: "#6de7ff",
+    background: "#07151c",
+    surface: "#153543",
+    foreground: "#f2fbff",
+    muted: "#91aab4",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "CLOSER THAN EXPECTED",
+    headline: "The reveal was in front of you.",
+    subheadline: "Foreground movement turns the product itself into the transition.",
+    cta: "See what clears",
+  },
+  {
+    id: "counterweight",
+    name: "Counterweight",
+    category: "Balanced Motion",
+    description: "Product and message move in opposition, then settle into a precisely balanced campaign frame.",
+    batch: 11,
+    accent: "#ff6b36",
+    background: "#e8e2d7",
+    surface: "#1b3340",
+    foreground: "#17191a",
+    muted: "#69675f",
+    layout: "split",
+    imageFit: "contain",
+    imageScale: 0.92,
+    eyebrow: "WEIGHT / BALANCE",
+    headline: "Every move finds its balance.",
+    subheadline: "Product and message carry equal visual weight without competing for attention.",
+    cta: "Find the balance",
+  },
+  {
+    id: "echo-exit",
+    name: "Echo Exit",
+    category: "Motion Residue",
+    description: "Product echoes preserve the path of movement before peeling away to reveal one definitive hero.",
+    batch: 11,
+    accent: "#ff4b86",
+    background: "#160c15",
+    surface: "#382035",
+    foreground: "#fff4fb",
+    muted: "#b69aaa",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.9,
+    eyebrow: "MOTION LEAVES A TRACE",
+    headline: "Only one image remains.",
+    subheadline: "Every echo records the journey. The final product owns the destination.",
+    cta: "Stay with the original",
+  },
+  {
+    id: "wordmark-passage",
+    name: "Wordmark Passage",
+    category: "Type & Depth",
+    description: "Campaign typography travels behind, through, and in front of the product to create cinematic depth.",
+    batch: 11,
+    accent: "#fbff52",
+    background: "#121212",
+    surface: "#2a2a2a",
+    foreground: "#ffffff",
+    muted: "#aaaaa5",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "OBJECT / MESSAGE",
+    headline: "The message moves through it.",
+    subheadline: "Type and product share one depth-driven campaign composition.",
+    cta: "Read the object",
+  },
+  {
+    id: "still-point",
+    name: "Still Point",
+    category: "Controlled Motion",
+    description: "The product remains perfectly still while crops, copy, and framing move around its fixed position.",
+    batch: 11,
+    accent: "#86f0d0",
+    background: "#0b1615",
+    surface: "#203431",
+    foreground: "#f1fffb",
+    muted: "#93aaa4",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "THE FRAME MOVES",
+    headline: "The center never has to.",
+    subheadline: "Complete composure becomes the strongest movement in the film.",
+    cta: "Hold your ground",
+  },
+  {
+    id: "contour-cut",
+    name: "Contour Cut",
+    category: "Match Editing",
+    description: "Successive product crops align on a shared contour so every hard cut preserves visual momentum.",
+    batch: 11,
+    accent: "#ff744d",
+    background: "#eee7dc",
+    surface: "#242b46",
+    foreground: "#15171c",
+    muted: "#6b675f",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "CUT ON FORM",
+    headline: "Every edge leads forward.",
+    subheadline: "Product geometry becomes the edit without adding decorative geometry.",
+    cta: "Follow the contour",
+  },
+  {
+    id: "last-one-standing",
+    name: "Last One Standing",
+    category: "Reduction Edit",
+    description: "A crowded product composition simplifies through decisive cuts until one hero remains.",
+    batch: 11,
+    accent: "#ffd447",
+    background: "#17140c",
+    surface: "#39321c",
+    foreground: "#fff9e8",
+    muted: "#b0a58a",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.92,
+    eyebrow: "REMOVE THE COMPETITION",
+    headline: "One product owns the frame.",
+    subheadline: "Each cut removes distraction until nothing remains but the strongest choice.",
+    cta: "Choose the one",
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -2118,6 +2318,7 @@ export const productVideoBatch7Duration = 300;
 export const productVideoBatch8Duration = 300;
 export const productVideoBatch9Duration = 300;
 export const productVideoBatch10Duration = 300;
+export const productVideoBatch11Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -2130,5 +2331,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 8) return productVideoBatch8Duration;
   if (batch === 9) return productVideoBatch9Duration;
   if (batch === 10) return productVideoBatch10Duration;
+  if (batch === 11) return productVideoBatch11Duration;
   return productVideoDuration;
 };
