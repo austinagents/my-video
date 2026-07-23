@@ -822,12 +822,14 @@ const InspectorBody: React.FC<{
               min={30}
               step={15}
               value={scene.durationFrames}
-              onChange={(event) =>
+              onChange={(event) => {
+                const durationFrames = Number(event.target.value);
+                if (!Number.isSafeInteger(durationFrames)) return;
                 onUpdate((current) => ({
                   ...current,
-                  durationFrames: Math.max(30, Number(event.target.value) || 30),
-                }))
-              }
+                  durationFrames: Math.max(30, durationFrames),
+                }));
+              }}
             />
             frames
           </label>

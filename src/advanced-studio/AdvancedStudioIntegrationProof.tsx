@@ -29,8 +29,17 @@ import type {
   AdvancedStudioInfographicContent,
   AdvancedStudioProject,
   AdvancedStudioScene,
-  AdvancedStudioTimedScene,
   SceneBounds,
+} from "./scene-contract";
+import {
+  getAdvancedStudioProjectDuration,
+  getAdvancedStudioTimedScenes,
+} from "./scene-contract";
+import type {AdvancedStudioTimedScene} from "./scene-contract";
+
+export {
+  getAdvancedStudioProjectDuration,
+  getAdvancedStudioTimedScenes,
 } from "./scene-contract";
 
 const fps = 30;
@@ -464,23 +473,6 @@ export const advancedStudioDefaultProject: AdvancedStudioProject = {
   title: "Advanced Studio Proof",
   scenes,
 };
-
-export const getAdvancedStudioProjectDuration = (
-  project: AdvancedStudioProject,
-) => project.scenes.reduce((sum, scene) => sum + scene.durationFrames, 0);
-
-export const getAdvancedStudioTimedScenes = (
-  project: AdvancedStudioProject,
-) =>
-  project.scenes.reduce<AdvancedStudioTimedScene[]>((items, scene) => {
-    const startFrame = items.at(-1)?.endFrame ?? 0;
-    items.push({
-      ...scene,
-      startFrame,
-      endFrame: startFrame + scene.durationFrames,
-    });
-    return items;
-  }, []);
 
 export const advancedStudioIntegrationProofDuration =
   getAdvancedStudioProjectDuration(advancedStudioDefaultProject);

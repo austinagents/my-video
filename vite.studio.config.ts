@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
 import {spawn} from "node:child_process";
+import {getAdvancedStudioProjectDuration} from "./src/advanced-studio/scene-contract";
 
 const readBody = async (request: import("node:http").IncomingMessage) => {
   return await new Promise<string>((resolve, reject) => {
@@ -142,13 +143,10 @@ const studioApi = (): Plugin => ({
               : formatId === "vertical"
                 ? "AdvancedStudioIntegrationProofVertical"
                 : "AdvancedStudioIntegrationProofPortrait";
-          const durationFrames = Array.isArray(props.project?.scenes)
-            ? props.project.scenes.reduce(
-                (sum: number, scene: {durationFrames?: number}) =>
-                  sum + (Number(scene.durationFrames) || 0),
-                0,
-              )
-            : 360;
+          if (!Array.isArray(props.project?.scenes)) {
+            throw new Error("Advanced Studio project scenes must be an array.");
+          }
+          const durationFrames = getAdvancedStudioProjectDuration(props.project);
 
           fs.mkdirSync(path.resolve("public"), {recursive: true});
           fs.mkdirSync(path.resolve("output"), {recursive: true});
@@ -167,7 +165,7 @@ const studioApi = (): Plugin => ({
               compositionId,
               `output/advanced-studio-${formatId}.mp4`,
               "--props=public/advanced-project.json",
-              `--frames=0-${Math.max(0, durationFrames - 1)}`,
+              `--duration=${durationFrames}`,
               "--overwrite",
             ],
             {

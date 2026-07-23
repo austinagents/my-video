@@ -15,6 +15,10 @@ await writeFile(
 	    import {validateStudioDesignCompatibility} from ${JSON.stringify(path.resolve("src/antv-studio/compatibility.ts"))};
 	    import {cloneContent} from ${JSON.stringify(path.resolve("src/antv-studio/sample-content.ts"))};
 	    import {defaultControls} from ${JSON.stringify(path.resolve("src/antv-studio/theme.ts"))};
+	    import {
+	      getAdvancedStudioProjectDuration,
+	      getAdvancedStudioTimedScenes,
+	    } from ${JSON.stringify(path.resolve("src/advanced-studio/scene-contract.ts"))};
 
     if (process.argv.includes("--ids")) {
       console.log(antVStudioDesigns.map((design) => design.id).join("\\n"));
@@ -140,6 +144,115 @@ await writeFile(
 	        errors.push("g6 hierarchy validation did not report a cycle.");
 	      }
 	    }
+
+		    const copyProject = (project) => JSON.parse(JSON.stringify(project));
+		    const assertDurationCase = ({
+		      label,
+		      project,
+		      expectedDuration,
+		      expectedFirstDuration,
+		      expectedSecondStart,
+		    }) => {
+		      try {
+		        const duration = getAdvancedStudioProjectDuration(project);
+		        const timedScenes = getAdvancedStudioTimedScenes(project);
+		        if (duration !== expectedDuration) {
+		          errors.push(\`\${label} duration was \${duration}; expected \${expectedDuration}.\`);
+		        }
+		        if (timedScenes[0]?.endFrame - timedScenes[0]?.startFrame !== expectedFirstDuration) {
+		          errors.push(\`\${label} first scene visible length was incorrect.\`);
+		        }
+		        if (timedScenes[1]?.startFrame !== expectedSecondStart) {
+		          errors.push(\`\${label} following scene start was \${timedScenes[1]?.startFrame}; expected \${expectedSecondStart}.\`);
+		        }
+		      } catch (error) {
+		        errors.push(\`\${label} duration validation threw: \${error instanceof Error ? error.message : String(error)}\`);
+		      }
+		    };
+
+		    const template1Project = {
+		      title: "Template 1 duration fixture",
+		      scenes: [
+		        {id: "scene-1", durationFrames: 90},
+		        {id: "scene-2", durationFrames: 90},
+		        {id: "scene-3", durationFrames: 90},
+		        {id: "scene-4", durationFrames: 75},
+		        {id: "scene-5", durationFrames: 75},
+		        {id: "scene-6", durationFrames: 105},
+		        {id: "scene-7", durationFrames: 90},
+		        {id: "scene-8", durationFrames: 90},
+		        {id: "scene-9", durationFrames: 90},
+		        {id: "scene-10", durationFrames: 105},
+		        {id: "scene-11", durationFrames: 75},
+		        {id: "scene-12", durationFrames: 90},
+		        {id: "scene-13", durationFrames: 90},
+		        {id: "scene-14", durationFrames: 105},
+		      ],
+		    };
+
+		    assertDurationCase({
+		      label: "Template 1",
+		      project: copyProject(template1Project),
+		      expectedDuration: 1260,
+		      expectedFirstDuration: 90,
+		      expectedSecondStart: 90,
+		    });
+
+		    const shortenedProject = copyProject(template1Project);
+		    shortenedProject.scenes[0].durationFrames = 60;
+		    assertDurationCase({
+		      label: "Shortened project",
+		      project: shortenedProject,
+		      expectedDuration: 1230,
+		      expectedFirstDuration: 60,
+		      expectedSecondStart: 60,
+		    });
+
+		    const lengthenedProject = copyProject(template1Project);
+		    lengthenedProject.scenes[0].durationFrames = 150;
+		    assertDurationCase({
+		      label: "Lengthened project",
+		      project: lengthenedProject,
+		      expectedDuration: 1320,
+		      expectedFirstDuration: 150,
+		      expectedSecondStart: 150,
+		    });
+
+		    const baselineTimedScenes = getAdvancedStudioTimedScenes(template1Project);
+		    const shortenedTimedScenes = getAdvancedStudioTimedScenes(shortenedProject);
+		    const lengthenedTimedScenes = getAdvancedStudioTimedScenes(lengthenedProject);
+		    for (let index = 1; index < baselineTimedScenes.length; index += 1) {
+		      if (
+		        shortenedTimedScenes[index].startFrame !==
+		        baselineTimedScenes[index].startFrame - 30
+		      ) {
+		        errors.push(\`Shortening scene 1 did not shift scene \${index + 1} by -30 frames.\`);
+		      }
+		      if (
+		        lengthenedTimedScenes[index].startFrame !==
+		        baselineTimedScenes[index].startFrame + 60
+		      ) {
+		        errors.push(\`Lengthening scene 1 did not shift scene \${index + 1} by +60 frames.\`);
+		      }
+		    }
+
+		    for (const invalidDuration of [0, -1, 1.5]) {
+		      const invalidProject = copyProject(template1Project);
+		      invalidProject.scenes[0].durationFrames = invalidDuration;
+		      try {
+		        getAdvancedStudioProjectDuration(invalidProject);
+		        errors.push(\`Advanced Studio accepted invalid scene duration \${invalidDuration}.\`);
+		      } catch {
+		        // Expected.
+		      }
+		    }
+
+		    try {
+		      getAdvancedStudioProjectDuration({title: "Empty", scenes: []});
+		      errors.push("Advanced Studio accepted a zero-duration project.");
+		    } catch {
+		      // Expected.
+		    }
 
 	    if (errors.length > 0) {
       console.error(errors.join("\\n"));
