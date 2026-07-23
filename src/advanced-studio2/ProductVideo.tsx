@@ -15,6 +15,7 @@ import {ProductTemplateBatch2} from "./ProductTemplateBatch2";
 import {ProductTemplateBatch3} from "./ProductTemplateBatch3";
 import {ProductTemplateBatch4} from "./ProductTemplateBatch4";
 import {ProductTemplateBatch5} from "./ProductTemplateBatch5";
+import {ProductTemplateBatch6} from "./ProductTemplateBatch6";
 
 export type ProductVideoFormat = "portrait" | "square" | "vertical";
 
@@ -35,6 +36,7 @@ export const productVideoBatch2Duration = 240;
 export const productVideoBatch3Duration = 240;
 export const productVideoBatch4Duration = 240;
 export const productVideoBatch5Duration = 300;
+export const productVideoBatch6Duration = 300;
 export const productVideoFps = 30;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
@@ -43,6 +45,7 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 3) return productVideoBatch3Duration;
   if (batch === 4) return productVideoBatch4Duration;
   if (batch === 5) return productVideoBatch5Duration;
+  if (batch === 6) return productVideoBatch6Duration;
   return productVideoDuration;
 };
 
@@ -95,6 +98,9 @@ export const ProductVideo: React.FC<ProductVideoProps> = (props) => {
   }
   if (template.batch === 5) {
     return <ProductTemplateBatch5 {...props} />;
+  }
+  if (template.batch === 6) {
+    return <ProductTemplateBatch6 {...props} />;
   }
   const accent = props.accent || template.accent;
   const vertical = height / width > 1.55;
