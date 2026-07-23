@@ -399,8 +399,10 @@ const studioApi = (): Plugin => ({
           const durationInFrames = getProductVideoDuration(props.templateId);
           const batch = getProductTemplate(props.templateId).batch;
           const compositionPrefix =
-            batch === 3
-              ? "AdvancedStudio2ProductBatch3"
+            batch === 4
+              ? "AdvancedStudio2ProductBatch4"
+              : batch === 3
+                ? "AdvancedStudio2ProductBatch3"
               : batch === 2
                 ? "AdvancedStudio2ProductBatch2"
                 : "AdvancedStudio2Product";
