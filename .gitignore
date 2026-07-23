@@ -14,6 +14,7 @@ build
 # Generated outputs
 output/
 data/
+public/advanced-studio2-assets/
 
 # Local backup source files
 *.backup.tsx

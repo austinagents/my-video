@@ -108,7 +108,17 @@ export type ProductTemplateId =
   | "wordmark-passage"
   | "still-point"
   | "contour-cut"
-  | "last-one-standing";
+  | "last-one-standing"
+  | "material-noir"
+  | "mineral-gallery"
+  | "wet-asphalt"
+  | "travertine-sun"
+  | "brushed-alloy"
+  | "paper-atelier"
+  | "concrete-runway"
+  | "velvet-chamber"
+  | "timber-ritual"
+  | "studio-archive";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -142,7 +152,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   accent: string;
   background: string;
   surface: string;
@@ -160,6 +170,7 @@ export type ProductTemplate = {
   headline: string;
   subheadline: string;
   cta: string;
+  polyHavenDefaultAssetId?: string;
   mediaSlots?: ProductMediaSlot[];
 };
 
@@ -2300,6 +2311,206 @@ export const productTemplates: ProductTemplate[] = [
     subheadline: "Each cut removes distraction until nothing remains but the strongest choice.",
     cta: "Choose the one",
   },
+  {
+    id: "material-noir",
+    name: "Material Noir",
+    category: "Tactile Luxury",
+    description: "A grazing beam discovers the material before the product emerges from shadow.",
+    batch: 12,
+    accent: "#e0b86a",
+    background: "#080706",
+    surface: "#211b14",
+    foreground: "#fff8ea",
+    muted: "#b4a58d",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "MATERIAL / AFTER DARK",
+    headline: "Texture becomes atmosphere.",
+    subheadline: "A tactile surface, a controlled beam, and one product in complete focus.",
+    cta: "Enter the material",
+    polyHavenDefaultAssetId: "marble_01",
+  },
+  {
+    id: "mineral-gallery",
+    name: "Mineral Gallery",
+    category: "Architectural",
+    description: "Monumental material panels open into a calm museum-scale product portrait.",
+    batch: 12,
+    accent: "#d7c6aa",
+    background: "#d8d1c5",
+    surface: "#f2ede4",
+    foreground: "#201d19",
+    muted: "#6f685e",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "OBJECT / MATERIAL / SPACE",
+    headline: "A gallery built around one object.",
+    subheadline: "Natural surface and architectural scale give the product a permanent presence.",
+    cta: "Enter the gallery",
+    polyHavenDefaultAssetId: "grey_cartago_03",
+  },
+  {
+    id: "wet-asphalt",
+    name: "Wet Asphalt",
+    category: "Night Performance",
+    description: "A low tracking move across a reflective surface resolves into an illuminated hero.",
+    batch: 12,
+    accent: "#66d8ff",
+    background: "#05090c",
+    surface: "#13232d",
+    foreground: "#f2fbff",
+    muted: "#8da7b3",
+    layout: "technical",
+    imageFit: "contain",
+    imageScale: 0.98,
+    eyebrow: "AFTER HOURS / FULL OUTPUT",
+    headline: "Performance leaves a reflection.",
+    subheadline: "Night light, grounded texture, and decisive movement frame the product at speed.",
+    cta: "Own the night",
+    polyHavenDefaultAssetId: "asphalt_02",
+  },
+  {
+    id: "travertine-sun",
+    name: "Travertine Sun",
+    category: "Warm Luxury",
+    description: "Long daylight moves across stone before revealing a warm editorial packshot.",
+    batch: 12,
+    accent: "#a9562d",
+    background: "#d6b78e",
+    surface: "#f3dfc1",
+    foreground: "#332116",
+    muted: "#795f4c",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "LIGHT / STONE / FORM",
+    headline: "Made for the warmest hour.",
+    subheadline: "Natural material and directional light turn a simple product shot into a destination.",
+    cta: "Follow the light",
+    polyHavenDefaultAssetId: "sandstone_cracks",
+  },
+  {
+    id: "brushed-alloy",
+    name: "Brushed Alloy",
+    category: "Industrial Precision",
+    description: "A scanning highlight and machined surface create a precise technical reveal.",
+    batch: 12,
+    accent: "#ff623f",
+    background: "#111419",
+    surface: "#343a42",
+    foreground: "#f5f7fa",
+    muted: "#a0a8b2",
+    layout: "technical",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "PRECISION / MATERIAL TEST",
+    headline: "Engineered down to the surface.",
+    subheadline: "Controlled highlights and measured movement make every finish feel intentional.",
+    cta: "Inspect the build",
+    polyHavenDefaultAssetId: "blue_metal_plate",
+  },
+  {
+    id: "paper-atelier",
+    name: "Paper Atelier",
+    category: "Editorial Craft",
+    description: "Torn editorial windows and tactile paper create an authored campaign sequence.",
+    batch: 12,
+    accent: "#d43c2c",
+    background: "#e8e0d2",
+    surface: "#fffaf1",
+    foreground: "#171512",
+    muted: "#6c655c",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "THE MATERIAL EDIT",
+    headline: "Craft becomes the campaign.",
+    subheadline: "Paper, image, and typography assemble into one tactile product story.",
+    cta: "Open the edition",
+    polyHavenDefaultAssetId: "painted_plaster_wall",
+  },
+  {
+    id: "concrete-runway",
+    name: "Concrete Runway",
+    category: "Urban Fashion",
+    description: "A hard architectural runway carries the product through an urban campaign reveal.",
+    batch: 12,
+    accent: "#e4ff36",
+    background: "#151615",
+    surface: "#4a4b47",
+    foreground: "#f7f7f0",
+    muted: "#aaa99e",
+    layout: "split",
+    imageFit: "contain",
+    imageScale: 1,
+    eyebrow: "CITY / OBJECT / MOTION",
+    headline: "Built for the hard light.",
+    subheadline: "Urban texture and runway pacing give the product a confident point of view.",
+    cta: "Take the runway",
+    polyHavenDefaultAssetId: "concrete_floor_worn_001",
+  },
+  {
+    id: "velvet-chamber",
+    name: "Velvet Chamber",
+    category: "Prestige Beauty",
+    description: "Soft folds and a slow spotlight create a theatrical luxury unveiling.",
+    batch: 12,
+    accent: "#f0be8e",
+    background: "#16080f",
+    surface: "#48172d",
+    foreground: "#fff5f2",
+    muted: "#c29aa8",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "PRIVATE VIEW / TONIGHT",
+    headline: "The room opens for one object.",
+    subheadline: "Soft material, deep color, and deliberate light create a private unveiling.",
+    cta: "Enter the chamber",
+    polyHavenDefaultAssetId: "velour_velvet",
+  },
+  {
+    id: "timber-ritual",
+    name: "Timber Ritual",
+    category: "Natural Lifestyle",
+    description: "Morning light and organic surface movement build a grounded daily ritual.",
+    batch: 12,
+    accent: "#d26f3f",
+    background: "#b98c63",
+    surface: "#ead5b9",
+    foreground: "#2d1c12",
+    muted: "#70533e",
+    layout: "split",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "MORNING / MADE BETTER",
+    headline: "A ritual with natural character.",
+    subheadline: "Warm material and measured daylight make an everyday object feel considered.",
+    cta: "Begin the ritual",
+    polyHavenDefaultAssetId: "oak_veneer_01",
+  },
+  {
+    id: "studio-archive",
+    name: "Studio Archive",
+    category: "Material Montage",
+    description: "Contact sheets, material crops, and a final clean hero form a complete campaign study.",
+    batch: 12,
+    accent: "#ffca3a",
+    background: "#101113",
+    surface: "#efeadf",
+    foreground: "#171717",
+    muted: "#69655e",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "ARCHIVE / MATERIAL STUDY",
+    headline: "Every surface leaves evidence.",
+    subheadline: "A cinematic material study resolves into one definitive campaign image.",
+    cta: "View the archive",
+    polyHavenDefaultAssetId: "terrazzo_tiles",
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -2319,6 +2530,7 @@ export const productVideoBatch8Duration = 300;
 export const productVideoBatch9Duration = 300;
 export const productVideoBatch10Duration = 300;
 export const productVideoBatch11Duration = 300;
+export const productVideoBatch12Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -2332,5 +2544,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 9) return productVideoBatch9Duration;
   if (batch === 10) return productVideoBatch10Duration;
   if (batch === 11) return productVideoBatch11Duration;
+  if (batch === 12) return productVideoBatch12Duration;
   return productVideoDuration;
 };

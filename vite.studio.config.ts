@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
 import {spawn} from "node:child_process";
+import {createHash} from "node:crypto";
 import {getAdvancedStudioProjectDuration} from "./src/advanced-studio/scene-contract";
 import {
   getProductTemplate,
@@ -63,6 +64,50 @@ const runProcess = (
     child.on("error", reject);
   });
 
+const polyHavenHeaders = {
+  "User-Agent": "Framepoint-Studio/advanced-studio2-experimental",
+  Accept: "application/json",
+};
+
+type PolyHavenAsset = {
+  name: string;
+  description?: string;
+  thumbnail_url: string;
+  category?: string;
+  tags?: string[];
+  files_hash: string;
+  authors?: Record<string, string>;
+  download_count?: number;
+  type: number;
+};
+
+let polyHavenTextureCatalog:
+  | Record<string, PolyHavenAsset>
+  | undefined;
+
+const getPolyHavenTextureCatalog = async () => {
+  if (polyHavenTextureCatalog) return polyHavenTextureCatalog;
+  const result = await fetch("https://api.polyhaven.com/assets?type=textures", {
+    headers: polyHavenHeaders,
+  });
+  if (!result.ok) {
+    throw new Error(`Poly Haven catalog request failed (${result.status}).`);
+  }
+  polyHavenTextureCatalog =
+    (await result.json()) as Record<string, PolyHavenAsset>;
+  return polyHavenTextureCatalog;
+};
+
+const sendJson = (
+  response: import("node:http").ServerResponse,
+  statusCode: number,
+  body: unknown,
+) => {
+  response.statusCode = statusCode;
+  response.setHeader("Content-Type", "application/json");
+  response.end(JSON.stringify(body));
+};
+
 const studioApi = (): Plugin => ({
   name: "studio-api",
 
@@ -89,6 +134,239 @@ const studioApi = (): Plugin => ({
         response.statusCode = 200;
         response.setHeader("Content-Type", "image/png");
         response.end(fs.readFileSync(filePath));
+        return;
+      }
+
+      if (
+        request.url?.startsWith(
+          "/advanced-studio2-assets/polyhaven/",
+        ) &&
+        request.method === "GET"
+      ) {
+        const fileName = decodeURIComponent(
+          request.url
+            .replace("/advanced-studio2-assets/polyhaven/", "")
+            .split("?")[0],
+        );
+        if (
+          !/^[a-zA-Z0-9_-]+\.(jpg|json)$/.test(fileName) ||
+          path.basename(fileName) !== fileName
+        ) {
+          response.statusCode = 400;
+          response.end("Invalid local asset path.");
+          return;
+        }
+        const filePath = path.resolve(
+          "public",
+          "advanced-studio2-assets",
+          "polyhaven",
+          fileName,
+        );
+        if (!fs.existsSync(filePath)) {
+          response.statusCode = 404;
+          response.end("Local asset not found.");
+          return;
+        }
+        response.statusCode = 200;
+        response.setHeader(
+          "Content-Type",
+          fileName.endsWith(".jpg") ? "image/jpeg" : "application/json",
+        );
+        response.setHeader("Content-Length", fs.statSync(filePath).size);
+        fs.createReadStream(filePath).pipe(response);
+        return;
+      }
+
+      if (
+        request.url?.startsWith("/api/advanced-studio2/polyhaven/assets") &&
+        request.method === "GET"
+      ) {
+        try {
+          const requestUrl = new URL(request.url, "http://localhost");
+          const query = (requestUrl.searchParams.get("q") ?? "")
+            .trim()
+            .toLowerCase();
+          const page = Math.max(
+            1,
+            Number.parseInt(requestUrl.searchParams.get("page") ?? "1", 10) ||
+              1,
+          );
+          const catalog = await getPolyHavenTextureCatalog();
+          const matches = Object.entries(catalog)
+            .filter(([, asset]) => asset.type === 1)
+            .filter(([assetId, asset]) => {
+              if (!query) return true;
+              return [
+                assetId,
+                asset.name,
+                asset.description ?? "",
+                asset.category ?? "",
+                ...(asset.tags ?? []),
+              ]
+                .join(" ")
+                .toLowerCase()
+                .includes(query);
+            })
+            .sort(
+              ([, left], [, right]) =>
+                (right.download_count ?? 0) - (left.download_count ?? 0),
+            );
+          const pageSize = 48;
+          const items = matches
+            .slice((page - 1) * pageSize, page * pageSize)
+            .map(([assetId, asset]) => ({
+              assetId,
+              name: asset.name,
+              description: asset.description ?? "",
+              thumbnailUrl: asset.thumbnail_url,
+              category: asset.category ?? "",
+              tags: asset.tags ?? [],
+              filesHash: asset.files_hash,
+              authors: Object.keys(asset.authors ?? {}),
+              downloadCount: asset.download_count ?? 0,
+            }));
+          sendJson(response, 200, {
+            ok: true,
+            items,
+            page,
+            pageSize,
+            total: matches.length,
+          });
+        } catch (error) {
+          sendJson(response, 502, {
+            ok: false,
+            error:
+              error instanceof Error
+                ? error.message
+                : "Poly Haven catalog unavailable.",
+          });
+        }
+        return;
+      }
+
+      if (
+        request.url === "/api/advanced-studio2/polyhaven/download" &&
+        request.method === "POST"
+      ) {
+        try {
+          const body = JSON.parse(await readBody(request)) as {
+            assetId?: string;
+          };
+          const assetId = body.assetId ?? "";
+          if (!/^[a-zA-Z0-9_-]{1,100}$/.test(assetId)) {
+            throw new Error("Invalid Poly Haven asset ID.");
+          }
+          const catalog = await getPolyHavenTextureCatalog();
+          const asset = catalog[assetId];
+          if (!asset || asset.type !== 1) {
+            throw new Error("Poly Haven texture not found.");
+          }
+          const filesResponse = await fetch(
+            `https://api.polyhaven.com/files/${encodeURIComponent(assetId)}`,
+            {headers: polyHavenHeaders},
+          );
+          if (!filesResponse.ok) {
+            throw new Error(
+              `Poly Haven file request failed (${filesResponse.status}).`,
+            );
+          }
+          const files = (await filesResponse.json()) as {
+            Diffuse?: {
+              "2k"?: {
+                jpg?: {size?: number; md5?: string; url?: string};
+              };
+            };
+          };
+          const source = files.Diffuse?.["2k"]?.jpg;
+          if (!source?.url || !source.md5) {
+            throw new Error("This texture has no supported 2K diffuse JPG.");
+          }
+          if ((source.size ?? 0) > 15 * 1024 * 1024) {
+            throw new Error("The selected texture exceeds the 15 MB limit.");
+          }
+          const sourceUrl = new URL(source.url);
+          if (
+            sourceUrl.protocol !== "https:" ||
+            sourceUrl.hostname !== "dl.polyhaven.org" ||
+            !sourceUrl.pathname.startsWith("/file/ph-assets/Textures/")
+          ) {
+            throw new Error("Poly Haven returned an unsupported file host.");
+          }
+          const assetDirectory = path.resolve(
+            "public",
+            "advanced-studio2-assets",
+            "polyhaven",
+          );
+          fs.mkdirSync(assetDirectory, {recursive: true});
+          const fileName = `${assetId}-${source.md5}.jpg`;
+          const filePath = path.join(assetDirectory, fileName);
+          if (!fs.existsSync(filePath)) {
+            const download = await fetch(sourceUrl, {
+              headers: {
+                "User-Agent":
+                  "Framepoint-Studio/advanced-studio2-experimental",
+              },
+            });
+            if (!download.ok) {
+              throw new Error(
+                `Poly Haven download failed (${download.status}).`,
+              );
+            }
+            const contentType = download.headers.get("content-type") ?? "";
+            if (!contentType.startsWith("image/jpeg")) {
+              throw new Error("Poly Haven returned an unsupported file type.");
+            }
+            const bytes = Buffer.from(await download.arrayBuffer());
+            if (bytes.length === 0 || bytes.length > 15 * 1024 * 1024) {
+              throw new Error("Poly Haven returned an invalid file size.");
+            }
+            const md5 = createHash("md5").update(bytes).digest("hex");
+            if (md5 !== source.md5) {
+              throw new Error("Poly Haven file checksum did not match.");
+            }
+            const temporaryPath = `${filePath}.download`;
+            fs.writeFileSync(temporaryPath, bytes);
+            fs.renameSync(temporaryPath, filePath);
+          }
+          const sha256 = createHash("sha256")
+            .update(fs.readFileSync(filePath))
+            .digest("hex");
+          const selection = {
+            assetId,
+            name: asset.name,
+            localSrc: `/advanced-studio2-assets/polyhaven/${fileName}`,
+            thumbnailUrl: asset.thumbnail_url,
+            filesHash: asset.files_hash,
+            resolution: "2k",
+            mapType: "Diffuse",
+            format: "jpg",
+            sourceUrl: source.url,
+            authors: Object.keys(asset.authors ?? {}),
+          };
+          fs.writeFileSync(
+            path.join(assetDirectory, `${assetId}-${source.md5}.json`),
+            JSON.stringify(
+              {
+                ...selection,
+                sha256,
+                downloadedAt: new Date().toISOString(),
+                license: "CC0-1.0",
+                licenseUrl: "https://polyhaven.com/license",
+              },
+              null,
+              2,
+            ),
+          );
+          sendJson(response, 200, {ok: true, selection});
+        } catch (error) {
+          sendJson(response, 422, {
+            ok: false,
+            error:
+              error instanceof Error
+                ? error.message
+                : "Poly Haven texture download failed.",
+          });
+        }
         return;
       }
 
@@ -403,7 +681,9 @@ const studioApi = (): Plugin => ({
           const durationInFrames = getProductVideoDuration(props.templateId);
           const batch = getProductTemplate(props.templateId).batch;
           const compositionPrefix =
-            batch === 11
+            batch === 12
+              ? "AdvancedStudio2ProductBatch12"
+              : batch === 11
               ? "AdvancedStudio2ProductBatch11"
               : batch === 10
               ? "AdvancedStudio2ProductBatch10"

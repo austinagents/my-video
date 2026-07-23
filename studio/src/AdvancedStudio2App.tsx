@@ -11,6 +11,7 @@ import {
   Palette,
   Play,
   RotateCcw,
+  Search,
   Sparkles,
   Upload,
 } from "lucide-react";
@@ -27,6 +28,10 @@ import {
   type ProductMediaSlot,
   type ProductTemplateId,
 } from "../../src/advanced-studio2/product-templates";
+import type {
+  PolyHavenTextureSelection,
+  PolyHavenTextureSummary,
+} from "../../src/advanced-studio2/polyhaven-assets";
 
 const formats: Array<{id: ProductVideoFormat; label: string; meta: string}> = [
   {id: "portrait", label: "Portrait", meta: "1080 × 1350"},
@@ -50,18 +55,64 @@ const defaultState: ProductVideoProps = {
 export const AdvancedStudio2App: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const [project, setProject] = React.useState<ProductVideoProps>(defaultState);
-  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | null>(null);
+  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | null>(null);
   const [isProcessingImage, setIsProcessingImage] = React.useState(false);
   const [imageMessage, setImageMessage] = React.useState("");
   const [renderState, setRenderState] = React.useState<
     "idle" | "rendering" | "complete" | "error"
   >("idle");
   const [renderMessage, setRenderMessage] = React.useState("");
+  const [polyHavenSearch, setPolyHavenSearch] = React.useState("");
+  const [polyHavenAssets, setPolyHavenAssets] = React.useState<
+    PolyHavenTextureSummary[]
+  >([]);
+  const [polyHavenState, setPolyHavenState] = React.useState<
+    "idle" | "loading" | "downloading" | "error"
+  >("idle");
+  const [polyHavenMessage, setPolyHavenMessage] = React.useState("");
   const format = productVideoFormats[project.formatId];
   const selectedTemplate =
     productTemplates.find((item) => item.id === project.templateId) ??
     productTemplates[0];
   const durationInFrames = getProductVideoDuration(project.templateId);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setPolyHavenState("loading");
+      setPolyHavenMessage("");
+      try {
+        const response = await fetch(
+          `/api/advanced-studio2/polyhaven/assets?q=${encodeURIComponent(
+            polyHavenSearch,
+          )}`,
+          {signal: controller.signal},
+        );
+        const result = (await response.json()) as {
+          ok?: boolean;
+          items?: PolyHavenTextureSummary[];
+          error?: string;
+        };
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Poly Haven catalog unavailable.");
+        }
+        setPolyHavenAssets(result.items ?? []);
+        setPolyHavenState("idle");
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setPolyHavenState("error");
+        setPolyHavenMessage(
+          error instanceof Error
+            ? error.message
+            : "Poly Haven catalog unavailable.",
+        );
+      }
+    }, 250);
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [polyHavenSearch]);
 
   const update = <K extends keyof ProductVideoProps>(
     key: K,
@@ -182,6 +233,47 @@ export const AdvancedStudio2App: React.FC = () => {
     }
   };
 
+  const selectPolyHavenTexture = async (assetId: string) => {
+    setPolyHavenState("downloading");
+    setPolyHavenMessage("Downloading the approved 2K diffuse texture…");
+    try {
+      const response = await fetch(
+        "/api/advanced-studio2/polyhaven/download",
+        {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({assetId}),
+        },
+      );
+      const result = (await response.json()) as {
+        ok?: boolean;
+        selection?: PolyHavenTextureSelection;
+        error?: string;
+      };
+      if (!response.ok || !result.ok || !result.selection) {
+        throw new Error(result.error || "Texture download failed.");
+      }
+      update("polyHavenTexture", result.selection);
+      setPolyHavenState("idle");
+      setPolyHavenMessage(`${result.selection.name} is cached and render-ready.`);
+    } catch (error) {
+      setPolyHavenState("error");
+      setPolyHavenMessage(
+        error instanceof Error ? error.message : "Texture download failed.",
+      );
+    }
+  };
+
+  React.useEffect(() => {
+    if (
+      selectedTemplate.batch !== 12 ||
+      !selectedTemplate.polyHavenDefaultAssetId
+    ) {
+      return;
+    }
+    void selectPolyHavenTexture(selectedTemplate.polyHavenDefaultAssetId);
+  }, [project.templateId]);
+
   const renderVideo = async () => {
     setRenderState("rendering");
     setRenderMessage("Rendering the exact preview composition…");
@@ -233,27 +325,40 @@ export const AdvancedStudio2App: React.FC = () => {
             className="as2-button primary"
             type="button"
             onClick={renderVideo}
-            disabled={renderState === "rendering"}
+            disabled={
+              renderState === "rendering" ||
+              polyHavenState === "downloading" ||
+              (selectedTemplate.batch === 12 && !project.polyHavenTexture)
+            }
           >
             <Sparkles size={18} />
-            {renderState === "rendering" ? "Rendering…" : "Export video"}
+            {renderState === "rendering"
+              ? "Rendering…"
+              : selectedTemplate.batch === 12 &&
+                  (!project.polyHavenTexture ||
+                    polyHavenState === "downloading")
+                ? "Preparing material…"
+                : "Export video"}
           </button>
         </div>
       </header>
 
       <main className="as2-workspace">
         <aside className="as2-library">
-          {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const).map((batch) => (
+          {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const).map((batch) => (
             <React.Fragment key={batch}>
               <button
                 className="as2-template-folder"
                 type="button"
                 aria-expanded={expandedBatch === batch}
-                onClick={() =>
+                onClick={() => {
                   setExpandedBatch((current) =>
                     current === batch ? null : batch,
-                  )
-                }
+                  );
+                  if (batch === 12 && selectedTemplate.batch !== 12) {
+                    update("templateId", "material-noir");
+                  }
+                }}
               >
                 <span className="as2-folder-icon">
                   <Folder size={20} fill="currentColor" />
@@ -463,6 +568,81 @@ export const AdvancedStudio2App: React.FC = () => {
             <div className="as2-image-message">{imageMessage}</div>
           ) : null}
 
+          <section className="as2-polyhaven">
+              <div className="as2-polyhaven-heading">
+                <div>
+                  <strong>Material environment</strong>
+                  <small>
+                    Browse here · applied by Product Templates 12
+                  </small>
+                </div>
+                {project.polyHavenTexture ? (
+                  <button
+                    type="button"
+                    onClick={() => update("polyHavenTexture", undefined)}
+                  >
+                    Clear
+                  </button>
+                ) : null}
+              </div>
+              {project.polyHavenTexture ? (
+                <div className="as2-polyhaven-selected">
+                  <img
+                    src={project.polyHavenTexture.thumbnailUrl}
+                    alt=""
+                  />
+                  <div>
+                    <strong>{project.polyHavenTexture.name}</strong>
+                    <small>2K diffuse JPG · cached locally</small>
+                  </div>
+                  <Check size={16} />
+                </div>
+              ) : null}
+              <label className="as2-polyhaven-search">
+                <Search size={15} />
+                <input
+                  value={polyHavenSearch}
+                  onChange={(event) => setPolyHavenSearch(event.target.value)}
+                  placeholder="Search stone, metal, fabric…"
+                />
+              </label>
+              <div className="as2-polyhaven-grid">
+                {polyHavenAssets.map((asset) => (
+                  <button
+                    key={asset.assetId}
+                    type="button"
+                    className={
+                      project.polyHavenTexture?.assetId === asset.assetId
+                        ? "selected"
+                        : ""
+                    }
+                    disabled={polyHavenState === "downloading"}
+                    onClick={() => selectPolyHavenTexture(asset.assetId)}
+                    title={asset.description}
+                  >
+                    <img src={asset.thumbnailUrl} alt="" />
+                    <span>{asset.name}</span>
+                  </button>
+                ))}
+              </div>
+              {polyHavenState === "loading" ? (
+                <div className="as2-polyhaven-message">Loading textures…</div>
+              ) : null}
+              {polyHavenMessage ? (
+                <div className="as2-polyhaven-message">
+                  {polyHavenMessage}
+                </div>
+              ) : null}
+              <a
+                className="as2-polyhaven-credit"
+                href="https://polyhaven.com/textures"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Powered by Poly Haven · CC0
+              </a>
+          </section>
+
           <div className="as2-field-group">
             <label>
               <span>Product name</span>
@@ -535,6 +715,7 @@ export const AdvancedStudio2App: React.FC = () => {
                 ...defaultState,
                 imageSrc: current.imageSrc,
                 media: current.media,
+                polyHavenTexture: current.polyHavenTexture,
                 formatId: current.formatId,
               }))
             }
