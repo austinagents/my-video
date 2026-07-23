@@ -138,7 +138,17 @@ export type ProductTemplateId =
   | "material-transfer"
   | "silhouette-portal"
   | "contact-exposure"
-  | "product-sourced-end-frame";
+  | "product-sourced-end-frame"
+  | "expanding-world"
+  | "object-of-desire"
+  | "inner-workings"
+  | "world-builder"
+  | "future-ripple"
+  | "product-perspective"
+  | "impossible-control"
+  | "rendezvous"
+  | "detail-landscape"
+  | "constant-journey";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -172,7 +182,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
   accent: string;
   background: string;
   surface: string;
@@ -2811,6 +2821,86 @@ export const productTemplates: ProductTemplate[] = [
     headline: "The product authors the ending.", subheadline: "Image, framing, and message are all sourced from one hero.",
     cta: "Own the frame", polyHavenDefaultAssetId: "terrazzo_tiles",
   },
+  {
+    id: "expanding-world", name: "Expanding World", category: "Transformative Space",
+    description: "The product expands one continuous room until the environment becomes its campaign stage.", batch: 15,
+    accent: "#ff6f61", background: "#191113", surface: "#5b3038", foreground: "#fff8f4", muted: "#d7bab8",
+    layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "SPACE RESPONDS",
+    headline: "Make room for more.", subheadline: "The world opens outward from one defining product.",
+    cta: "Enter the experience", polyHavenDefaultAssetId: "painted_plaster_wall",
+  },
+  {
+    id: "object-of-desire", name: "Object of Desire", category: "Cinematic Suspense",
+    description: "Reflections and shadows repeatedly anticipate the product before attention finally meets it.", batch: 15,
+    accent: "#df334f", background: "#09070b", surface: "#251520", foreground: "#fff6f8", muted: "#bfa7ae",
+    layout: "poster", imageFit: "contain", imageScale: 0.98, eyebrow: "IMPOSSIBLE TO IGNORE",
+    headline: "It keeps finding you.", subheadline: "Every glance leads back to the same unmistakable object.",
+    cta: "Meet the obsession", polyHavenDefaultAssetId: "velour_velvet",
+  },
+  {
+    id: "inner-workings", name: "Inner Workings", category: "Product World",
+    description: "A hidden cinematic mechanism assembles inside the product before delivering the finished hero.", batch: 15,
+    accent: "#ffcc55", background: "#080d10", surface: "#21323b", foreground: "#f5fbff", muted: "#9dafb8",
+    layout: "technical", imageFit: "contain", imageScale: 0.98, eyebrow: "BUILT FROM WITHIN",
+    headline: "There is a world inside.", subheadline: "Every hidden movement works toward one finished result.",
+    cta: "See what drives it", polyHavenDefaultAssetId: "blue_metal_plate",
+  },
+  {
+    id: "world-builder", name: "World Builder", category: "Imaginative Product",
+    description: "A complete landscape assembles around the product and is revealed as its creation.", batch: 15,
+    accent: "#65d58f", background: "#0d1612", surface: "#29493a", foreground: "#f3fff7", muted: "#9fc2ad",
+    layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "IMAGINATION TAKES FORM",
+    headline: "Build beyond the expected.", subheadline: "One product turns possibility into a world you can enter.",
+    cta: "Create what comes next", polyHavenDefaultAssetId: "aerial_rocks_04",
+  },
+  {
+    id: "future-ripple", name: "Future Ripple", category: "Consequential Cinema",
+    description: "One encounter with the product branches into multiple futures before resolving at the source.", batch: 15,
+    accent: "#58b8ff", background: "#07101b", surface: "#173452", foreground: "#f3f9ff", muted: "#9bb4ca",
+    layout: "technical", imageFit: "contain", imageScale: 0.98, eyebrow: "ONE MOMENT CHANGES EVERYTHING",
+    headline: "Choose the future.", subheadline: "Every possible outcome begins with one decisive object.",
+    cta: "Make the moment", polyHavenDefaultAssetId: "concrete_floor_worn_001",
+  },
+  {
+    id: "product-perspective", name: "Product Perspective", category: "Object Story",
+    description: "The camera adopts the product's point of view before a final reframing reveals the protagonist.", batch: 15,
+    accent: "#f0b56a", background: "#1a130e", surface: "#64462f", foreground: "#fff9ef", muted: "#ccb9a4",
+    layout: "editorial", imageFit: "contain", imageScale: 0.98, eyebrow: "THE STORY WAS WATCHING",
+    headline: "See it from here.", subheadline: "The final frame changes the meaning of everything before it.",
+    cta: "Change perspective", polyHavenDefaultAssetId: "oak_veneer_01",
+  },
+  {
+    id: "impossible-control", name: "Impossible Control", category: "Performance Proof",
+    description: "A single uninterrupted precision test escalates around a perfectly controlled product.", batch: 15,
+    accent: "#d7ff4d", background: "#090c0b", surface: "#29322d", foreground: "#f8fff2", muted: "#a7b2a9",
+    layout: "technical", imageFit: "contain", imageScale: 0.98, eyebrow: "CONTROL WITHOUT COMPROMISE",
+    headline: "Precision under pressure.", subheadline: "The world moves to its limits. The product never loses command.",
+    cta: "Witness control", polyHavenDefaultAssetId: "concrete_floor_worn_001",
+  },
+  {
+    id: "rendezvous", name: "Rendezvous", category: "Luxury Narrative",
+    description: "Two cinematic paths orbit the product and converge in one earned encounter.", batch: 15,
+    accent: "#d9b16f", background: "#120b0d", surface: "#4a2c35", foreground: "#fff8f5", muted: "#c7afb4",
+    layout: "poster", imageFit: "contain", imageScale: 0.98, eyebrow: "DESTINED TO MEET",
+    headline: "Every path arrives here.", subheadline: "Two journeys become one around an unmistakable signature.",
+    cta: "Meet at the center", polyHavenDefaultAssetId: "marble_01",
+  },
+  {
+    id: "detail-landscape", name: "Detail Landscape", category: "Iconic Detail",
+    description: "An extreme product detail becomes monumental set design before resolving into the whole.", batch: 15,
+    accent: "#e7c4ff", background: "#0f0a15", surface: "#3f2c52", foreground: "#fbf6ff", muted: "#baa9c8",
+    layout: "poster", imageFit: "contain", imageScale: 0.98, eyebrow: "AN ICON AT EVERY SCALE",
+    headline: "The detail becomes the world.", subheadline: "Travel through the signature before seeing the complete object.",
+    cta: "Explore the detail", polyHavenDefaultAssetId: "terrazzo_tiles",
+  },
+  {
+    id: "constant-journey", name: "Constant Journey", category: "Travel Cinema",
+    description: "The product remains the visual constant while one continuous world travels around it.", batch: 15,
+    accent: "#ffc85e", background: "#101317", surface: "#34404b", foreground: "#f8fbff", muted: "#a9b4be",
+    layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "CARRY THE WORLD WITH YOU",
+    headline: "One constant. Every horizon.", subheadline: "The destination changes while the product holds the journey together.",
+    cta: "Begin the journey", polyHavenDefaultAssetId: "aerial_rocks_04",
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -2833,6 +2923,7 @@ export const productVideoBatch11Duration = 300;
 export const productVideoBatch12Duration = 300;
 export const productVideoBatch13Duration = 300;
 export const productVideoBatch14Duration = 300;
+export const productVideoBatch15Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -2849,5 +2940,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 12) return productVideoBatch12Duration;
   if (batch === 13) return productVideoBatch13Duration;
   if (batch === 14) return productVideoBatch14Duration;
+  if (batch === 15) return productVideoBatch15Duration;
   return productVideoDuration;
 };
