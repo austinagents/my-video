@@ -4,6 +4,7 @@ import {
   Check,
   ChevronDown,
   Download,
+  Folder,
   ImagePlus,
   MonitorPlay,
   Palette,
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import {
   ProductVideo,
-  productVideoDuration,
+  getProductVideoDuration,
   productVideoFormats,
   productVideoFps,
   type ProductVideoFormat,
@@ -46,6 +47,7 @@ const defaultState: ProductVideoProps = {
 export const AdvancedStudio2App: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const [project, setProject] = React.useState<ProductVideoProps>(defaultState);
+  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | null>(null);
   const [isProcessingImage, setIsProcessingImage] = React.useState(false);
   const [imageMessage, setImageMessage] = React.useState("");
   const [renderState, setRenderState] = React.useState<
@@ -56,6 +58,7 @@ export const AdvancedStudio2App: React.FC = () => {
   const selectedTemplate =
     productTemplates.find((item) => item.id === project.templateId) ??
     productTemplates[0];
+  const durationInFrames = getProductVideoDuration(project.templateId);
 
   const update = <K extends keyof ProductVideoProps>(
     key: K,
@@ -166,42 +169,70 @@ export const AdvancedStudio2App: React.FC = () => {
 
       <main className="as2-workspace">
         <aside className="as2-library">
-          <div className="as2-panel-heading">
-            <span>01</span>
-            <div>
-              <strong>Choose a direction</strong>
-              <small>10 locked professional templates</small>
-            </div>
-          </div>
-          <div className="as2-template-grid">
-            {productTemplates.map((template, index) => (
+          {([1, 2] as const).map((batch) => (
+            <React.Fragment key={batch}>
               <button
-                key={template.id}
-                className={`as2-template-card ${
-                  project.templateId === template.id ? "selected" : ""
-                }`}
+                className="as2-template-folder"
                 type="button"
-                onClick={() => update("templateId", template.id)}
+                aria-expanded={expandedBatch === batch}
+                onClick={() =>
+                  setExpandedBatch((current) =>
+                    current === batch ? null : batch,
+                  )
+                }
               >
-                <div
-                  className="as2-template-art"
-                  style={{
-                    background: template.background,
-                    color: template.foreground,
-                    borderColor: `${template.accent}55`,
-                  }}
-                >
-                  <span style={{background: template.accent}} />
-                  <b>{String(index + 1).padStart(2, "0")}</b>
-                  <em>{template.eyebrow}</em>
-                </div>
+                <span className="as2-folder-icon">
+                  <Folder size={20} fill="currentColor" />
+                </span>
                 <div>
-                  <strong>{template.name}</strong>
-                  <small>{template.category}</small>
+                  <strong>Product Templates {batch}</strong>
+                  <small>10 locked templates</small>
                 </div>
+                <ChevronDown
+                  className="as2-folder-chevron"
+                  size={17}
+                  aria-hidden="true"
+                />
               </button>
-            ))}
-          </div>
+              {expandedBatch === batch ? (
+                <div className="as2-template-grid">
+                  {productTemplates
+                    .filter((template) => template.batch === batch)
+                    .map((template) => (
+                      <button
+                        key={template.id}
+                        className={`as2-template-card ${
+                          project.templateId === template.id ? "selected" : ""
+                        }`}
+                        type="button"
+                        onClick={() => update("templateId", template.id)}
+                      >
+                        <div
+                          className="as2-template-art"
+                          style={{
+                            background: template.background,
+                            color: template.foreground,
+                            borderColor: `${template.accent}55`,
+                          }}
+                        >
+                          <span style={{background: template.accent}} />
+                          <b>
+                            {String(
+                              productTemplates.indexOf(template) + 1,
+                            ).padStart(2, "0")}
+                          </b>
+                          <em>{template.eyebrow}</em>
+                        </div>
+                        <div>
+                          <strong>{template.name}</strong>
+                          <small>{template.category}</small>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              ) : null}
+            </React.Fragment>
+          ))}
         </aside>
 
         <section className="as2-stage-column">
@@ -235,7 +266,7 @@ export const AdvancedStudio2App: React.FC = () => {
                 ref={playerRef}
                 component={ProductVideo}
                 inputProps={project}
-                durationInFrames={productVideoDuration}
+                durationInFrames={durationInFrames}
                 fps={productVideoFps}
                 compositionWidth={format.width}
                 compositionHeight={format.height}
@@ -256,7 +287,7 @@ export const AdvancedStudio2App: React.FC = () => {
               <Play size={20} fill="currentColor" />
             </button>
             <div>
-              <strong>6 second product story</strong>
+              <strong>{durationInFrames / productVideoFps} second product story</strong>
               <span>Reveal → product proof → call to action</span>
             </div>
             <div className="as2-timeline">

@@ -11,6 +11,7 @@ import {
 } from "./advanced-studio/AdvancedStudioIntegrationProof";
 import {
   ProductVideo,
+  productVideoBatch2Duration,
   productVideoDuration,
   productVideoFormats,
   productVideoFps,
@@ -29,6 +30,10 @@ const defaultProductVideoProps: ProductVideoProps = {
   imageSrc: "",
   productName: "Aurelia One",
   formatId: "portrait",
+};
+const defaultBatch2ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "eclipse",
 };
 
 export const MyComposition: React.FC = () => {
@@ -111,6 +116,36 @@ export const MyComposition: React.FC = () => {
         width={productVideoFormats.vertical.width}
         height={productVideoFormats.vertical.height}
         defaultProps={{...defaultProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch2Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch2Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch2ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch2Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch2Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch2ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch2Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch2Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch2ProductVideoProps, formatId: "vertical"}}
       />
     </>
   );
