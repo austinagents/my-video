@@ -847,7 +847,7 @@ Implemented foundation:
 - `validateStudioDesignCompatibility` provides one structured compatibility check for UI, registry validation, preview, render, and provider renderer wrappers.
 - Advanced preview/render validates infographic scene content before mounting a provider renderer.
 - G2/G6/S2 renderer wrappers validate compatibility before provider execution.
-- Advanced UI design application and behavior-template application validate compatibility before mutating scene state.
+- Advanced UI design application validates compatibility before mutating scene state.
 - Registry validation requires capability metadata and includes the G6 fishbone mismatch as a sentinel rejection.
 
 Not implemented in Phase 2:

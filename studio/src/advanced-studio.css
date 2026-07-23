@@ -946,27 +946,6 @@ textarea.advanced-input {
   background: #1d242d;
 }
 
-.behavior-template-stack {
-  display: grid;
-  gap: 10px;
-}
-
-.behavior-template-button {
-  width: 100%;
-  min-height: 46px;
-  border: 1px solid #f2c46d;
-  border-radius: 6px;
-  color: #f7e7bf;
-  background: rgba(242, 196, 109, 0.12);
-  font: inherit;
-  font-weight: 750;
-  text-align: center;
-}
-
-.behavior-template-button.active {
-  box-shadow: inset 0 0 0 1px rgba(242, 196, 109, 0.22);
-}
-
 .advanced-collapse {
   width: 100%;
   display: flex;

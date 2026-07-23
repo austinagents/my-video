@@ -563,18 +563,21 @@ S2 static composition is selected by `designId`, not by a separate generic table
 
 S2 designs use `row-reveal` metadata. The current Advanced visible animation is produced by `InfographicSceneRenderer.designAnimationStyle`, which applies opacity, clipping, and translation based on design animation metadata.
 
-## 8. Template Architecture
+## 8. Reusable Generation Boundary
 
-A Scene Template is a complete reusable scene composition concept. In Advanced Studio architecture, templates belong above scene data and below the authoring UI: they select or write scene-owned fields, then the normal render pipeline consumes those fields.
+Advanced Studio currently has one approved baseline: the default project in
+`src/advanced-studio/AdvancedStudioIntegrationProof.tsx`. No additional
+Advanced Studio template system is currently approved.
 
-Templates interact with rendering by configuring existing owners:
+Future reusable-generation work must begin from that baseline and preserve the
+existing ownership boundaries:
 
-- Board scene templates configure Board project data and Board semantic motion fields.
-- Infographic scene templates configure provider design selection and provider-compatible content.
-- Motion-oriented template choices configure existing camera path and transition fields.
-- Preview and export do not render templates directly. They render the resulting `AdvancedStudioProject`.
-
-Current behavior-template implementation details live in `docs/advanced-studio-template-system.md`.
+- Board composition remains Board project/block data rendered by `Board`.
+- G2/G6/S2 visual composition remains provider design and provider-compatible content rendered by AntV renderers.
+- Camera remains `cameraPath` interpreted by `cameraPathStyle`.
+- Transitions remain `transitionIn` and `transitionOut` interpreted by `sceneOpacity`.
+- Board semantic motion remains `content.animation` interpreted by `getBoardSemanticMotion`.
+- Preview and export remain consumers of the resulting `AdvancedStudioProject`.
 
 ## 9. Current Limitations
 
@@ -592,11 +595,10 @@ Observed limitations from the current implementation:
 - The `animation` term is overloaded: Board semantic motion uses `shared/project.ts` `AnimationPreset`; AntV internal/wrapper animation uses `src/antv-studio/types.ts` `AnimationPreset`.
 - Legacy `cameraPreset` remains in the Advanced scene contract and is still read as a fallback.
 
-## 10. True Scene Templates
+## 10. Future Scene Generation
 
-Conceptually, a true Scene Template would define a complete reusable static scene composition and its compatible behavior choices while preserving the ownership boundaries documented here.
-
-Within the current architecture, a true Scene Template must still hand off to canonical owners:
+Future scene-generation work is not a current template system. It must still hand
+off to canonical owners:
 
 - Board composition remains Board project/block data rendered by `Board`.
 - G2/G6/S2 visual composition remains provider design and provider-compatible content rendered by AntV renderers.
@@ -604,8 +606,6 @@ Within the current architecture, a true Scene Template must still hand off to ca
 - Transitions remain `transitionIn` and `transitionOut` interpreted by `sceneOpacity`.
 - Board semantic motion remains `content.animation` interpreted by `getBoardSemanticMotion`.
 - Preview and export remain consumers of the resulting `AdvancedStudioProject`.
-
-Current behavior-template implementation details are documented in `docs/advanced-studio-template-system.md`.
 
 ## 11. File Map
 
@@ -616,7 +616,7 @@ Current behavior-template implementation details are documented in `docs/advance
 | `src/advanced-studio/BoardSceneRenderer.tsx` | Advanced Board scene renderer adapter | Converts Advanced Board scene content into shared Board rendering and shared semantic motion | `BoardSceneContent`, `BoardSceneRenderer` |
 | `src/advanced-studio/InfographicSceneRenderer.tsx` | Advanced infographic scene renderer | Applies title/subtitle shell, format layout, design wrapper animation, provider renderer dispatch, render readiness/error handling | `InfographicSceneContent`, `InfographicSceneRenderer` |
 | `src/advanced-studio/camera-paths.ts` | Advanced camera system | Defines camera path presets and computes frame-progress transform style | `AdvancedStudioCameraPathPreset`, `CameraPathPoint`, `AdvancedStudioCameraPath`, `advancedStudioCameraPaths`, `getAdvancedStudioCameraPath`, `cameraPathStyle` |
-| `studio/src/AdvancedStudioApp.tsx` | Advanced Studio browser UI | Owns project UI state, selected scene, Remotion Player preview, inspector, template/design browser, render button, and authoring orchestration | `AdvancedStudioApp` |
+| `studio/src/AdvancedStudioApp.tsx` | Advanced Studio browser UI | Owns project UI state, selected scene, Remotion Player preview, inspector, design browser, render button, and authoring orchestration | `AdvancedStudioApp` |
 | `studio/src/advanced-main.tsx` | Advanced Studio browser entry point | Mounts `AdvancedStudioApp` and Advanced Studio CSS | none beyond module side effect |
 | `studio/advanced-studio.html` | Advanced Studio HTML route | Provides the DOM root for `/advanced-studio.html` | none |
 | `studio/src/advanced-studio.css` | Advanced Studio styling | UI layout, panels, inspector, timeline, and authoring controls | none |
