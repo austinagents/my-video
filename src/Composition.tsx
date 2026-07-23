@@ -25,6 +25,8 @@ import {
   productVideoBatch13Duration,
   productVideoBatch14Duration,
   productVideoBatch15Duration,
+  productVideoBatch16Duration,
+  productVideoBatch17Duration,
   productVideoDuration,
   productVideoFormats,
   productVideoFps,
@@ -99,6 +101,14 @@ const defaultBatch14ProductVideoProps: ProductVideoProps = {
 const defaultBatch15ProductVideoProps: ProductVideoProps = {
   ...defaultProductVideoProps,
   templateId: "expanding-world",
+};
+const defaultBatch16ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "vapor-chamber",
+};
+const defaultBatch17ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "palindrome-hero",
 };
 
 export const MyComposition: React.FC = () => {
@@ -601,6 +611,66 @@ export const MyComposition: React.FC = () => {
         width={productVideoFormats.vertical.width}
         height={productVideoFormats.vertical.height}
         defaultProps={{...defaultBatch15ProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch16Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch16Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch16ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch16Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch16Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch16ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch16Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch16Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch16ProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch17Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch17Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch17ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch17Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch17Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch17ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch17Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch17Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch17ProductVideoProps, formatId: "vertical"}}
       />
     </>
   );

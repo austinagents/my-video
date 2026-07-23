@@ -400,7 +400,7 @@ const TheCallback: React.FC<ProductVideoProps> = (props) => {
         <Product src={props.imageSrc} />
       </div>
       <div style={{position: "absolute", inset: `${45 - resolve * 38}%`, border: `5px solid ${s.accent}`, borderRadius: `${(1 - resolve) * 50}%`, opacity: resolve}} />
-      <div style={{position: "absolute", left: "8%", right: "8%", bottom: "7%", opacity: resolve}}>
+      <div style={{position: "absolute", left: "8%", right: "8%", bottom: "10%", opacity: resolve}}>
         <Copy scene={s} />
       </div>
     </AbsoluteFill>

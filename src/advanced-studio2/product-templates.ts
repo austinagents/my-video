@@ -148,7 +148,19 @@ export type ProductTemplateId =
   | "impossible-control"
   | "rendezvous"
   | "detail-landscape"
-  | "constant-journey";
+  | "constant-journey"
+  | "vapor-chamber"
+  | "daybreak-continuum"
+  | "impact-field"
+  | "camera-obscura"
+  | "weatherproof"
+  | "magnetic-stillness"
+  | "shadow-dial"
+  | "sonic-aperture"
+  | "glass-memory"
+  | "horizon-fold"
+  | "palindrome-hero"
+  | "product-callback";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -182,7 +194,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17;
   accent: string;
   background: string;
   surface: string;
@@ -2901,6 +2913,102 @@ export const productTemplates: ProductTemplate[] = [
     headline: "One constant. Every horizon.", subheadline: "The destination changes while the product holds the journey together.",
     cta: "Begin the journey", polyHavenDefaultAssetId: "aerial_rocks_04",
   },
+  {
+    id: "vapor-chamber", name: "Vapor Chamber", category: "Atmospheric Reveal",
+    description: "Dense atmosphere parts around the product and condenses into its final stage.", batch: 16,
+    accent: "#b8d8ff", background: "#091018", surface: "#243747", foreground: "#f4f9ff", muted: "#a9bac9",
+    layout: "poster", imageFit: "contain", imageScale: 0.98, eyebrow: "CLARITY TAKES FORM",
+    headline: "Presence changes the atmosphere.", subheadline: "The air clears only where the product takes command.",
+    cta: "Enter clarity", polyHavenDefaultAssetId: "blue_metal_plate",
+  },
+  {
+    id: "daybreak-continuum", name: "Daybreak Continuum", category: "Natural Light",
+    description: "One uninterrupted light cycle moves from predawn blue to a warm final hero.", batch: 16,
+    accent: "#ffbf63", background: "#08101d", surface: "#4a3b42", foreground: "#fff8ee", muted: "#ccb8aa",
+    layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "MADE FOR EVERY HOUR",
+    headline: "Light finds its signature.", subheadline: "A complete day resolves around one constant object.",
+    cta: "Meet the light", polyHavenDefaultAssetId: "painted_plaster_wall",
+  },
+  {
+    id: "impact-field", name: "Impact Field", category: "Protective Performance",
+    description: "Escalating wavefronts meet the product and reorganize into a controlled field.", batch: 16,
+    accent: "#ff5d68", background: "#08090d", surface: "#2d2028", foreground: "#fff6f7", muted: "#bba7ad",
+    layout: "technical", imageFit: "contain", imageScale: 0.98, eyebrow: "BUILT FOR THE MOMENT",
+    headline: "Impact becomes control.", subheadline: "Pressure arrives from every direction and leaves as proof.",
+    cta: "Test the limit", polyHavenDefaultAssetId: "concrete_floor_worn_001",
+  },
+  {
+    id: "camera-obscura", name: "Camera Obscura", category: "Optical Cinema",
+    description: "An inverted projection slowly corrects itself and resolves into the real product.", batch: 16,
+    accent: "#f3c476", background: "#130f0c", surface: "#4d3c2d", foreground: "#fff9ee", muted: "#cbbba5",
+    layout: "editorial", imageFit: "contain", imageScale: 0.98, eyebrow: "IMAGE BECOMES OBJECT",
+    headline: "Reality develops in frame.", subheadline: "The projection turns, sharpens, and becomes the thing itself.",
+    cta: "Resolve the image", polyHavenDefaultAssetId: "oak_veneer_01",
+  },
+  {
+    id: "weatherproof", name: "Weatherproof", category: "Elemental Proof",
+    description: "A continuous rain field bends around the product while the world remains exposed.", batch: 16,
+    accent: "#74cfff", background: "#061018", surface: "#203845", foreground: "#f1fbff", muted: "#98b7c5",
+    layout: "poster", imageFit: "contain", imageScale: 0.98, eyebrow: "THE ELEMENTS MOVE AROUND IT",
+    headline: "Made to hold its ground.", subheadline: "The storm changes course. The product does not.",
+    cta: "Face the weather", polyHavenDefaultAssetId: "asphalt_02",
+  },
+  {
+    id: "magnetic-stillness", name: "Magnetic Stillness", category: "Force and Form",
+    description: "A moving material field bends toward the product and settles into ordered stillness.", batch: 16,
+    accent: "#93ffca", background: "#07110d", surface: "#1d4032", foreground: "#f2fff8", muted: "#9cbcac",
+    layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "THE FIELD KNOWS THE CENTER",
+    headline: "Everything aligns around it.", subheadline: "Motion becomes order the moment the product enters the field.",
+    cta: "Find the center", polyHavenDefaultAssetId: "sandstone_cracks",
+  },
+  {
+    id: "shadow-dial", name: "Shadow Dial", category: "Temporal Object",
+    description: "A single long shadow travels around the product and records a complete passage of time.", batch: 16,
+    accent: "#e9ae5b", background: "#18100a", surface: "#76502e", foreground: "#fff8ed", muted: "#ccb497",
+    layout: "editorial", imageFit: "contain", imageScale: 0.98, eyebrow: "TIME MOVES / FORM REMAINS",
+    headline: "Designed beyond the moment.", subheadline: "The day travels across the stage while the signature stays.",
+    cta: "Mark the time", polyHavenDefaultAssetId: "marble_01",
+  },
+  {
+    id: "sonic-aperture", name: "Sonic Aperture", category: "Acoustic Cinema",
+    description: "A dark aperture responds to a measured pulse and opens onto the final product.", batch: 16,
+    accent: "#c786ff", background: "#08060d", surface: "#38254b", foreground: "#faf5ff", muted: "#b5a4c0",
+    layout: "poster", imageFit: "contain", imageScale: 0.98, eyebrow: "FORM FOLLOWS FREQUENCY",
+    headline: "The signal opens the frame.", subheadline: "Every pulse reveals more until sound becomes presence.",
+    cta: "Open the signal", polyHavenDefaultAssetId: "velour_velvet",
+  },
+  {
+    id: "glass-memory", name: "Glass Memory", category: "Transparent Luxury",
+    description: "A moving trace clears frosted glass and leaves the product permanently visible.", batch: 16,
+    accent: "#d7f2ff", background: "#0a1115", surface: "#35515e", foreground: "#f4fbff", muted: "#a7bbc5",
+    layout: "split", imageFit: "contain", imageScale: 0.98, eyebrow: "CLARITY LEAVES A TRACE",
+    headline: "Some impressions remain.", subheadline: "The surface forgets everything except the product.",
+    cta: "See what remains", polyHavenDefaultAssetId: "marble_01",
+  },
+  {
+    id: "horizon-fold", name: "Horizon Fold", category: "Architectural Cinema",
+    description: "One continuous material horizon folds upward and becomes the final product wall.", batch: 16,
+    accent: "#efc46f", background: "#12100c", surface: "#594a35", foreground: "#fff9ed", muted: "#c7b79d",
+    layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "THE STAGE RISES",
+    headline: "One surface. A new dimension.", subheadline: "The horizon becomes architecture without leaving the product.",
+    cta: "Cross the horizon", polyHavenDefaultAssetId: "oak_veneer_01",
+  },
+  {
+    id: "palindrome-hero", name: "Palindrome", category: "Seamless Loop",
+    description: "A symmetrical five-second movement reverses perfectly into its opening frame.", batch: 17,
+    accent: "#a996ff", background: "#0f0b19", surface: "#28203d", foreground: "#faf7ff", muted: "#aaa0bd",
+    layout: "center", imageFit: "contain", imageScale: 0.94, eyebrow: "FORWARD / REVERSE",
+    headline: "Made to be watched again.", subheadline: "A complete cinematic loop with no visible beginning or end.",
+    cta: "Stay in the loop", polyHavenDefaultAssetId: "velour_velvet",
+  },
+  {
+    id: "product-callback", name: "The Callback", category: "Setup & Payoff",
+    description: "A simple opening motif develops through the film and resolves around the product.", batch: 17,
+    accent: "#ff6348", background: "#e9e2d5", surface: "#183b43", foreground: "#121817", muted: "#68716d",
+    layout: "editorial", imageFit: "contain", imageScale: 0.94, eyebrow: "REMEMBER THIS",
+    headline: "Every detail comes back.", subheadline: "The opening clue becomes the final product signature.",
+    cta: "See the connection", polyHavenDefaultAssetId: "painted_plaster_wall",
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -2924,6 +3032,8 @@ export const productVideoBatch12Duration = 300;
 export const productVideoBatch13Duration = 300;
 export const productVideoBatch14Duration = 300;
 export const productVideoBatch15Duration = 300;
+export const productVideoBatch16Duration = 300;
+export const productVideoBatch17Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -2941,5 +3051,7 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 13) return productVideoBatch13Duration;
   if (batch === 14) return productVideoBatch14Duration;
   if (batch === 15) return productVideoBatch15Duration;
+  if (batch === 16) return productVideoBatch16Duration;
+  if (batch === 17) return productVideoBatch17Duration;
   return productVideoDuration;
 };
