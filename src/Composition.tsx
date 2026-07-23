@@ -16,6 +16,7 @@ import {
   productVideoBatch4Duration,
   productVideoBatch5Duration,
   productVideoBatch6Duration,
+  productVideoBatch7Duration,
   productVideoDuration,
   productVideoFormats,
   productVideoFps,
@@ -54,6 +55,10 @@ const defaultBatch5ProductVideoProps: ProductVideoProps = {
 const defaultBatch6ProductVideoProps: ProductVideoProps = {
   ...defaultProductVideoProps,
   templateId: "motion-control",
+};
+const defaultBatch7ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "luxury-object",
 };
 
 export const MyComposition: React.FC = () => {
@@ -286,6 +291,36 @@ export const MyComposition: React.FC = () => {
         width={productVideoFormats.vertical.width}
         height={productVideoFormats.vertical.height}
         defaultProps={{...defaultBatch6ProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch7Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch7Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch7ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch7Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch7Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch7ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch7Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch7Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch7ProductVideoProps, formatId: "vertical"}}
       />
     </>
   );

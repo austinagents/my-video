@@ -47,7 +47,7 @@ const defaultState: ProductVideoProps = {
 export const AdvancedStudio2App: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const [project, setProject] = React.useState<ProductVideoProps>(defaultState);
-  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | null>(null);
+  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | null>(null);
   const [isProcessingImage, setIsProcessingImage] = React.useState(false);
   const [imageMessage, setImageMessage] = React.useState("");
   const [renderState, setRenderState] = React.useState<
@@ -169,7 +169,7 @@ export const AdvancedStudio2App: React.FC = () => {
 
       <main className="as2-workspace">
         <aside className="as2-library">
-          {([1, 2, 3, 4, 5, 6] as const).map((batch) => (
+          {([1, 2, 3, 4, 5, 6, 7] as const).map((batch) => (
             <React.Fragment key={batch}>
               <button
                 className="as2-template-folder"
