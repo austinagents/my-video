@@ -39,6 +39,38 @@ const studioApi = (): Plugin => ({
         return;
       }
 
+      if (
+        request.url?.startsWith("/api/export-advanced/") &&
+        request.method === "GET"
+      ) {
+        const formatId = request.url
+          .replace("/api/export-advanced/", "")
+          .split("?")[0];
+        if (!["portrait", "square", "vertical"].includes(formatId)) {
+          response.statusCode = 400;
+          response.end("Invalid Advanced Studio format.");
+          return;
+        }
+
+        const fileName = `advanced-studio-${formatId}.mp4`;
+        const filePath = path.resolve("output", fileName);
+        if (!fs.existsSync(filePath)) {
+          response.statusCode = 404;
+          response.end("Export not found.");
+          return;
+        }
+
+        response.statusCode = 200;
+        response.setHeader("Content-Type", "video/mp4");
+        response.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${fileName}"`,
+        );
+        response.setHeader("Content-Length", fs.statSync(filePath).size);
+        fs.createReadStream(filePath).pipe(response);
+        return;
+      }
+
       if (request.url === "/api/project" && request.method === "POST") {
         try {
           const body = await readBody(request);
@@ -152,7 +184,7 @@ const studioApi = (): Plugin => ({
           fs.mkdirSync(path.resolve("output"), {recursive: true});
 
           fs.writeFileSync(
-            path.resolve("public/advanced-project.json"),
+            path.resolve("output/advanced-project.json"),
             JSON.stringify(props, null, 2),
           );
 
@@ -164,7 +196,7 @@ const studioApi = (): Plugin => ({
               "src/index.ts",
               compositionId,
               `output/advanced-studio-${formatId}.mp4`,
-              "--props=public/advanced-project.json",
+              "--props=output/advanced-project.json",
               `--duration=${durationFrames}`,
               "--overwrite",
             ],
@@ -182,6 +214,7 @@ const studioApi = (): Plugin => ({
               JSON.stringify({
                 ok: code === 0,
                 output: `output/advanced-studio-${formatId}.mp4`,
+                downloadUrl: `/api/export-advanced/${formatId}`,
               }),
             );
           });

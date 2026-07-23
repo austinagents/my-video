@@ -197,6 +197,7 @@ export const getAdvancedStudioCameraPath = (
 export const cameraPathStyle = (
   preset: AdvancedStudioCameraPathPreset | undefined,
   progress: number,
+  includeScale = true,
 ): React.CSSProperties => {
   const path = getAdvancedStudioCameraPath(preset);
   if (path.id === "static") return {};
@@ -208,7 +209,9 @@ export const cameraPathStyle = (
   const scale = from.scale + (to.scale - from.scale) * eased;
 
   return {
-    transform: `translate(${x}px, ${y}px) scale(${scale})`,
+    transform: includeScale
+      ? `translate(${x}px, ${y}px) scale(${scale})`
+      : `translate(${x}px, ${y}px)`,
     transformOrigin: "center center",
   };
 };

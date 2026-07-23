@@ -9,6 +9,7 @@ export type BoardSceneContent = {
   project?: StudioProject;
   activeBlockId: string | null;
   animation: AnimationPreset;
+  stableTextMotion?: boolean;
 };
 
 export const BoardSceneRenderer: React.FC<
@@ -54,7 +55,18 @@ export const BoardSceneRenderer: React.FC<
       }}
     >
       <div
-        style={motion.style}
+        style={
+          content.stableTextMotion
+            ? {
+                position: "relative",
+                left: motion.translateX * fit,
+                top: motion.translateY * fit,
+                opacity: motion.opacity,
+                transform: `scale(${fit})`,
+                transformOrigin: "center center",
+              }
+            : motion.style
+        }
       >
         <Board
           project={project}

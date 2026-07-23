@@ -19,6 +19,11 @@ export type InfographicSceneContent = {
   controls?: StudioControls;
 };
 
+type InfographicSceneRendererProps =
+  SceneRendererProps<InfographicSceneContent> & {
+    visualStyle?: React.CSSProperties;
+  };
+
 const clamp = {
   extrapolateLeft: "clamp" as const,
   extrapolateRight: "clamp" as const,
@@ -84,7 +89,7 @@ const designAnimationStyle = (
 };
 
 export const InfographicSceneRenderer: React.FC<
-  SceneRendererProps<InfographicSceneContent>
+  InfographicSceneRendererProps
 > = ({
   sceneId,
   format,
@@ -93,6 +98,7 @@ export const InfographicSceneRenderer: React.FC<
   content,
   onReady,
   onError,
+  visualStyle,
 }) => {
   const renderHandleRef = React.useRef<number | null>(null);
   const completedRef = React.useRef(false);
@@ -188,56 +194,64 @@ export const InfographicSceneRenderer: React.FC<
       </div>
 
       <div
-        data-advanced-scene={sceneId}
-        data-selected-design={design.id}
-        data-engine={design.engine}
         style={{
           position: "absolute",
-          left: layout.contentLeft,
-          top: layout.contentTop,
-          width: layout.contentWidth,
-          height: layout.contentHeight,
-          overflow: "hidden",
-          ...designAnimationStyle(design, progress),
+          inset: 0,
+          ...visualStyle,
         }}
       >
-        {design.engine === "g2" ? (
-          <G2StudioRenderer
-            design={design}
-            content={editableContent}
-            controls={controls}
-            width={layout.contentWidth}
-            height={layout.contentHeight}
-            frameWidth={format.width}
-            frameHeight={format.height}
-            onReady={finish}
-            onError={fail}
-          />
-        ) : design.engine === "g6" ? (
-          <G6StudioRenderer
-            design={design}
-            content={editableContent}
-            controls={controls}
-            width={layout.contentWidth}
-            height={layout.contentHeight}
-            frameWidth={format.width}
-            frameHeight={format.height}
-            onReady={finish}
-            onError={fail}
-          />
-        ) : (
-          <S2StudioRenderer
-            design={design}
-            content={editableContent}
-            controls={controls}
-            width={layout.contentWidth}
-            height={layout.contentHeight}
-            frameWidth={format.width}
-            frameHeight={format.height}
-            onReady={finish}
-            onError={fail}
-          />
-        )}
+        <div
+          data-advanced-scene={sceneId}
+          data-selected-design={design.id}
+          data-engine={design.engine}
+          style={{
+            position: "absolute",
+            left: layout.contentLeft,
+            top: layout.contentTop,
+            width: layout.contentWidth,
+            height: layout.contentHeight,
+            overflow: "hidden",
+            ...designAnimationStyle(design, progress),
+          }}
+        >
+          {design.engine === "g2" ? (
+            <G2StudioRenderer
+              design={design}
+              content={editableContent}
+              controls={controls}
+              width={layout.contentWidth}
+              height={layout.contentHeight}
+              frameWidth={format.width}
+              frameHeight={format.height}
+              onReady={finish}
+              onError={fail}
+            />
+          ) : design.engine === "g6" ? (
+            <G6StudioRenderer
+              design={design}
+              content={editableContent}
+              controls={controls}
+              width={layout.contentWidth}
+              height={layout.contentHeight}
+              frameWidth={format.width}
+              frameHeight={format.height}
+              onReady={finish}
+              onError={fail}
+            />
+          ) : (
+            <S2StudioRenderer
+              design={design}
+              content={editableContent}
+              controls={controls}
+              width={layout.contentWidth}
+              height={layout.contentHeight}
+              frameWidth={format.width}
+              frameHeight={format.height}
+              onReady={finish}
+              onError={fail}
+            />
+          )}
+        </div>
       </div>
 
     </div>

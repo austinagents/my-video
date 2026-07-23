@@ -34,6 +34,7 @@ export type AdvancedStudioInfographicContent = {
   designId: string;
   content?: StudioContent;
   controls?: StudioControls;
+  stableTextMotion?: boolean;
 };
 
 export type AdvancedStudioScene = {

@@ -19,7 +19,6 @@ import {
   Sparkles,
   Square,
   Trash2,
-  Upload,
   Wand2,
   WandSparkles,
   ZoomIn,
@@ -351,7 +350,7 @@ export const AdvancedStudioApp: React.FC = () => {
     requestAnimationFrame(() => playerRef.current?.play());
   };
 
-  const renderAdvanced = async () => {
+  const exportAdvanced = async () => {
     setRenderStatus("rendering");
     setRenderOutput("");
     setRenderError("");
@@ -382,15 +381,24 @@ export const AdvancedStudioApp: React.FC = () => {
       });
       const result = (await response.json().catch(() => ({}))) as {
         output?: string;
+        downloadUrl?: string;
         error?: string;
       };
       if (!response.ok) {
-        throw new Error(result.error ?? "Render failed");
+        throw new Error(result.error ?? "Export failed");
       }
       setRenderOutput(result.output ?? "");
       setRenderStatus("complete");
+      if (result.downloadUrl) {
+        const download = document.createElement("a");
+        download.href = result.downloadUrl;
+        download.download = "";
+        document.body.appendChild(download);
+        download.click();
+        download.remove();
+      }
     } catch (error) {
-      setRenderError(error instanceof Error ? error.message : "Render failed");
+      setRenderError(error instanceof Error ? error.message : "Export failed");
       setRenderStatus("error");
     }
   };
@@ -451,36 +459,28 @@ export const AdvancedStudioApp: React.FC = () => {
             <Play size={16} /> Preview Scene
           </button>
           <button
-            className="toolbar-button disabled"
-            type="button"
-            disabled
-            title="Export is not connected in this phase"
-          >
-            <Upload size={16} /> Export
-          </button>
-          <button
             className="render-button"
             type="button"
-            onClick={renderAdvanced}
+            onClick={exportAdvanced}
             disabled={renderStatus === "rendering"}
           >
-            <Wand2 size={16} />
+            <Download size={16} />
             {renderStatus === "rendering"
-              ? "Rendering"
+              ? "Exporting"
               : renderStatus === "complete"
-                ? "Rendered"
+                ? "Exported"
                 : renderStatus === "error"
-                  ? "Render Failed"
-                  : "Render"}
+                  ? "Export Failed"
+                  : "Export"}
           </button>
           {renderStatus !== "idle" ? (
             <div className={`render-feedback ${renderStatus}`}>
               <strong>
                 {renderStatus === "rendering"
-                  ? "Rendering"
+                  ? "Exporting"
                   : renderStatus === "complete"
-                    ? "Render complete"
-                    : "Render failed"}
+                    ? "Export complete"
+                    : "Export failed"}
               </strong>
               {renderOutput ? <span>{renderOutput}</span> : null}
               {renderError ? <span>{renderError}</span> : null}

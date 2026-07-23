@@ -62,8 +62,8 @@ const donutBreakdownDesign = requireDesign("g2-donut-breakdown", "g2");
 const conversionFunnelDesign = requireDesign("g2-conversion-funnel", "g2");
 const smoothTrendDesign = requireDesign("g2-smooth-trend", "g2");
 const kpiSnapshotDesign = requireDesign("g2-kpi-sparkline", "g2");
-const whyItHappensDesign = requireDesign("g6-why-it-happens", "g6");
-const resourceFlowDesign = requireDesign("g6-resource-flow", "g6");
+const organizationTreeDesign = requireDesign("g6-organization-tree", "g6");
+const diagnosticFlowDesign = requireDesign("g6-diagnostic-flow", "g6");
 const decisionTreeDesign = requireDesign("g6-decision-tree", "g6");
 const scorecardDesign = requireDesign("s2-monthly-scorecard", "s2");
 
@@ -82,6 +82,7 @@ const createReferenceInfographicContent = (
   designId: design.id,
   content: overrideContent,
   controls: defaultControls,
+  stableTextMotion: true,
 });
 
 const styleReferenceBoardProject: StudioProject = {
@@ -177,6 +178,7 @@ const scenes: AdvancedStudioScene[] = [
       project: styleReferenceBoardProject,
       activeBlockId: "hook",
       animation: "spotlight",
+      stableTextMotion: true,
     },
     transitionOut: crossfade(12),
     cameraPath: {
@@ -192,6 +194,7 @@ const scenes: AdvancedStudioScene[] = [
       project: styleReferenceBoardProject,
       activeBlockId: "structure",
       animation: "focus",
+      stableTextMotion: true,
     },
     transitionIn: crossfade(12),
     transitionOut: crossfade(12),
@@ -205,7 +208,7 @@ const scenes: AdvancedStudioScene[] = [
     title: "Why the Message Fails",
     durationFrames: 90,
     content: createReferenceInfographicContent(
-      whyItHappensDesign,
+      organizationTreeDesign,
       content(
         "Why the Message Fails",
         "Most viewers lose the thread before the proof arrives",
@@ -262,6 +265,7 @@ const scenes: AdvancedStudioScene[] = [
       project: styleReferenceBoardProject,
       activeBlockId: "proof",
       animation: "spotlight",
+      stableTextMotion: true,
     },
     transitionIn: crossfade(12),
     transitionOut: crossfade(12),
@@ -298,6 +302,7 @@ const scenes: AdvancedStudioScene[] = [
       project: styleReferenceBoardProject,
       activeBlockId: "path",
       animation: "reveal",
+      stableTextMotion: true,
     },
     transitionIn: crossfade(12),
     transitionOut: crossfade(12),
@@ -331,7 +336,7 @@ const scenes: AdvancedStudioScene[] = [
     title: "Visual Flow",
     durationFrames: 90,
     content: createReferenceInfographicContent(
-      resourceFlowDesign,
+      diagnosticFlowDesign,
       content(
         "Visual Flow",
         "Each cut turns one idea into the next visual cue",
@@ -390,6 +395,7 @@ const scenes: AdvancedStudioScene[] = [
       project: styleReferenceBoardProject,
       activeBlockId: "decision",
       animation: "compare",
+      stableTextMotion: true,
     },
     transitionIn: crossfade(12),
     transitionOut: crossfade(10),
@@ -461,6 +467,7 @@ const scenes: AdvancedStudioScene[] = [
       project: styleReferenceBoardProject,
       activeBlockId: null,
       animation: "overview",
+      stableTextMotion: true,
     },
     transitionIn: crossfade(12),
     cameraPath: {
@@ -600,9 +607,13 @@ const renderScene = ({
     onError: (message: string) => onError(scene.id, message),
   };
 
+  const sceneContent = scene.content as
+    | AdvancedStudioInfographicContent
+    | BoardSceneContent;
   const pathStyle = cameraPathStyle(
     scene.cameraPath?.preset ?? scene.cameraPreset ?? "static",
     progress,
+    !sceneContent.stableTextMotion,
   );
 
   if (scene.type === "g2" || scene.type === "g6" || scene.type === "s2") {
@@ -634,16 +645,22 @@ const renderScene = ({
           position: "absolute",
           inset: 0,
           overflow: "hidden",
-          ...pathStyle,
         }}
       >
         <InfographicSceneRenderer
           {...rendererProps}
           content={infographicContent}
+          visualStyle={pathStyle}
         />
       </div>
     );
   }
+
+  const boardPathStyle = cameraPathStyle(
+    scene.cameraPath?.preset ?? scene.cameraPreset ?? "static",
+    progress,
+    !sceneContent.stableTextMotion,
+  );
 
   return (
     <div
@@ -651,7 +668,7 @@ const renderScene = ({
         position: "absolute",
         inset: 0,
         overflow: "hidden",
-        ...pathStyle,
+        ...boardPathStyle,
       }}
     >
       <BoardSceneRenderer

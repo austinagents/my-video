@@ -30,6 +30,9 @@ export type BoardSemanticMotion = {
   activeBlockId: string | null;
   dimInactive: boolean;
   opacity: number;
+  translateX: number;
+  translateY: number;
+  scale: number;
   transform: string;
   style: React.CSSProperties;
 };
@@ -107,6 +110,9 @@ export const getBoardSemanticMotion = ({
     activeBlockId: activeBlock?.id ?? null,
     dimInactive: animation === "spotlight",
     opacity,
+    translateX,
+    translateY,
+    scale,
     transform,
     style: {
       opacity,

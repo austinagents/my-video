@@ -24,6 +24,7 @@ const dataFrom = (nodes: StudioNode[], edges: StudioEdge[]): GraphData => ({
       size: index === 0 ? [132, 54] : [118, 46],
       labelText: item.label,
       labelFill: index === 0 ? "#17130a" : studioTheme.text,
+      labelPlacement: "center",
       labelFontSize: 12,
       labelFontWeight: index === 0 ? 700 : 600,
       labelWordWrap: true,
@@ -74,6 +75,7 @@ const hierarchyDataFrom = (hierarchy: G6HierarchyData): GraphData => {
         size: depth === 0 ? [150, 58] : depth === 1 ? [132, 50] : [112, 42],
         labelText: item.label,
         labelFill: depth === 0 ? "#17130a" : studioTheme.text,
+        labelPlacement: "center",
         labelFontSize: depth === 0 ? 13 : 11,
         labelFontWeight: depth <= 1 ? 700 : 600,
         labelWordWrap: true,
@@ -118,9 +120,18 @@ const graph = (
     height: ctx.height,
     background: "transparent",
     autoResize: false,
+    autoFit: {
+      type: "view",
+      options: {when: "always", direction: "both"},
+      animation: false,
+    },
+    padding: Math.round(Math.min(ctx.width, ctx.height) * 0.08),
     animation: false,
     data,
-    layout,
+    layout:
+      layout && typeof layout === "object"
+        ? {...layout, nodeSize: [132, 54]}
+        : layout,
     node: {
       type: "rect",
     },

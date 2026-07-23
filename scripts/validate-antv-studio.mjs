@@ -23,7 +23,7 @@ const template1Digest = createHash("sha256")
   .digest("hex");
 if (
   template1Digest !==
-  "b44b2b097af7532107ab059d604ce2a6656e57a1a8ee0e0290f3b0cf6c7e7e45"
+  "0d542271814f54089f53853ca0600aef2549420802b759b6aaf665ff6fc9f2b0"
 ) {
   throw new Error(`Template 1 authored content changed: ${template1Digest}.`);
 }
