@@ -6,8 +6,8 @@ import {spawn} from "node:child_process";
 import {getAdvancedStudioProjectDuration} from "./src/advanced-studio/scene-contract";
 import {
   getProductVideoDuration,
-  productVideoBatch2Duration,
 } from "./src/advanced-studio2/ProductVideo";
+import {getProductTemplate} from "./src/advanced-studio2/product-templates";
 
 const readBody = async (request: import("node:http").IncomingMessage) => {
   return await new Promise<string>((resolve, reject) => {
@@ -397,19 +397,19 @@ const studioApi = (): Plugin => ({
             throw new Error("Invalid Advanced Studio 2 format.");
           }
           const durationInFrames = getProductVideoDuration(props.templateId);
-          const isBatch2 = durationInFrames === productVideoBatch2Duration;
+          const batch = getProductTemplate(props.templateId).batch;
+          const compositionPrefix =
+            batch === 3
+              ? "AdvancedStudio2ProductBatch3"
+              : batch === 2
+                ? "AdvancedStudio2ProductBatch2"
+                : "AdvancedStudio2Product";
           const compositionId =
             formatId === "square"
-              ? isBatch2
-                ? "AdvancedStudio2ProductBatch2Square"
-                : "AdvancedStudio2ProductSquare"
+              ? `${compositionPrefix}Square`
               : formatId === "vertical"
-                ? isBatch2
-                  ? "AdvancedStudio2ProductBatch2Vertical"
-                  : "AdvancedStudio2ProductVertical"
-                : isBatch2
-                  ? "AdvancedStudio2ProductBatch2Portrait"
-                  : "AdvancedStudio2ProductPortrait";
+                ? `${compositionPrefix}Vertical`
+                : `${compositionPrefix}Portrait`;
           fs.mkdirSync(path.resolve("output"), {recursive: true});
           const propsPath = path.resolve("output/advanced-studio2-project.json");
           fs.writeFileSync(propsPath, JSON.stringify(props, null, 2));
