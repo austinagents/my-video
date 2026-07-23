@@ -18,6 +18,7 @@ import {
   productVideoBatch6Duration,
   productVideoBatch7Duration,
   productVideoBatch8Duration,
+  productVideoBatch9Duration,
   productVideoDuration,
   productVideoFormats,
   productVideoFps,
@@ -64,6 +65,10 @@ const defaultBatch7ProductVideoProps: ProductVideoProps = {
 const defaultBatch8ProductVideoProps: ProductVideoProps = {
   ...defaultProductVideoProps,
   templateId: "angle-study",
+};
+const defaultBatch9ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "curtain-call",
 };
 
 export const MyComposition: React.FC = () => {
@@ -356,6 +361,36 @@ export const MyComposition: React.FC = () => {
         width={productVideoFormats.vertical.width}
         height={productVideoFormats.vertical.height}
         defaultProps={{...defaultBatch8ProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch9Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch9Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch9ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch9Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch9Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch9ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch9Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch9Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch9ProductVideoProps, formatId: "vertical"}}
       />
     </>
   );

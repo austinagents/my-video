@@ -78,7 +78,17 @@ export type ProductTemplateId =
   | "package-to-product"
   | "feature-in-focus"
   | "human-moment"
-  | "campaign-cut";
+  | "campaign-cut"
+  | "curtain-call"
+  | "stage-flats"
+  | "frame-step"
+  | "projection-room"
+  | "silhouette-trace"
+  | "object-choreography"
+  | "five-beat-film"
+  | "worlds-around-object"
+  | "living-still"
+  | "tension-release";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -112,7 +122,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
   accent: string;
   background: string;
   surface: string;
@@ -1700,6 +1710,196 @@ export const productTemplates: ProductTemplate[] = [
       {id: "campaignVideo", label: "Campaign video", kind: "video"},
     ],
   },
+  {
+    id: "curtain-call",
+    name: "Curtain Call",
+    category: "Theatrical",
+    description: "A restrained theatrical conceal-and-reveal built around one decisive hero moment.",
+    batch: 9,
+    accent: "#f2c96d",
+    background: "#090909",
+    surface: "#24190f",
+    foreground: "#fff8e8",
+    muted: "#b4a48b",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.94,
+    eyebrow: "PRESENTING",
+    headline: "Worth the wait.",
+    subheadline: "Anticipation gives way to one unforgettable product.",
+    cta: "Take the stage",
+  },
+  {
+    id: "stage-flats",
+    name: "Stage Flats",
+    category: "Set Design",
+    description: "Graphic scenery unfolds around one product from a deliberately fixed camera.",
+    batch: 9,
+    accent: "#ff684f",
+    background: "#e8dfd0",
+    surface: "#173f48",
+    foreground: "#111312",
+    muted: "#665f55",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.92,
+    eyebrow: "ONE OBJECT / THREE ACTS",
+    headline: "The world moves around it.",
+    subheadline: "A graphic stage built to make the product impossible to miss.",
+    cta: "Enter the scene",
+  },
+  {
+    id: "frame-step",
+    name: "Frame Step",
+    category: "Tactile Motion",
+    description: "Deliberately stepped timing gives one product a crafted stop-motion character.",
+    batch: 9,
+    accent: "#ff4f7d",
+    background: "#f4e9d8",
+    surface: "#2a68ff",
+    foreground: "#161616",
+    muted: "#70685e",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.92,
+    eyebrow: "POSE / HOLD / MOVE",
+    headline: "Made to move differently.",
+    subheadline: "Tactile rhythm turns every pose into a statement.",
+    cta: "See the difference",
+  },
+  {
+    id: "projection-room",
+    name: "Projection Room",
+    category: "Cinema",
+    description: "Responsive projector beams and apertures turn the product reveal into an event.",
+    batch: 9,
+    accent: "#62dfff",
+    background: "#05080d",
+    surface: "#101b28",
+    foreground: "#f5fbff",
+    muted: "#8da5b6",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "NOW SHOWING",
+    headline: "Made for the big screen.",
+    subheadline: "Light, atmosphere, and one product in perfect focus.",
+    cta: "Watch the premiere",
+  },
+  {
+    id: "silhouette-trace",
+    name: "Silhouette Trace",
+    category: "Form",
+    description: "Edge light establishes the product shape before color and detail arrive.",
+    batch: 9,
+    accent: "#c6ff4d",
+    background: "#030504",
+    surface: "#112019",
+    foreground: "#f6fff0",
+    muted: "#8fa18d",
+    layout: "split",
+    imageFit: "contain",
+    imageScale: 0.96,
+    eyebrow: "FORM / RECOGNIZED",
+    headline: "Iconic before it is revealed.",
+    subheadline: "A silhouette strong enough to speak before the details do.",
+    cta: "Meet the icon",
+  },
+  {
+    id: "object-choreography",
+    name: "Object Choreography",
+    category: "Motion Direction",
+    description: "A precise compress-separate-align-lock movement resolves into one hero product.",
+    batch: 9,
+    accent: "#ff5d35",
+    background: "#eee8dc",
+    surface: "#1c2850",
+    foreground: "#111319",
+    muted: "#68645d",
+    layout: "technical",
+    imageFit: "contain",
+    imageScale: 0.88,
+    eyebrow: "MOTION / WITH PURPOSE",
+    headline: "Every move has a reason.",
+    subheadline: "Controlled choreography turns function into visual identity.",
+    cta: "See it align",
+  },
+  {
+    id: "five-beat-film",
+    name: "Five-Beat Film",
+    category: "Modular Campaign",
+    description: "Five self-contained visual beats combine into one disciplined commercial.",
+    batch: 9,
+    accent: "#ffd500",
+    background: "#111111",
+    surface: "#2644ff",
+    foreground: "#ffffff",
+    muted: "#b6b6b6",
+    layout: "poster",
+    imageFit: "contain",
+    imageScale: 0.9,
+    eyebrow: "FIVE BEATS / ONE MESSAGE",
+    headline: "Built to land every point.",
+    subheadline: "Identity, tension, reveal, proof, and one final packshot.",
+    cta: "Make it count",
+  },
+  {
+    id: "worlds-around-object",
+    name: "Worlds Around One Object",
+    category: "Graphic Journey",
+    description: "Three graphic environments travel past one consistent, truthful product image.",
+    batch: 9,
+    accent: "#ff563e",
+    background: "#e7f1ec",
+    surface: "#173d35",
+    foreground: "#12201d",
+    muted: "#64736d",
+    layout: "editorial",
+    imageFit: "contain",
+    imageScale: 0.93,
+    eyebrow: "ONE OBJECT / MANY WORLDS",
+    headline: "At home everywhere.",
+    subheadline: "The scenery changes. The product remains unmistakable.",
+    cta: "Travel further",
+  },
+  {
+    id: "living-still",
+    name: "Living Still",
+    category: "Cinemagraph",
+    description: "A composed hero image comes alive through only light, shadow, and restrained type.",
+    batch: 9,
+    accent: "#d6ff68",
+    background: "#16170f",
+    surface: "#303326",
+    foreground: "#fbfbea",
+    muted: "#a9aa94",
+    layout: "split",
+    imageFit: "contain",
+    imageScale: 0.95,
+    eyebrow: "STILL / NOT STATIC",
+    headline: "Quietly impossible to ignore.",
+    subheadline: "The smallest movement can hold the longest attention.",
+    cta: "Stay with it",
+  },
+  {
+    id: "tension-release",
+    name: "Tension / Release",
+    category: "Hero Commercial",
+    description: "Progressive visual pressure releases into a spacious, authoritative final packshot.",
+    batch: 9,
+    accent: "#ff3f34",
+    background: "#f0ede5",
+    surface: "#111111",
+    foreground: "#111111",
+    muted: "#6c6860",
+    layout: "center",
+    imageFit: "contain",
+    imageScale: 0.95,
+    eyebrow: "ANTICIPATION / ARRIVAL",
+    headline: "The moment everything opens.",
+    subheadline: "Pressure builds. The product delivers the release.",
+    cta: "Experience the arrival",
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -1716,6 +1916,7 @@ export const productVideoBatch5Duration = 300;
 export const productVideoBatch6Duration = 300;
 export const productVideoBatch7Duration = 300;
 export const productVideoBatch8Duration = 300;
+export const productVideoBatch9Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -1726,5 +1927,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 6) return productVideoBatch6Duration;
   if (batch === 7) return productVideoBatch7Duration;
   if (batch === 8) return productVideoBatch8Duration;
+  if (batch === 9) return productVideoBatch9Duration;
   return productVideoDuration;
 };
