@@ -55,7 +55,7 @@ const defaultState: ProductVideoProps = {
 export const AdvancedStudio2App: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const [project, setProject] = React.useState<ProductVideoProps>(defaultState);
-  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | null>(null);
+  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | null>(null);
   const [isProcessingImage, setIsProcessingImage] = React.useState(false);
   const [imageMessage, setImageMessage] = React.useState("");
   const [renderState, setRenderState] = React.useState<
@@ -271,7 +271,8 @@ export const AdvancedStudio2App: React.FC = () => {
         selectedTemplate.batch !== 14 &&
         selectedTemplate.batch !== 15 &&
         selectedTemplate.batch !== 16 &&
-        selectedTemplate.batch !== 17) ||
+        selectedTemplate.batch !== 17 &&
+        selectedTemplate.batch !== 18) ||
       !selectedTemplate.polyHavenDefaultAssetId
     ) {
       return;
@@ -338,7 +339,8 @@ export const AdvancedStudio2App: React.FC = () => {
                 selectedTemplate.batch === 14 ||
                 selectedTemplate.batch === 15 ||
                 selectedTemplate.batch === 16 ||
-                selectedTemplate.batch === 17) &&
+                selectedTemplate.batch === 17 ||
+                selectedTemplate.batch === 18) &&
                 !project.polyHavenTexture)
             }
           >
@@ -350,7 +352,8 @@ export const AdvancedStudio2App: React.FC = () => {
                     selectedTemplate.batch === 14 ||
                     selectedTemplate.batch === 15 ||
                     selectedTemplate.batch === 16 ||
-                    selectedTemplate.batch === 17) &&
+                    selectedTemplate.batch === 17 ||
+                    selectedTemplate.batch === 18) &&
                   (!project.polyHavenTexture ||
                     polyHavenState === "downloading")
                 ? "Preparing material…"
@@ -361,7 +364,7 @@ export const AdvancedStudio2App: React.FC = () => {
 
       <main className="as2-workspace">
         <aside className="as2-library">
-          {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] as const).map((batch) => (
+          {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18] as const).map((batch) => (
             <React.Fragment key={batch}>
               <button
                 className="as2-template-folder"
@@ -388,6 +391,9 @@ export const AdvancedStudio2App: React.FC = () => {
                   }
                   if (batch === 17 && selectedTemplate.batch !== 17) {
                     update("templateId", "palindrome-hero");
+                  }
+                  if (batch === 18 && selectedTemplate.batch !== 18) {
+                    update("templateId", "faultline");
                   }
                 }}
               >

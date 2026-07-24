@@ -66,7 +66,7 @@ const finishStyle = (s: Scene): React.CSSProperties => {
   const finish = move(s.frame, [220, 278], [0, 1]);
   return {
     position: "absolute", left: "7%", right: "7%", bottom: "4%",
-    opacity: finish, transform: `translateY(${(1 - finish) * 28}px)`,
+    opacity: finish,
   };
 };
 

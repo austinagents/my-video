@@ -27,6 +27,7 @@ import {
   productVideoBatch15Duration,
   productVideoBatch16Duration,
   productVideoBatch17Duration,
+  productVideoBatch18Duration,
   productVideoDuration,
   productVideoFormats,
   productVideoFps,
@@ -109,6 +110,10 @@ const defaultBatch16ProductVideoProps: ProductVideoProps = {
 const defaultBatch17ProductVideoProps: ProductVideoProps = {
   ...defaultProductVideoProps,
   templateId: "palindrome-hero",
+};
+const defaultBatch18ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "faultline",
 };
 
 export const MyComposition: React.FC = () => {
@@ -671,6 +676,36 @@ export const MyComposition: React.FC = () => {
         width={productVideoFormats.vertical.width}
         height={productVideoFormats.vertical.height}
         defaultProps={{...defaultBatch17ProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch18Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch18Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch18ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch18Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch18Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch18ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch18Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch18Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch18ProductVideoProps, formatId: "vertical"}}
       />
     </>
   );

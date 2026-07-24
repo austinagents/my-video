@@ -160,7 +160,28 @@ export type ProductTemplateId =
   | "glass-memory"
   | "horizon-fold"
   | "palindrome-hero"
-  | "product-callback";
+  | "product-callback"
+  | "orbit-relay"
+  | "reflection-tide"
+  | "folding-horizon-loop"
+  | "eclipse-halo-loop"
+  | "conveyor-infinity"
+  | "magnetic-bloom-loop"
+  | "prism-turn-loop"
+  | "curtain-breath-loop"
+  | "pendulum-stage-loop"
+  | "ripple-return-loop"
+  | "light-thread-reveal"
+  | "stamp-impression-reveal"
+  | "aperture-mark-reveal"
+  | "ribbon-signature-reveal"
+  | "grid-signal-reveal"
+  | "shadow-glyph-reveal"
+  | "particle-monogram-reveal"
+  | "cutline-frame-reveal"
+  | "echo-arc-reveal"
+  | "material-seam-reveal"
+  | "faultline";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -194,7 +215,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18;
   accent: string;
   background: string;
   surface: string;
@@ -3009,6 +3030,173 @@ export const productTemplates: ProductTemplate[] = [
     headline: "Every detail comes back.", subheadline: "The opening clue becomes the final product signature.",
     cta: "See the connection", polyHavenDefaultAssetId: "painted_plaster_wall",
   },
+  {
+    id: "orbit-relay", name: "Orbit Relay", category: "Seamless Product Loop",
+    description: "Three illuminated markers relay one uninterrupted orbit around the product.", batch: 17,
+    accent: "#79d9ff", background: "#071018", surface: "#173847", foreground: "#f4fbff", muted: "#9fb9c6",
+    layout: "center", imageFit: "contain", imageScale: 0.96, eyebrow: "ONE ORBIT / NO END",
+    headline: "Attention stays in motion.", subheadline: "A continuous relay keeps returning to the product.",
+    cta: "Follow the orbit", polyHavenDefaultAssetId: "blue_metal_plate",
+  },
+  {
+    id: "reflection-tide", name: "Reflection Tide", category: "Seamless Product Loop",
+    description: "A mirrored product reflection rises and recedes in a perfectly repeating material tide.", batch: 17,
+    accent: "#8eead8", background: "#071512", surface: "#204940", foreground: "#f1fffb", muted: "#9bc5bb",
+    layout: "poster", imageFit: "contain", imageScale: 0.96, eyebrow: "RISE / REFLECT / RETURN",
+    headline: "The surface remembers.", subheadline: "Every reflection returns to the same defining form.",
+    cta: "Meet the tide", polyHavenDefaultAssetId: "marble_01",
+  },
+  {
+    id: "folding-horizon-loop", name: "Folding Horizon", category: "Seamless Product Loop",
+    description: "A continuous architectural plane folds up, frames the product, and returns flat.", batch: 17,
+    accent: "#e5bb72", background: "#151109", surface: "#665035", foreground: "#fff9eb", muted: "#c8b99d",
+    layout: "center", imageFit: "contain", imageScale: 0.96, eyebrow: "PLANE / STAGE / PLANE",
+    headline: "The stage keeps becoming.", subheadline: "One material surface transforms without breaking the shot.",
+    cta: "Follow the fold", polyHavenDefaultAssetId: "oak_veneer_01",
+  },
+  {
+    id: "eclipse-halo-loop", name: "Eclipse Halo", category: "Seamless Product Loop",
+    description: "A traveling eclipse repeatedly transfers its halo to the product edge.", batch: 17,
+    accent: "#ffd46c", background: "#07080c", surface: "#323039", foreground: "#fffaf0", muted: "#bcb7ae",
+    layout: "poster", imageFit: "contain", imageScale: 0.96, eyebrow: "SHADOW / LIGHT / ICON",
+    headline: "The light always returns.", subheadline: "A complete eclipse resolves around one constant object.",
+    cta: "Enter the halo", polyHavenDefaultAssetId: "asphalt_02",
+  },
+  {
+    id: "conveyor-infinity", name: "Conveyor Infinity", category: "Seamless Product Loop",
+    description: "Product echoes travel an impossible conveyor and merge back into the original.", batch: 17,
+    accent: "#ff866f", background: "#120b0b", surface: "#4c2d2a", foreground: "#fff7f4", muted: "#c7aaa4",
+    layout: "technical", imageFit: "contain", imageScale: 0.96, eyebrow: "ONE OBJECT / EVERY POSITION",
+    headline: "The line never stops.", subheadline: "Every passing image returns to the original product.",
+    cta: "Stay on the line", polyHavenDefaultAssetId: "concrete_floor_worn_001",
+  },
+  {
+    id: "magnetic-bloom-loop", name: "Magnetic Bloom", category: "Seamless Product Loop",
+    description: "Metallic petals align around the hero, bloom outward, and return to stillness.", batch: 17,
+    accent: "#9cffc9", background: "#07110d", surface: "#284b3a", foreground: "#f3fff8", muted: "#a4c3b2",
+    layout: "center", imageFit: "contain", imageScale: 0.96, eyebrow: "ALIGN / BLOOM / ALIGN",
+    headline: "The field follows its form.", subheadline: "Every element opens and closes around the product.",
+    cta: "Enter the field", polyHavenDefaultAssetId: "sandstone_cracks",
+  },
+  {
+    id: "prism-turn-loop", name: "Prism Turn", category: "Seamless Product Loop",
+    description: "A rotating spectral plane separates product color and recombines it seamlessly.", batch: 17,
+    accent: "#8ce7ff", background: "#090b15", surface: "#33345a", foreground: "#f8f9ff", muted: "#afb2ca",
+    layout: "poster", imageFit: "contain", imageScale: 0.96, eyebrow: "SPECTRUM / OBJECT / SPECTRUM",
+    headline: "Every angle finds the color.", subheadline: "The spectrum separates, turns, and returns to one hero.",
+    cta: "Turn the light", polyHavenDefaultAssetId: "terrazzo_tiles",
+  },
+  {
+    id: "curtain-breath-loop", name: "Curtain Breath", category: "Seamless Product Loop",
+    description: "Soft material curtains inhale around the product and exhale to their opening pose.", batch: 17,
+    accent: "#e6b8ff", background: "#120819", surface: "#4b2858", foreground: "#fff7ff", muted: "#c5aacb",
+    layout: "center", imageFit: "contain", imageScale: 0.96, eyebrow: "OPEN / HOLD / RETURN",
+    headline: "The room breathes around it.", subheadline: "A quiet material rhythm keeps the hero continuously revealed.",
+    cta: "Enter the chamber", polyHavenDefaultAssetId: "velour_velvet",
+  },
+  {
+    id: "pendulum-stage-loop", name: "Pendulum Stage", category: "Seamless Product Loop",
+    description: "A single stage light swings through a complete arc and returns without a cut.", batch: 17,
+    accent: "#f3c67d", background: "#100d08", surface: "#4c402e", foreground: "#fffaf0", muted: "#c8bda9",
+    layout: "editorial", imageFit: "contain", imageScale: 0.96, eyebrow: "LIGHT / TIME / RETURN",
+    headline: "Presence holds the center.", subheadline: "The world swings while the product remains composed.",
+    cta: "Hold the moment", polyHavenDefaultAssetId: "painted_plaster_wall",
+  },
+  {
+    id: "ripple-return-loop", name: "Ripple Return", category: "Seamless Product Loop",
+    description: "Concentric material ripples leave the product and reverse precisely back to their source.", batch: 17,
+    accent: "#72c9ff", background: "#071019", surface: "#24465b", foreground: "#f3faff", muted: "#9fbac9",
+    layout: "center", imageFit: "contain", imageScale: 0.96, eyebrow: "SOURCE / SIGNAL / SOURCE",
+    headline: "Every signal leads back.", subheadline: "The product sends the motion and receives its perfect return.",
+    cta: "Follow the signal", polyHavenDefaultAssetId: "grey_cartago_03",
+  },
+  {
+    id: "light-thread-reveal", name: "Light Thread", category: "Motif-Based Product Reveal",
+    description: "One luminous thread traces the product contour before becoming the campaign underline.", batch: 17,
+    accent: "#76e4ff", background: "#061017", surface: "#173d4b", foreground: "#f2fbff", muted: "#9bb9c4",
+    layout: "editorial", imageFit: "contain", imageScale: 0.96, eyebrow: "ONE LINE / ONE SIGNATURE",
+    headline: "The light knows the shape.", subheadline: "A single thread discovers the product and signs the final frame.",
+    cta: "Trace the form", polyHavenDefaultAssetId: "blue_metal_plate",
+  },
+  {
+    id: "stamp-impression-reveal", name: "Stamp Impression", category: "Motif-Based Product Reveal",
+    description: "A pressed mark establishes the motif before lifting to reveal the real product.", batch: 17,
+    accent: "#de4939", background: "#eee5d8", surface: "#a8967d", foreground: "#17130f", muted: "#6e675e",
+    layout: "poster", imageFit: "contain", imageScale: 0.96, eyebrow: "PRESS / LIFT / REMEMBER",
+    headline: "Presence leaves proof.", subheadline: "The opening impression becomes the final campaign seal.",
+    cta: "Make the mark", polyHavenDefaultAssetId: "painted_plaster_wall",
+  },
+  {
+    id: "aperture-mark-reveal", name: "Aperture Mark", category: "Motif-Based Product Reveal",
+    description: "A small iris symbol expands through the product and resolves as a precise frame corner.", batch: 17,
+    accent: "#ffca69", background: "#08090d", surface: "#3c3427", foreground: "#fffaf1", muted: "#bbb3a5",
+    layout: "technical", imageFit: "contain", imageScale: 0.96, eyebrow: "OPEN / FOCUS / LOCK",
+    headline: "The frame finds its subject.", subheadline: "One optical mark opens the view and locks onto the hero.",
+    cta: "Take focus", polyHavenDefaultAssetId: "asphalt_02",
+  },
+  {
+    id: "ribbon-signature-reveal", name: "Ribbon Signature", category: "Motif-Based Product Reveal",
+    description: "A material ribbon crosses the product, loops behind it, and signs the final composition.", batch: 17,
+    accent: "#f1a7d8", background: "#160b13", surface: "#5a304d", foreground: "#fff7fc", muted: "#caacc0",
+    layout: "poster", imageFit: "contain", imageScale: 0.96, eyebrow: "MOVEMENT BECOMES IDENTITY",
+    headline: "A signature in one motion.", subheadline: "The ribbon introduces the product and completes its campaign mark.",
+    cta: "Follow the ribbon", polyHavenDefaultAssetId: "velour_velvet",
+  },
+  {
+    id: "grid-signal-reveal", name: "Grid Signal", category: "Motif-Based Product Reveal",
+    description: "One illuminated grid cell propagates a signal that assembles the product frame.", batch: 17,
+    accent: "#8ef0c0", background: "#07110d", surface: "#234735", foreground: "#f3fff8", muted: "#a2c1b0",
+    layout: "technical", imageFit: "contain", imageScale: 0.96, eyebrow: "CELL / SIGNAL / SYSTEM",
+    headline: "One point activates everything.", subheadline: "The smallest signal builds the complete product presentation.",
+    cta: "Start the signal", polyHavenDefaultAssetId: "concrete_floor_worn_001",
+  },
+  {
+    id: "shadow-glyph-reveal", name: "Shadow Glyph", category: "Motif-Based Product Reveal",
+    description: "A graphic shadow symbol rotates into alignment and reveals the object that cast it.", batch: 17,
+    accent: "#e8b66c", background: "#181007", surface: "#6d5132", foreground: "#fff9ec", muted: "#ccb99d",
+    layout: "editorial", imageFit: "contain", imageScale: 0.96, eyebrow: "SYMBOL / SHADOW / OBJECT",
+    headline: "The mark had a source.", subheadline: "A graphic shadow resolves into the product behind the identity.",
+    cta: "Find the source", polyHavenDefaultAssetId: "oak_veneer_01",
+  },
+  {
+    id: "particle-monogram-reveal", name: "Particle Monogram", category: "Motif-Based Product Reveal",
+    description: "A field of material particles forms a monogram, then parts around the product.", batch: 17,
+    accent: "#b495ff", background: "#0d0917", surface: "#3b2c5b", foreground: "#fbf8ff", muted: "#b5aac8",
+    layout: "center", imageFit: "contain", imageScale: 0.96, eyebrow: "PARTICLE / MARK / PRESENCE",
+    headline: "Identity gathers around it.", subheadline: "The opening symbol disperses into a complete product reveal.",
+    cta: "Gather the mark", polyHavenDefaultAssetId: "sandstone_cracks",
+  },
+  {
+    id: "cutline-frame-reveal", name: "Cutline Frame", category: "Motif-Based Product Reveal",
+    description: "A precise cutline travels through the material and folds open as the final frame.", batch: 17,
+    accent: "#ff715b", background: "#0e0d0b", surface: "#433d34", foreground: "#fff9f3", muted: "#bbb1a5",
+    layout: "technical", imageFit: "contain", imageScale: 0.96, eyebrow: "CUT / OPEN / FRAME",
+    headline: "Precision opens the view.", subheadline: "One controlled line releases the product and defines the campaign.",
+    cta: "Follow the cut", polyHavenDefaultAssetId: "decrepit_wallpaper",
+  },
+  {
+    id: "echo-arc-reveal", name: "Echo Arc", category: "Motif-Based Product Reveal",
+    description: "A single arc repeats across depth before collapsing into a halo behind the product.", batch: 17,
+    accent: "#70d5ff", background: "#061018", surface: "#21465c", foreground: "#f2fbff", muted: "#9ebccc",
+    layout: "poster", imageFit: "contain", imageScale: 0.96, eyebrow: "ARC / ECHO / ICON",
+    headline: "The signal becomes presence.", subheadline: "Every echo converges behind one definitive product.",
+    cta: "Enter the echo", polyHavenDefaultAssetId: "grey_cartago_03",
+  },
+  {
+    id: "material-seam-reveal", name: "Material Seam", category: "Motif-Based Product Reveal",
+    description: "A highlighted seam separates the material and becomes the product's final horizon.", batch: 17,
+    accent: "#efc877", background: "#130f09", surface: "#665338", foreground: "#fff9ec", muted: "#c7b89c",
+    layout: "center", imageFit: "contain", imageScale: 0.96, eyebrow: "SEAM / OPEN / STAGE",
+    headline: "The surface reveals its center.", subheadline: "A single material joint opens into the final product world.",
+    cta: "Open the surface", polyHavenDefaultAssetId: "terrazzo_tiles",
+  },
+  {
+    id: "faultline", name: "Faultline", category: "Cinematic Product Ad",
+    description: "A full-screen mineral wall fractures toward camera, reveals the product, and reforms around its hero frame.", batch: 18,
+    accent: "#D6AA5B", background: "#050505", surface: "#171511", foreground: "#F4F0E8", muted: "#9b968d",
+    layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "",
+    headline: "", subheadline: "", cta: "", polyHavenDefaultAssetId: "aerial_rocks_04",
+  },
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -3034,6 +3222,7 @@ export const productVideoBatch14Duration = 300;
 export const productVideoBatch15Duration = 300;
 export const productVideoBatch16Duration = 300;
 export const productVideoBatch17Duration = 300;
+export const productVideoBatch18Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -3053,5 +3242,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 15) return productVideoBatch15Duration;
   if (batch === 16) return productVideoBatch16Duration;
   if (batch === 17) return productVideoBatch17Duration;
+  if (batch === 18) return productVideoBatch18Duration;
   return productVideoDuration;
 };
