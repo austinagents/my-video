@@ -181,7 +181,17 @@ export type ProductTemplateId =
   | "cutline-frame-reveal"
   | "echo-arc-reveal"
   | "material-seam-reveal"
-  | "faultline";
+  | "faultline"
+  | "marble-split-gate"
+  | "basalt-pedestal-rise"
+  | "slate-mechanical-iris"
+  | "granite-tracking-corridor"
+  | "sandstone-sundial"
+  | "blue-steel-compression-bay"
+  | "terrazzo-rotating-atrium"
+  | "velvet-proscenium"
+  | "concrete-monolith-cascade"
+  | "brass-halo-chamber";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -3197,6 +3207,16 @@ export const productTemplates: ProductTemplate[] = [
     layout: "center", imageFit: "contain", imageScale: 0.98, eyebrow: "",
     headline: "", subheadline: "", cta: "", polyHavenDefaultAssetId: "aerial_rocks_04",
   },
+  {id:"marble-split-gate",name:"Marble Split Gate",category:"Blender Cinematic Product Ad",description:"Physical marble gates open during a real forward dolly.",batch:18,accent:"#E8C48C",background:"#15120F",surface:"#B99A72",foreground:"#FFF8ED",muted:"#D8CABA",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"THE OPENING",headline:"Made to take the center.",subheadline:"A marble chamber opens around the product.",cta:"Discover",polyHavenDefaultAssetId:"marble_01"},
+  {id:"basalt-pedestal-rise",name:"Basalt Pedestal Rise",category:"Blender Cinematic Product Ad",description:"A physical basalt pedestal rises into a monumental packshot.",batch:18,accent:"#D77A45",background:"#090807",surface:"#29231E",foreground:"#FFF5EC",muted:"#BEB0A5",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"MONUMENT / 01",headline:"Built above the ordinary.",subheadline:"Dark rock and directed light establish the hero.",cta:"Rise",polyHavenDefaultAssetId:"dark_rock_02"},
+  {id:"slate-mechanical-iris",name:"Slate Mechanical Iris",category:"Blender Cinematic Product Ad",description:"Rigid slate fins rotate as a mechanical aperture.",batch:18,accent:"#78C7ED",background:"#07121A",surface:"#263943",foreground:"#F1FAFF",muted:"#A9BBC5",layout:"center",imageFit:"contain",imageScale:.95,eyebrow:"APERTURE / LOCK",headline:"Everything resolves here.",subheadline:"A mechanical slate iris reveals one focal point.",cta:"Focus",polyHavenDefaultAssetId:"slate_floor_03"},
+  {id:"granite-tracking-corridor",name:"Granite Tracking Corridor",category:"Blender Cinematic Product Ad",description:"A real lateral camera track moves through granite columns.",batch:18,accent:"#DFC194",background:"#131210",surface:"#56514B",foreground:"#FFF9EF",muted:"#C7BFB4",layout:"editorial",imageFit:"contain",imageScale:.95,eyebrow:"TRACK / TERMINAL",headline:"The route ends here.",subheadline:"Granite depth clears into an open terminal bay.",cta:"Arrive",polyHavenDefaultAssetId:"granite_tile_04"},
+  {id:"sandstone-sundial",name:"Sandstone Sundial",category:"Blender Cinematic Product Ad",description:"A real light sweeps fixed sandstone during a restrained camera arc.",batch:18,accent:"#F0A14C",background:"#27160B",surface:"#8C5C32",foreground:"#FFF4E6",muted:"#D2BA9F",layout:"split",imageFit:"contain",imageScale:.96,eyebrow:"LIGHT / FORM",headline:"Catch the decisive line.",subheadline:"A long shadow resolves toward the product.",cta:"Follow",polyHavenDefaultAssetId:"sandstone_cracks"},
+  {id:"blue-steel-compression-bay",name:"Blue Steel Compression Bay",category:"Blender Cinematic Product Ad",description:"Steel walls compress safely and retract around the hero stage.",batch:18,accent:"#4DCEFF",background:"#03131D",surface:"#0E4661",foreground:"#F1FBFF",muted:"#9DBAC7",layout:"technical",imageFit:"contain",imageScale:.96,eyebrow:"BAY / ACTIVE",headline:"Pressure creates precision.",subheadline:"A controlled industrial chamber protects the center.",cta:"Enter",polyHavenDefaultAssetId:"blue_metal_plate"},
+  {id:"terrazzo-rotating-atrium",name:"Terrazzo Rotating Atrium",category:"Blender Cinematic Product Ad",description:"Physical terrazzo rings rotate as the camera cranes upward.",batch:18,accent:"#F2A1B0",background:"#171214",surface:"#604B50",foreground:"#FFF8F5",muted:"#D5C2C5",layout:"poster",imageFit:"contain",imageScale:.95,eyebrow:"ATRIUM / ALIGN",headline:"Every orbit finds its center.",subheadline:"Rotating architecture resolves beneath a top light.",cta:"Align",polyHavenDefaultAssetId:"terrazzo_tiles"},
+  {id:"velvet-proscenium",name:"Velvet Proscenium",category:"Blender Cinematic Product Ad",description:"Simulated velvet curtains open around the hero.",batch:18,accent:"#E8AE58",background:"#351019",surface:"#873448",foreground:"#FFF6EA",muted:"#D7B8BD",layout:"center",imageFit:"contain",imageScale:.95,eyebrow:"FEATURE / PRESENTED",headline:"Give it the full stage.",subheadline:"Cloth, depth, and a restrained theatrical push.",cta:"Present",polyHavenDefaultAssetId:"velour_velvet"},
+  {id:"concrete-monolith-cascade",name:"Concrete Monolith Cascade",category:"Blender Cinematic Product Ad",description:"Concrete monoliths move sequentially through a camera corridor.",batch:18,accent:"#B9D2D9",background:"#111719",surface:"#596467",foreground:"#F4F8F8",muted:"#AEBABC",layout:"editorial",imageFit:"contain",imageScale:.95,eyebrow:"DEPTH / SEQUENCE",headline:"Designed through the distance.",subheadline:"A concrete cascade keeps the hero visible.",cta:"Proceed",polyHavenDefaultAssetId:"concrete"},
+  {id:"brass-halo-chamber",name:"Brass Halo Chamber",category:"Blender Cinematic Product Ad",description:"Independent metal rings and traveling lights align as a brass halo.",batch:18,accent:"#F0C56A",background:"#100B05",surface:"#806129",foreground:"#FFF7E8",muted:"#CDBC9C",layout:"center",imageFit:"contain",imageScale:.95,eyebrow:"HALO / RESOLVE",headline:"The signal becomes singular.",subheadline:"Brushed metal and moving light converge behind the product.",cta:"Illuminate",polyHavenDefaultAssetId:"metal_plate"},
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {

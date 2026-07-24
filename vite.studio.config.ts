@@ -139,6 +139,74 @@ const studioApi = (): Plugin => ({
 
       if (
         request.url?.startsWith(
+          "/advanced-studio2-assets/blender/template18/",
+        ) &&
+        request.method === "GET"
+      ) {
+        const relativePath = decodeURIComponent(
+          request.url
+            .replace("/advanced-studio2-assets/blender/template18/", "")
+            .split("?")[0],
+        );
+        const assetRoot = path.resolve(
+          "public",
+          "advanced-studio2-assets",
+          "blender",
+          "template18",
+        );
+        const filePath = path.resolve(assetRoot, relativePath);
+        if (
+          !filePath.startsWith(`${assetRoot}${path.sep}`) ||
+          !fs.existsSync(filePath) ||
+          !fs.statSync(filePath).isFile()
+        ) {
+          response.statusCode = 404;
+          response.end("Not found");
+          return;
+        }
+        const extension = path.extname(filePath);
+        response.setHeader(
+          "Content-Type",
+          extension === ".mp4"
+            ? "video/mp4"
+            : extension === ".png"
+              ? "image/png"
+              : extension === ".json"
+                ? "application/json"
+                : "application/octet-stream",
+        );
+        response.setHeader("Accept-Ranges", "bytes");
+        const size = fs.statSync(filePath).size;
+        const range = request.headers.range;
+        if (range) {
+          const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+          if (!match) {
+            response.statusCode = 416;
+            response.end();
+            return;
+          }
+          const start = match[1] ? Number(match[1]) : 0;
+          const end = match[2] ? Number(match[2]) : size - 1;
+          if (start >= size || end >= size || start > end) {
+            response.statusCode = 416;
+            response.setHeader("Content-Range", `bytes */${size}`);
+            response.end();
+            return;
+          }
+          response.statusCode = 206;
+          response.setHeader("Content-Range", `bytes ${start}-${end}/${size}`);
+          response.setHeader("Content-Length", end - start + 1);
+          fs.createReadStream(filePath, {start, end}).pipe(response);
+          return;
+        }
+        response.statusCode = 200;
+        response.setHeader("Content-Length", size);
+        fs.createReadStream(filePath).pipe(response);
+        return;
+      }
+
+      if (
+        request.url?.startsWith(
           "/advanced-studio2-assets/polyhaven/",
         ) &&
         request.method === "GET"

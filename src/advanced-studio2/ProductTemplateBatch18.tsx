@@ -9,6 +9,7 @@ import {
 } from "remotion";
 import {getProductTemplate} from "./product-templates";
 import type {ProductVideoProps} from "./ProductVideo";
+import {ProductTemplateBatch18Blender} from "./ProductTemplateBatch18Blender";
 
 const clamp = {
   extrapolateLeft: "clamp" as const,
@@ -62,7 +63,7 @@ const Material: React.FC<{
     />
   ) : null;
 
-export const ProductTemplateBatch18: React.FC<ProductVideoProps> = (props) => {
+const Faultline: React.FC<ProductVideoProps> = (props) => {
   const frame = useCurrentFrame();
   const {width, height} = useVideoConfig();
   const template = getProductTemplate(props.templateId);
@@ -342,3 +343,6 @@ export const ProductTemplateBatch18: React.FC<ProductVideoProps> = (props) => {
     </AbsoluteFill>
   );
 };
+
+export const ProductTemplateBatch18: React.FC<ProductVideoProps> = (props) =>
+  props.templateId === "faultline" ? <Faultline {...props} /> : <ProductTemplateBatch18Blender {...props} />;
