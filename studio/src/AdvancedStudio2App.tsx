@@ -29,8 +29,10 @@ import {
   type ProductTemplateId,
 } from "../../src/advanced-studio2/product-templates";
 import type {
+  PolyHavenAssetSummary,
+  PolyHavenAssetType,
+  PolyHavenCachedAssetSelection,
   PolyHavenTextureSelection,
-  PolyHavenTextureSummary,
 } from "../../src/advanced-studio2/polyhaven-assets";
 
 const formats: Array<{id: ProductVideoFormat; label: string; meta: string}> = [
@@ -70,9 +72,13 @@ export const AdvancedStudio2App: React.FC = () => {
   >("idle");
   const [renderMessage, setRenderMessage] = React.useState("");
   const [polyHavenSearch, setPolyHavenSearch] = React.useState("");
+  const [polyHavenAssetType, setPolyHavenAssetType] =
+    React.useState<PolyHavenAssetType>("textures");
   const [polyHavenAssets, setPolyHavenAssets] = React.useState<
-    PolyHavenTextureSummary[]
+    PolyHavenAssetSummary[]
   >([]);
+  const [polyHavenCachedAsset, setPolyHavenCachedAsset] =
+    React.useState<PolyHavenCachedAssetSelection>();
   const [polyHavenState, setPolyHavenState] = React.useState<
     "idle" | "loading" | "downloading" | "error"
   >("idle");
@@ -82,6 +88,12 @@ export const AdvancedStudio2App: React.FC = () => {
     productTemplates.find((item) => item.id === project.templateId) ??
     productTemplates[0];
   const durationInFrames = getProductVideoDuration(project.templateId);
+  const selectedPolyHavenAsset =
+    polyHavenAssetType === "textures"
+      ? project.polyHavenTexture
+      : polyHavenCachedAsset?.assetType === polyHavenAssetType
+        ? polyHavenCachedAsset
+        : undefined;
 
   React.useEffect(() => {
     const controller = new AbortController();
@@ -92,12 +104,12 @@ export const AdvancedStudio2App: React.FC = () => {
         const response = await fetch(
           `/api/advanced-studio2/polyhaven/assets?q=${encodeURIComponent(
             polyHavenSearch,
-          )}`,
+          )}&type=${polyHavenAssetType}`,
           {signal: controller.signal},
         );
         const result = (await response.json()) as {
           ok?: boolean;
-          items?: PolyHavenTextureSummary[];
+          items?: PolyHavenAssetSummary[];
           error?: string;
         };
         if (!response.ok || !result.ok) {
@@ -119,7 +131,7 @@ export const AdvancedStudio2App: React.FC = () => {
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [polyHavenSearch]);
+  }, [polyHavenAssetType, polyHavenSearch]);
 
   const update = <K extends keyof ProductVideoProps>(
     key: K,
@@ -240,33 +252,55 @@ export const AdvancedStudio2App: React.FC = () => {
     }
   };
 
-  const selectPolyHavenTexture = async (assetId: string) => {
+  const selectPolyHavenAsset = async (
+    assetId: string,
+    assetType: PolyHavenAssetType = polyHavenAssetType,
+  ) => {
     setPolyHavenState("downloading");
-    setPolyHavenMessage("Downloading the approved 2K diffuse texture…");
+    setPolyHavenMessage(
+      assetType === "models"
+        ? "Downloading the verified 1K GLTF and dependencies…"
+        : assetType === "hdris"
+          ? "Downloading the verified 1K HDR environment…"
+          : "Downloading the approved 2K diffuse texture…",
+    );
     try {
       const response = await fetch(
         "/api/advanced-studio2/polyhaven/download",
         {
           method: "POST",
           headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({assetId}),
+          body: JSON.stringify({assetId, assetType}),
         },
       );
       const result = (await response.json()) as {
         ok?: boolean;
-        selection?: PolyHavenTextureSelection;
+        selection?:
+          | PolyHavenTextureSelection
+          | PolyHavenCachedAssetSelection;
         error?: string;
       };
       if (!response.ok || !result.ok || !result.selection) {
-        throw new Error(result.error || "Texture download failed.");
+        throw new Error(result.error || "Poly Haven download failed.");
       }
-      update("polyHavenTexture", result.selection);
+      if (assetType === "textures") {
+        update(
+          "polyHavenTexture",
+          result.selection as PolyHavenTextureSelection,
+        );
+      } else {
+        setPolyHavenCachedAsset(
+          result.selection as PolyHavenCachedAssetSelection,
+        );
+      }
       setPolyHavenState("idle");
       setPolyHavenMessage(`${result.selection.name} is cached and render-ready.`);
     } catch (error) {
       setPolyHavenState("error");
       setPolyHavenMessage(
-        error instanceof Error ? error.message : "Texture download failed.",
+        error instanceof Error
+          ? error.message
+          : "Poly Haven download failed.",
       );
     }
   };
@@ -284,7 +318,10 @@ export const AdvancedStudio2App: React.FC = () => {
     ) {
       return;
     }
-    void selectPolyHavenTexture(selectedTemplate.polyHavenDefaultAssetId);
+    void selectPolyHavenAsset(
+      selectedTemplate.polyHavenDefaultAssetId,
+      "textures",
+    );
   }, [project.templateId]);
 
   const renderVideo = async () => {
@@ -622,29 +659,65 @@ export const AdvancedStudio2App: React.FC = () => {
           <section className="as2-polyhaven">
               <div className="as2-polyhaven-heading">
                 <div>
-                  <strong>Material environment</strong>
+                  <strong>Poly Haven assets</strong>
                   <small>
-                    Browse here · applied by Product Templates 12–17
+                    Official textures, HDRIs, and models
                   </small>
                 </div>
-                {project.polyHavenTexture ? (
+                {selectedPolyHavenAsset ? (
                   <button
                     type="button"
-                    onClick={() => update("polyHavenTexture", undefined)}
+                    onClick={() => {
+                      if (polyHavenAssetType === "textures") {
+                        update("polyHavenTexture", undefined);
+                      } else {
+                        setPolyHavenCachedAsset(undefined);
+                      }
+                    }}
                   >
                     Clear
                   </button>
                 ) : null}
               </div>
-              {project.polyHavenTexture ? (
+              <div className="as2-polyhaven-tabs">
+                {(
+                  [
+                    ["textures", "Materials"],
+                    ["hdris", "HDRIs"],
+                    ["models", "Models"],
+                  ] as const
+                ).map(([assetType, label]) => (
+                  <button
+                    key={assetType}
+                    type="button"
+                    className={
+                      polyHavenAssetType === assetType ? "active" : ""
+                    }
+                    onClick={() => {
+                      setPolyHavenAssetType(assetType);
+                      setPolyHavenSearch("");
+                      setPolyHavenMessage("");
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {selectedPolyHavenAsset ? (
                 <div className="as2-polyhaven-selected">
                   <img
-                    src={project.polyHavenTexture.thumbnailUrl}
+                    src={selectedPolyHavenAsset.thumbnailUrl}
                     alt=""
                   />
                   <div>
-                    <strong>{project.polyHavenTexture.name}</strong>
-                    <small>2K diffuse JPG · cached locally</small>
+                    <strong>{selectedPolyHavenAsset.name}</strong>
+                    <small>
+                      {polyHavenAssetType === "models"
+                        ? "1K GLTF package · cached locally"
+                        : polyHavenAssetType === "hdris"
+                          ? "1K HDR environment · cached locally"
+                          : "2K diffuse JPG · cached locally"}
+                    </small>
                   </div>
                   <Check size={16} />
                 </div>
@@ -654,7 +727,13 @@ export const AdvancedStudio2App: React.FC = () => {
                 <input
                   value={polyHavenSearch}
                   onChange={(event) => setPolyHavenSearch(event.target.value)}
-                  placeholder="Search stone, metal, fabric…"
+                  placeholder={
+                    polyHavenAssetType === "models"
+                      ? "Search rocks, architecture, objects…"
+                      : polyHavenAssetType === "hdris"
+                        ? "Search studio, sky, interior…"
+                        : "Search stone, metal, fabric…"
+                  }
                 />
               </label>
               <div className="as2-polyhaven-grid">
@@ -663,12 +742,17 @@ export const AdvancedStudio2App: React.FC = () => {
                     key={asset.assetId}
                     type="button"
                     className={
-                      project.polyHavenTexture?.assetId === asset.assetId
+                      selectedPolyHavenAsset?.assetId === asset.assetId
                         ? "selected"
                         : ""
                     }
                     disabled={polyHavenState === "downloading"}
-                    onClick={() => selectPolyHavenTexture(asset.assetId)}
+                    onClick={() =>
+                      selectPolyHavenAsset(
+                        asset.assetId,
+                        polyHavenAssetType,
+                      )
+                    }
                     title={asset.description}
                   >
                     <img src={asset.thumbnailUrl} alt="" />
@@ -677,7 +761,9 @@ export const AdvancedStudio2App: React.FC = () => {
                 ))}
               </div>
               {polyHavenState === "loading" ? (
-                <div className="as2-polyhaven-message">Loading textures…</div>
+                <div className="as2-polyhaven-message">
+                  Loading Poly Haven {polyHavenAssetType}…
+                </div>
               ) : null}
               {polyHavenMessage ? (
                 <div className="as2-polyhaven-message">
@@ -686,7 +772,7 @@ export const AdvancedStudio2App: React.FC = () => {
               ) : null}
               <a
                 className="as2-polyhaven-credit"
-                href="https://polyhaven.com/textures"
+                href="https://polyhaven.com/"
                 target="_blank"
                 rel="noreferrer"
               >

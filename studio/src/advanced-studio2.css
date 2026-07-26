@@ -162,6 +162,16 @@ button { color: inherit; }
 .as2-polyhaven-heading button {
   border: 0; background: transparent; color: #f0c866; font-size: 9px; cursor: pointer;
 }
+.as2-polyhaven-tabs {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px;
+}
+.as2-polyhaven-tabs button {
+  padding: 6px 4px; border: 1px solid #2c333e; border-radius: 7px;
+  background: #0b0e13; color: #818b98; font-size: 9px; cursor: pointer;
+}
+.as2-polyhaven-tabs button.active {
+  border-color: #68582f; background: #1b1811; color: #f0c866;
+}
 .as2-polyhaven-selected {
   display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 9px;
   margin-top: 10px; padding: 8px; border: 1px solid #51452c; border-radius: 9px;

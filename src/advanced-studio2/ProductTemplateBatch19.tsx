@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
 import {ThreeCanvas} from "@remotion/three";
-import {Environment} from "@react-three/drei";
+import {Environment, useGLTF, useTexture} from "@react-three/drei";
 import {useThree} from "@react-three/fiber";
 import {AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame, useVideoConfig} from "remotion";
 import * as THREE from "three";
@@ -20,6 +20,115 @@ const ids = [
   "cloud-portal",
   "opal-tunnel",
 ] as const;
+
+type SurfaceId =
+  | "blue-metal"
+  | "metal"
+  | "slate"
+  | "dark-rock"
+  | "granite"
+  | "sandstone"
+  | "marble"
+  | "concrete";
+
+const surfaceFiles: Record<
+  SurfaceId,
+  {base: string; normal: string; roughness: string; metallic: string | null}
+> = {
+  "blue-metal": {
+    base: "advanced-studio2-assets/polyhaven/blue_metal_plate-6189f7c443f0b7767d3e046f021b5495.jpg",
+    normal: "advanced-studio2-assets/polyhaven/blue_metal_plate-normal-c460b1b25b5d418218982d8b100822b8.jpg",
+    roughness: "advanced-studio2-assets/polyhaven/blue_metal_plate-roughness-4be6436df5c7c5ecce9febb927051d52.jpg",
+    metallic: "advanced-studio2-assets/polyhaven/blue_metal_plate-metallic-d0f422ae772522cc3978f2bf2bbb5902.jpg",
+  },
+  metal: {
+    base: "advanced-studio2-assets/polyhaven/metal_plate-91b841e7e619e55588f0183a703fb644.jpg",
+    normal: "advanced-studio2-assets/polyhaven/metal_plate-normal-797c3f3de91da0c03f44f493576e158e.jpg",
+    roughness: "advanced-studio2-assets/polyhaven/metal_plate-roughness-b2c2bfc0a5e46c1a8bdfddd236daa200.jpg",
+    metallic: null,
+  },
+  slate: {
+    base: "advanced-studio2-assets/polyhaven/slate_floor_03-08553293b689ec359c8c70c9453dad18.jpg",
+    normal: "advanced-studio2-assets/polyhaven/slate_floor_03-normal-567d35c6ca8e2c793425e30cb9530833.jpg",
+    roughness: "advanced-studio2-assets/polyhaven/slate_floor_03-roughness-5190a529da4dd15b3701591b3cdf3fb8.jpg",
+    metallic: "advanced-studio2-assets/polyhaven/slate_floor_03-metallic-8a16c9baa41d8075311ac923585a6210.jpg",
+  },
+  "dark-rock": {
+    base: "advanced-studio2-assets/polyhaven/dark_rock_02-492ae574844fa49cba63aee89ef226d1.jpg",
+    normal: "advanced-studio2-assets/polyhaven/dark_rock_02-normal-bfde991c327e33704686fb7ede0561a7.jpg",
+    roughness: "advanced-studio2-assets/polyhaven/dark_rock_02-roughness-b21b552d0b78eb3824ac159b51ddba14.jpg",
+    metallic: "advanced-studio2-assets/polyhaven/dark_rock_02-metallic-97fb8a2c3fcef2e1679c709c386311ca.jpg",
+  },
+  granite: {
+    base: "advanced-studio2-assets/polyhaven/granite_tile_04-697337cdfe1302253da449acb2984db1.jpg",
+    normal: "advanced-studio2-assets/polyhaven/granite_tile_04-normal-b2d432f809dc9a4351c46fa1c09dbdd5.jpg",
+    roughness: "advanced-studio2-assets/polyhaven/granite_tile_04-roughness-457394c89bd773036a5ba15f15e2b761.jpg",
+    metallic: "advanced-studio2-assets/polyhaven/granite_tile_04-metallic-acb78046ab00e70c34184095bde80395.jpg",
+  },
+  sandstone: {
+    base: "advanced-studio2-assets/polyhaven/sandstone_cracks-bc08fe111536bf9b12fa89b43ae90561.jpg",
+    normal: "advanced-studio2-assets/polyhaven/sandstone_cracks-normal-f2139f27ed981b9b6788f5065ea97fee.jpg",
+    roughness: "advanced-studio2-assets/polyhaven/sandstone_cracks-roughness-242c27221af41d559dfc0281345bba6f.jpg",
+    metallic: null,
+  },
+  marble: {
+    base: "advanced-studio2-assets/polyhaven/marble_01-4eeefea16242cecb3b429ac0c8f88740.jpg",
+    normal: "advanced-studio2-assets/polyhaven/marble_01-normal-f25efb0b61ec7ac183b3b0f4d032ed17.jpg",
+    roughness: "advanced-studio2-assets/polyhaven/marble_01-roughness-c4cf0375d84277c6020bf230823efdcc.jpg",
+    metallic: null,
+  },
+  concrete: {
+    base: "advanced-studio2-assets/polyhaven/concrete-8ddd1a273bbde0e4095cba8647c79b96.jpg",
+    normal: "advanced-studio2-assets/polyhaven/concrete-normal-73f9112331204512b2612792367f506a.jpg",
+    roughness: "advanced-studio2-assets/polyhaven/concrete-roughness-69b8f7a10c68946248fcc48e3e046e58.jpg",
+    metallic: null,
+  },
+};
+
+const MappedMaterial: React.FC<{
+  surface: SurfaceId;
+  color: string;
+  roughness?: number;
+  metalness?: number;
+  repeat?: number;
+  side?: THREE.Side;
+  opacity?: number;
+}> = ({surface, color, roughness = 0.55, metalness = 0, repeat = 3, side, opacity = 1}) => {
+  const files = surfaceFiles[surface];
+  const loaded = useTexture([
+    staticFile(files.base),
+    staticFile(files.normal),
+    staticFile(files.roughness),
+    staticFile(files.metallic ?? files.roughness),
+  ]);
+  const [map, normalMap, roughnessMap, metalnessMap] = useMemo(
+    () =>
+      loaded.map((source, index) => {
+        const texture = source.clone();
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(repeat, repeat);
+        texture.colorSpace = index === 0 ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+        texture.needsUpdate = true;
+        return texture;
+      }),
+    [loaded, repeat],
+  );
+  return (
+    <meshStandardMaterial
+      map={map}
+      normalMap={normalMap}
+      normalScale={new THREE.Vector2(0.42, 0.42)}
+      roughnessMap={roughnessMap}
+      metalnessMap={files.metallic ? metalnessMap : undefined}
+      color={color}
+      roughness={roughness}
+      metalness={metalness}
+      side={side}
+      transparent={opacity < 1}
+      opacity={opacity}
+    />
+  );
+};
 
 const PreviewProduct: React.FC<{name: string}> = ({name}) => (
   <div
@@ -103,14 +212,19 @@ const CameraDirector: React.FC<{id: ProductVideoProps["templateId"]; frame: numb
   return null;
 };
 
-const Floor: React.FC<{color?: string; roughness?: number; metalness?: number}> = ({
+const Floor: React.FC<{color?: string; roughness?: number; metalness?: number; surface?: SurfaceId}> = ({
   color = "#151719",
   roughness = 0.5,
   metalness = 0.05,
+  surface,
 }) => (
   <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.75, 0]} receiveShadow>
     <planeGeometry args={[40, 40]} />
-    <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} />
+    {surface ? (
+      <MappedMaterial surface={surface} color={color} roughness={roughness} metalness={metalness} repeat={7} />
+    ) : (
+      <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} />
+    )}
   </mesh>
 );
 
@@ -121,10 +235,145 @@ const Pedestal: React.FC<{light?: boolean}> = ({light = false}) => (
   </mesh>
 );
 
+const shadowProps = {
+  "shadow-mapSize": [2048, 2048] as [number, number],
+  "shadow-camera-left": -8,
+  "shadow-camera-right": 8,
+  "shadow-camera-top": 8,
+  "shadow-camera-bottom": -8,
+  "shadow-camera-near": 0.5,
+  "shadow-camera-far": 28,
+  "shadow-bias": -0.0002,
+  "shadow-normalBias": 0.035,
+};
+
+const SceneLighting: React.FC<{id: ProductVideoProps["templateId"]}> = ({id}) => {
+  if (id === "optical-mesh") {
+    return (
+      <>
+        <ambientLight intensity={0.12} />
+        <directionalLight position={[-5, 6, 4]} intensity={4.4} castShadow {...shadowProps} />
+        <rectAreaLight position={[4, 1, 3]} intensity={7} width={2} height={7} color="#aec7d2" />
+      </>
+    );
+  }
+  if (id === "mirror-dune") {
+    return (
+      <>
+        <ambientLight intensity={0.09} />
+        <directionalLight position={[-4, 7, 5]} intensity={1.4} color="#e9dfd2" castShadow {...shadowProps} />
+        <rectAreaLight position={[-4, 6, 2]} rotation={[-0.8, -0.45, 0]} intensity={9} width={3} height={9} color="#f1e7d8" />
+        <rectAreaLight position={[5, 1, -2]} rotation={[0.2, 0.7, 0]} intensity={5} width={2} height={7} color="#8ca2aa" />
+      </>
+    );
+  }
+  if (id === "water-glacier") {
+    return (
+      <>
+        <ambientLight intensity={0.2} color="#b8d5df" />
+        <directionalLight position={[-5, 7, -4]} intensity={3.1} color="#e8fbff" castShadow {...shadowProps} />
+        <pointLight position={[3, -0.5, -4]} intensity={18} color="#7ab8ca" distance={14} />
+      </>
+    );
+  }
+  if (id === "amber-forest") {
+    return (
+      <>
+        <ambientLight intensity={0.07} color="#6c4a2d" />
+        <pointLight position={[0, 0, -4]} intensity={88} color="#f0a451" distance={13} />
+        <directionalLight position={[-4, 6, 3]} intensity={2.8} color="#ffe0ac" castShadow {...shadowProps} />
+      </>
+    );
+  }
+  if (id === "glass-vortex") {
+    return (
+      <>
+        <ambientLight intensity={0.09} />
+        <directionalLight position={[-5, 7, 4]} intensity={1.25} color="#ece6dc" castShadow {...shadowProps} />
+        <rectAreaLight position={[-4, 4, 3]} intensity={8} width={1.2} height={8} color="#f8f3e9" />
+        <rectAreaLight position={[4, 1, -1]} intensity={6} width={1} height={7} color="#b88752" />
+      </>
+    );
+  }
+  if (id === "cloud-portal") {
+    return (
+      <>
+        <hemisphereLight intensity={0.8} color="#f5f0e7" groundColor="#77736b" />
+        <directionalLight position={[-5, 8, -3]} intensity={4.6} color="#fff4dc" castShadow {...shadowProps} />
+      </>
+    );
+  }
+  if (id === "opal-tunnel") {
+    return (
+      <>
+        <ambientLight intensity={0.06} color="#879a9e" />
+        <directionalLight position={[-4, 7, 4]} intensity={0.9} color="#d9e2df" castShadow {...shadowProps} />
+        <pointLight position={[0, 0, 2]} intensity={30} color="#e7d0b3" distance={12} />
+        <rectAreaLight position={[-3, 4, 2]} intensity={4} width={1.4} height={6} color="#bcdfe0" />
+      </>
+    );
+  }
+  return (
+    <>
+      <ambientLight intensity={0.12} color="#879a9e" />
+      <directionalLight position={[-4, 7, 4]} intensity={1.5} color="#d9e2df" castShadow {...shadowProps} />
+      <pointLight position={[0, 0, 2]} intensity={78} color="#e7d0b3" distance={12} />
+      <rectAreaLight position={[-3, 4, 2]} intensity={7} width={1.4} height={6} color="#bcdfe0" />
+    </>
+  );
+};
+
+const modelFiles = {
+  cables: "advanced-studio2-assets/polyhaven/models/modular_electric_cables/modular_electric_cables_1k.gltf",
+  door: "advanced-studio2-assets/polyhaven/models/large_castle_door/large_castle_door_1k.gltf",
+  rock02: "advanced-studio2-assets/polyhaven/models/moon_rock_02/moon_rock_02_1k.gltf",
+  rock03: "advanced-studio2-assets/polyhaven/models/moon_rock_03/moon_rock_03_1k.gltf",
+  stones: "advanced-studio2-assets/polyhaven/models/namaqualand_stones_01/namaqualand_stones_01_1k.gltf",
+  branches: "advanced-studio2-assets/polyhaven/models/dry_branches_medium_01/dry_branches_medium_01_1k.gltf",
+  boulder: "advanced-studio2-assets/polyhaven/models/boulder_01/boulder_01_1k.gltf",
+  pipes: "advanced-studio2-assets/polyhaven/models/modular_industrial_pipes_01/modular_industrial_pipes_01_1k.gltf",
+} as const;
+
+const PolyModel: React.FC<{
+  asset: keyof typeof modelFiles;
+  position?: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: number | [number, number, number];
+  tint?: string;
+  roughness?: number;
+  metalness?: number;
+  part?: number;
+}> = ({asset, position = [0, 0, 0], rotation = [0, 0, 0], scale = 1, tint, roughness, metalness, part}) => {
+  const {scene} = useGLTF(staticFile(modelFiles[asset]));
+  const instance = useMemo(() => {
+    const source = part === undefined ? scene : scene.children[part] ?? scene;
+    const clone = source.clone(true);
+    clone.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+      object.castShadow = true;
+      object.receiveShadow = true;
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      const adjusted = materials.map((source) => {
+        const material = source.clone();
+        if (material instanceof THREE.MeshStandardMaterial) {
+          if (tint) material.color.set(tint);
+          if (roughness !== undefined) material.roughness = roughness;
+          if (metalness !== undefined) material.metalness = metalness;
+        }
+        return material;
+      });
+      object.material = Array.isArray(object.material) ? adjusted : adjusted[0];
+    });
+    return clone;
+  }, [metalness, part, roughness, scene, tint]);
+  return <primitive object={instance} position={position} rotation={rotation} scale={scale} />;
+};
+
 const terrainGeometry = (kind: "mirror" | "glacier") => {
   const size = kind === "glacier" ? 92 : 52;
   const geometry = new THREE.BufferGeometry();
   const positions: number[] = [];
+  const uvs: number[] = [];
   const indices: number[] = [];
   for (let zIndex = 0; zIndex < size; zIndex++) {
     for (let xIndex = 0; xIndex < size; xIndex++) {
@@ -145,6 +394,7 @@ const terrainGeometry = (kind: "mirror" | "glacier") => {
           ? -1.82 + wave * 0.72
           : -1.98 + glacierRidges * Math.min(1.45, riverDistance * 0.62) - Math.exp(-riverDistance * 2.8) * 0.48;
       positions.push(x, y, z);
+      uvs.push(xIndex / (size - 1), zIndex / (size - 1));
     }
   }
   for (let zIndex = 0; zIndex < size - 1; zIndex++) {
@@ -157,6 +407,7 @@ const terrainGeometry = (kind: "mirror" | "glacier") => {
     }
   }
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   return geometry;
@@ -169,7 +420,15 @@ const TerrainSheet: React.FC<{kind: "mirror" | "glacier"}> = ({kind}) => {
       {kind === "mirror" ? (
         <meshPhysicalMaterial color="#24292b" roughness={0.08} metalness={0.82} clearcoat={0.72} flatShading />
       ) : (
-        <meshPhysicalMaterial color="#cbd8dc" roughness={0.3} clearcoat={0.22} flatShading />
+        <meshPhysicalMaterial
+          color="#c9dadd"
+          roughness={0.38}
+          metalness={0}
+          clearcoat={0.35}
+          transmission={0.1}
+          thickness={0.55}
+          flatShading
+        />
       )}
     </mesh>
   );
@@ -179,6 +438,7 @@ const duneRibbonGeometry = (width: number, length: number, phase: number) => {
   const across = 18;
   const along = 64;
   const positions: number[] = [];
+  const uvs: number[] = [];
   const indices: number[] = [];
   for (let zIndex = 0; zIndex <= along; zIndex++) {
     const v = zIndex / along;
@@ -191,6 +451,7 @@ const duneRibbonGeometry = (width: number, length: number, phase: number) => {
       const y = -1.95 + crest * (0.7 + longitudinal);
       const z = (v - 0.5) * length;
       positions.push(x, y, z);
+      uvs.push(u, v);
     }
   }
   for (let zIndex = 0; zIndex < along; zIndex++) {
@@ -204,6 +465,7 @@ const duneRibbonGeometry = (width: number, length: number, phase: number) => {
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   return geometry;
@@ -219,7 +481,7 @@ const DuneRibbon: React.FC<{width: number; length: number; phase: number; positi
   const geometry = useMemo(() => duneRibbonGeometry(width, length, phase), [length, phase, width]);
   return (
     <mesh geometry={geometry} position={position} castShadow receiveShadow>
-      <meshPhysicalMaterial color={tone} roughness={0.13} metalness={0.82} clearcoat={0.68} side={THREE.DoubleSide} />
+      <MappedMaterial surface="sandstone" color={tone} roughness={0.72} metalness={0} repeat={2.2} side={THREE.DoubleSide} />
     </mesh>
   );
 };
@@ -267,11 +529,11 @@ const CrystalForest: React.FC<{grow: number; opacity: number}> = ({grow, opacity
     <>
       <instancedMesh ref={bodyRef} args={[undefined, undefined, crystals.length]} castShadow receiveShadow>
         <cylinderGeometry args={[1, 1, 1, 6]} />
-        <meshPhysicalMaterial color="#74401f" roughness={0.16} metalness={0.08} transmission={0.2} thickness={0.8} flatShading transparent opacity={opacity} />
+        <meshPhysicalMaterial color="#d07835" roughness={0.08} metalness={0} transmission={0.38} thickness={0.9} clearcoat={0.7} flatShading transparent opacity={opacity * 0.9} />
       </instancedMesh>
       <instancedMesh ref={tipRef} args={[undefined, undefined, crystals.length]} castShadow>
         <coneGeometry args={[1, 1, 6]} />
-        <meshPhysicalMaterial color="#c4873f" roughness={0.12} metalness={0.05} transmission={0.3} thickness={0.6} flatShading transparent opacity={opacity} />
+        <meshPhysicalMaterial color="#f2bd72" roughness={0.06} metalness={0} transmission={0.48} thickness={0.62} clearcoat={0.8} flatShading transparent opacity={opacity * 0.88} />
       </instancedMesh>
     </>
   );
@@ -415,7 +677,7 @@ const OpticalMesh: React.FC<{frame: number}> = ({frame}) => {
     <>
       <color attach="background" args={["#11181c"]} />
       <fog attach="fog" args={["#11181c", 8, 18]} />
-      <Floor color="#10161a" roughness={0.28} metalness={0.18} />
+      <Floor color="#52636b" roughness={0.32} metalness={0.48} surface="blue-metal" />
       <mesh geometry={geometry}>
         <meshStandardMaterial color="#d8dedc" wireframe roughness={0.18} metalness={0.78} />
       </mesh>
@@ -436,15 +698,15 @@ const MirrorDune: React.FC<{frame: number}> = ({frame}) => {
         length: 10.5 + (i % 3) * 1.3,
         phase: i * 0.68,
         position: [((i % 5) - 2) * 2.25, 0, -Math.floor(i / 5) * 3.4 + 0.8] as [number, number, number],
-        tone: i % 3 === 0 ? "#31383b" : i % 3 === 1 ? "#202628" : "#40484b",
+        tone: i % 3 === 0 ? "#c6a986" : i % 3 === 1 ? "#9e8062" : "#dfc6a5",
       })),
     [],
   );
   return (
     <>
-      <color attach="background" args={["#697175"]} />
-      <fog attach="fog" args={["#697175", 7, 17]} />
-      <Floor color="#4d5457" roughness={0.08} metalness={0.82} />
+      <color attach="background" args={["#8e877f"]} />
+      <fog attach="fog" args={["#8e877f", 8, 20]} />
+      <Floor color="#b8b0a6" roughness={0.13} metalness={0.7} surface="metal" />
       <group position={[travel, 0, -0.5]} rotation={[0, -0.08, 0]}>
         {ribbons.map((ribbon, i) => (
           <DuneRibbon key={i} {...ribbon} />
@@ -489,7 +751,7 @@ const Glacier: React.FC<{frame: number}> = ({frame}) => {
     <>
       <color attach="background" args={["#778991"]} />
       <fog attach="fog" args={["#778991", 7, 17]} />
-      <Floor color="#aeb9bd" roughness={0.42} />
+      <Floor color="#a9b9bd" roughness={0.48} surface="slate" />
       <mesh position={[0, -2.18, 0.8]} scale={[2.1 + reveal * 2.8, 0.24, 1.35 + reveal * 0.45]} rotation={[0, 0.2, 0]} visible={reveal < 0.99}>
         <sphereGeometry args={[1, 64, 40]} />
         <meshPhysicalMaterial color="#d7e5e8" transmission={0.68} thickness={0.8} roughness={0.035} transparent opacity={1 - reveal} />
@@ -513,7 +775,7 @@ const AmberForest: React.FC<{frame: number}> = ({frame}) => {
     <>
       <color attach="background" args={["#17130f"]} />
       <fog attach="fog" args={["#17130f", 8, 19]} />
-      <Floor color="#11100e" roughness={0.2} metalness={0.35} />
+      <Floor color="#5b321c" roughness={0.46} metalness={0.05} surface="dark-rock" />
       <mesh position={[0, -1.32, 0.7]} scale={1.15 + ease(frame, [0, 44], [0, 0.72])} rotation={[frame * 0.003, frame * 0.006, -0.18]} visible={transition < 0.99} castShadow>
         <dodecahedronGeometry args={[1.45, 0]} />
         <meshPhysicalMaterial color="#b96724" roughness={0.06} transmission={0.34} thickness={1.5} clearcoat={0.72} flatShading transparent opacity={1 - transition} />
@@ -535,11 +797,19 @@ const GlassVortex: React.FC<{frame: number}> = ({frame}) => {
           const t = j / 39;
           const a = t * Math.PI * 3.4 + i * 0.41;
           const r = 0.55 + t * 3.5;
-          const flat = new THREE.Vector3(-4.8 + t * 9.6, -2.15, (i - 12) * 0.11);
+          const flat = new THREE.Vector3(
+            -4.8 + t * 9.6,
+            (i - 12) * 0.065 - 0.1,
+            Math.sin(t * Math.PI * 2 + i * 0.18) * 0.08,
+          );
           const vortex = new THREE.Vector3(Math.cos(a) * r, -2 + t * 2.7, Math.sin(a) * r);
           const ringRadius = 0.85 + t * 3.2;
-          const ring = new THREE.Vector3(Math.cos(a) * ringRadius, -1.82 + i * 0.002, Math.sin(a) * ringRadius);
-          return flat.lerp(vortex, form).lerp(ring, settle);
+          const ring = new THREE.Vector3(
+            Math.cos(a) * ringRadius,
+            Math.sin(a) * ringRadius - 0.2,
+            -0.65 + t * 0.28,
+          );
+          return flat.lerp(vortex, form).lerp(ring, settle * 0.82);
         });
         return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 70, 0.018 + (i % 3) * 0.008, 6, false);
       }),
@@ -549,8 +819,12 @@ const GlassVortex: React.FC<{frame: number}> = ({frame}) => {
     <>
       <color attach="background" args={["#34393b"]} />
       <fog attach="fog" args={["#34393b", 8, 18]} />
-      <Floor color="#34393b" roughness={0.26} metalness={0.25} />
-      <group position={[0, -0.05, 0]} scale={0.82} rotation={[0.22, turn, 0]}>
+      <Floor color="#777775" roughness={0.34} metalness={0.28} surface="metal" />
+      <group
+        position={[0, -0.05, 0]}
+        scale={0.82}
+        rotation={[0.08 + (1 - settle) * 0.14, turn * (1 - settle), 0]}
+      >
         {threads.map((geometry, i) => (
           <mesh key={i} geometry={geometry}>
             <meshPhysicalMaterial color={i % 4 === 0 ? "#b88752" : "#d8d9d7"} roughness={0.12} metalness={i % 4 === 0 ? 0.65 : 0.25} clearcoat={0.65} />
@@ -572,42 +846,37 @@ const CloudPortal: React.FC<{frame: number}> = ({frame}) => {
         <sphereGeometry args={[1.65, 64, 40]} />
         <meshPhysicalMaterial color="#d8d6cf" transmission={0.88} thickness={1.3} roughness={0.03} transparent opacity={1 - world} depthWrite={false} />
       </mesh>
-      <group scale={ease(frame, [48, 176], [0.48, 1.08])} position={[0, 0.55, 0]}>
-        <mesh position={[0, 0.2, 0]} castShadow>
-          <torusGeometry args={[2.55, 0.3, 16, 96]} />
-          <meshStandardMaterial color="#393a37" roughness={0.92} transparent opacity={world} />
+      <group
+        scale={ease(frame, [48, 176], [0.48, 1.08])}
+        position={[0, 0.55, 0]}
+        visible={world > 0.01}
+      >
+        <mesh position={[0, 0.2, -0.06]} castShadow receiveShadow>
+          <torusGeometry args={[2.55, 0.42, 24, 128]} />
+          <MappedMaterial
+            surface="dark-rock"
+            color="#d5d0c5"
+            roughness={0.92}
+            repeat={3.2}
+          />
         </mesh>
-        {Array.from({length: 76}, (_, i) => {
-          const a = (i / 76) * Math.PI * 2;
+        {Array.from({length: 24}, (_, i) => {
+          const a = (i / 24) * Math.PI * 2;
           const irregular = 2.55 + Math.sin(i * 2.17) * 0.1 + Math.cos(i * 0.73) * 0.07;
           return (
-            <mesh
+            <PolyModel
               key={i}
+              asset="boulder"
               position={[Math.cos(a) * irregular, Math.sin(a) * irregular + 0.2, 0.12 + Math.sin(i * 1.31) * 0.14]}
               rotation={[i * 0.31, i * 0.17, a]}
-              scale={[0.58 + (i % 5) * 0.045, 0.5 + (i % 4) * 0.055, 0.46 + (i % 3) * 0.06]}
-            >
-              <dodecahedronGeometry args={[0.72, 0]} />
-              <meshStandardMaterial color="#4a4b47" roughness={0.86} transparent opacity={world} />
-            </mesh>
+              scale={[0.68 + (i % 5) * 0.045, 0.62 + (i % 4) * 0.05, 0.54 + (i % 3) * 0.055]}
+              roughness={0.9}
+            />
           );
         })}
       </group>
-      <group position={[0, -2.25, -1.5]} scale={[1, 0.52, 1]} visible={world > 0.01}>
-        {Array.from({length: 128}, (_, i) => (
-          <mesh
-            key={i}
-            position={[((i * 37) % 211) / 14 - 7.5, ((i * 17) % 11) * 0.065, -((i * 29) % 173) / 13 + 4.8]}
-            scale={0.42 + ((i * 13) % 11) * 0.065}
-          >
-            <sphereGeometry args={[1, 18, 12]} />
-            <meshStandardMaterial color={i % 4 === 0 ? "#c8c9c5" : "#deddd7"} roughness={1} transparent opacity={world * (0.28 + (i % 5) * 0.055)} depthWrite={false} />
-          </mesh>
-        ))}
-      </group>
-      <Floor color="#9c9890" roughness={0.9} />
-      <directionalLight position={[0, 3, -4]} intensity={3.5} color="#d5b887" />
-      <pointLight position={[0, -0.4, -6]} intensity={48 * world} color="#d8b47e" distance={18} />
+      <Floor color="#77736c" roughness={0.82} surface="dark-rock" />
+      <pointLight position={[0, -0.4, -6]} intensity={38 * world} color="#d8b47e" distance={18} />
     </>
   );
 };
@@ -619,7 +888,7 @@ const OpalTunnel: React.FC<{frame: number}> = ({frame}) => {
     <>
       <color attach="background" args={["#0b0c0d"]} />
       <fog attach="fog" args={["#0b0c0d", 6, 17]} />
-      <Floor color="#17191a" roughness={0.58} />
+      <Floor color="#434a49" roughness={0.5} surface="granite" />
       <group position={[0, -1.95, 0.8]} visible={enter < 0.99}>
         <mesh scale={[1.42, 0.55, 1.08]}>
           <sphereGeometry args={[1.35, 64, 40]} />
@@ -660,7 +929,165 @@ const OpalTunnel: React.FC<{frame: number}> = ({frame}) => {
           );
         })}
       </group>
-      <pointLight position={[0, 0, 2]} intensity={70} color="#e7d0b3" distance={12} />
+    </>
+  );
+};
+
+const AssetOpticalMesh: React.FC<{frame: number}> = ({frame}) => {
+  const close = ease(frame, [12, 132], [0, 1]);
+  const turn = ease(frame, [0, 210], [-0.28, 0.16]);
+  const placements = [
+    {part: 4, position: [-3.3 + close * 0.72, -2.15, -0.4] as [number, number, number], rotation: [0, 0.25, -0.08] as [number, number, number], scale: 13},
+    {part: 4, position: [3.3 - close * 0.72, -2.15, -0.6] as [number, number, number], rotation: [0, -0.35, Math.PI + 0.08] as [number, number, number], scale: 13},
+    {part: 7, position: [-2.9, 2.2, -1.4] as [number, number, number], rotation: [0, Math.PI / 2, Math.PI / 2] as [number, number, number], scale: 10},
+    {part: 7, position: [2.9, 2.2, -1.4] as [number, number, number], rotation: [0, -Math.PI / 2, -Math.PI / 2] as [number, number, number], scale: 10},
+  ];
+  return (
+    <>
+      <color attach="background" args={["#0c1114"]} />
+      <fog attach="fog" args={["#0c1114", 7, 17]} />
+      <Floor color="#303c42" roughness={0.38} metalness={0.38} surface="blue-metal" />
+      <PolyModel asset="cables" position={[0, -2.5, -4.2]} scale={5.8} tint="#27353a" roughness={0.42} metalness={0.48} />
+      <group rotation={[0, turn, 0]}>
+        {placements.map((placement, index) => (
+          <PolyModel key={index} asset="cables" {...placement} tint={index === 2 ? "#9e8568" : "#667a82"} roughness={0.3} metalness={0.72} />
+        ))}
+      </group>
+    </>
+  );
+};
+
+const AssetMirrorDune: React.FC<{frame: number}> = ({frame}) => {
+  const open = ease(frame, [18, 138], [0, 1]);
+  const depth = ease(frame, [0, 210], [1.4, -1.2]);
+  return (
+    <>
+      <color attach="background" args={["#52595c"]} />
+      <fog attach="fog" args={["#52595c", 9, 24]} />
+      <Floor color="#676b6b" roughness={0.26} metalness={0.56} surface="metal" />
+      <group position={[0, -2.72, depth]}>
+        <PolyModel asset="door" position={[-3.25 - open * 0.85, 0, 0]} rotation={[0, 0.34, 0]} scale={2.05} tint="#4f5556" roughness={0.34} metalness={0.42} />
+        <PolyModel asset="door" position={[3.25 + open * 0.85, 0, 0]} rotation={[0, Math.PI - 0.34, 0]} scale={2.05} tint="#4f5556" roughness={0.34} metalness={0.42} />
+      </group>
+    </>
+  );
+};
+
+const AssetGlacier: React.FC<{frame: number}> = ({frame}) => {
+  const spread = ease(frame, [24, 132], [1.3, 1]);
+  const rocks = Array.from({length: 12}, (_, index) => {
+    const side = index % 2 === 0 ? -1 : 1;
+    const row = Math.floor(index / 2);
+    return {
+      asset: index % 3 === 0 ? "rock03" as const : "rock02" as const,
+      position: [side * (2.15 + (row % 2) * 0.72) * spread, -2.75, 3.3 - row * 1.65] as [number, number, number],
+      rotation: [0.08 * (index % 3), side * (0.42 + row * 0.13), side * 0.08] as [number, number, number],
+      scale: index % 3 === 0 ? 27 : 12.5,
+    };
+  });
+  return (
+    <>
+      <color attach="background" args={["#71838a"]} />
+      <fog attach="fog" args={["#71838a", 8, 21]} />
+      <Floor color="#839da5" roughness={0.34} surface="slate" />
+      {rocks.map((rock, index) => <PolyModel key={index} {...rock} tint={index % 4 === 0 ? "#a9c9d1" : "#7f9da6"} roughness={0.48} metalness={0.02} />)}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.68, -0.4]} receiveShadow>
+        <planeGeometry args={[2.1, 15]} />
+        <meshPhysicalMaterial color="#91cbd5" roughness={0.08} metalness={0.08} clearcoat={0.75} />
+      </mesh>
+    </>
+  );
+};
+
+const AssetAmberForest: React.FC<{frame: number}> = ({frame}) => {
+  const grow = ease(frame, [22, 148], [0.16, 1]);
+  const stones = Array.from({length: 14}, (_, index) => {
+    const side = index % 2 === 0 ? -1 : 1;
+    const row = Math.floor(index / 2);
+    return {
+      position: [side * (2.25 + (row % 3) * 0.42), -2.74, 3.8 - row * 1.45] as [number, number, number],
+      rotation: [0, side * (0.18 + row * 0.17), side * 0.05] as [number, number, number],
+      scale: [5.8 + (index % 3), (12 + (index % 4) * 3) * grow, 5.8 + (index % 3)] as [number, number, number],
+    };
+  });
+  return (
+    <>
+      <color attach="background" args={["#17130f"]} />
+      <fog attach="fog" args={["#17130f", 7, 20]} />
+      <Floor color="#5b321c" roughness={0.46} metalness={0.05} surface="dark-rock" />
+      {stones.map((stone, index) => <PolyModel key={index} asset="stones" {...stone} tint={index % 3 === 0 ? "#a9632d" : "#74401f"} roughness={0.32} metalness={0.04} />)}
+      <pointLight position={[0, -0.4, -3]} color="#e9a24b" intensity={54 * grow} distance={12} />
+    </>
+  );
+};
+
+const AssetGlassVortex: React.FC<{frame: number}> = ({frame}) => {
+  const turn = ease(frame, [0, 210], [0, Math.PI * 0.72]);
+  const close = ease(frame, [18, 142], [1.35, 0.84]);
+  const branches = Array.from({length: 4}, (_, index) => {
+    const angle = (index / 4) * Math.PI * 2 + turn;
+    return {
+      position: [Math.cos(angle) * 4.6 * close, -0.55 + Math.sin(index * 1.7) * 0.4, Math.sin(angle) * 2.4 - 1.8] as [number, number, number],
+      rotation: [Math.PI / 2 + Math.sin(index) * 0.22, angle + Math.PI / 2, index * 0.41] as [number, number, number],
+      scale: 3.5 + (index % 2) * 0.55,
+    };
+  });
+  return (
+    <>
+      <color attach="background" args={["#272b2d"]} />
+      <fog attach="fog" args={["#272b2d", 8, 19]} />
+      <Floor color="#5b5c5a" roughness={0.4} metalness={0.18} surface="metal" />
+      {branches.map((branch, index) => <PolyModel key={index} asset="branches" {...branch} tint={index % 3 === 0 ? "#9c6b3e" : "#aeb0ad"} roughness={0.3} metalness={index % 3 === 0 ? 0.5 : 0.2} />)}
+    </>
+  );
+};
+
+const AssetCloudPortal: React.FC<{frame: number}> = ({frame}) => {
+  const world = ease(frame, [44, 84], [0, 1]);
+  const portalScale = ease(frame, [48, 176], [0.68, 1.08]);
+  const boulders = Array.from({length: 18}, (_, index) => {
+    const angle = (index / 18) * Math.PI * 2;
+    const radius = 2.72 + Math.sin(index * 1.9) * 0.13;
+    return {
+      position: [Math.cos(angle) * radius, Math.sin(angle) * radius + 0.22, 0.05 + Math.sin(index * 0.73) * 0.16] as [number, number, number],
+      rotation: [index * 0.37, index * 0.21, angle - Math.PI / 2] as [number, number, number],
+      scale: 0.62 + (index % 4) * 0.08,
+    };
+  });
+  return (
+    <>
+      <color attach="background" args={["#aaa69d"]} />
+      <fog attach="fog" args={["#aaa69d", 8, 19]} />
+      <group scale={portalScale} position={[0, 0.55, 0]} visible={world > 0.01}>
+        {boulders.map((boulder, index) => <PolyModel key={index} asset="boulder" {...boulder} tint={index % 3 === 0 ? "#565652" : "#3f403d"} roughness={0.88} />)}
+      </group>
+      <Floor color="#77736c" roughness={0.82} surface="dark-rock" />
+      <pointLight position={[0, -0.4, -6]} intensity={30 * world} color="#d8b47e" distance={18} />
+    </>
+  );
+};
+
+const AssetOpalTunnel: React.FC<{frame: number}> = ({frame}) => {
+  const enter = ease(frame, [38, 74], [0, 1]);
+  const travel = ease(frame, [62, 215], [0.2, 2.4]);
+  const pipeSegments = Array.from({length: 8}, (_, index) => {
+    const angle = (index / 8) * Math.PI * 2 + frame * 0.0015;
+    const radius = 2.9;
+    return {
+      part: 1,
+      position: [Math.cos(angle) * radius, Math.sin(angle) * radius + 0.3, -2.8 + travel] as [number, number, number],
+      rotation: [Math.PI / 2, 0, 0] as [number, number, number],
+      scale: 2.7,
+    };
+  });
+  return (
+    <>
+      <color attach="background" args={["#0b0c0d"]} />
+      <fog attach="fog" args={["#0b0c0d", 6, 18]} />
+      <Floor color="#343b3a" roughness={0.52} surface="granite" />
+      <group visible={enter > 0.01}>
+        {pipeSegments.map((pipeSegment, index) => <PolyModel key={index} asset="pipes" {...pipeSegment} tint={index % 3 === 0 ? "#9b8369" : "#788683"} roughness={0.24} metalness={0.58} />)}
+      </group>
     </>
   );
 };
@@ -769,6 +1196,12 @@ export const ProductTemplateBatch19: React.FC<ProductVideoProps> = (props) => {
   const productWidth = landing.width + (isVertical ? 8 : 0);
   const upperCopy = ["mirror-dune", "water-glacier", "amber-forest"].includes(props.templateId);
   const cameraZ = isVertical ? 10.3 : 8.6;
+  const environmentFile =
+    props.templateId === "water-glacier" || props.templateId === "opal-tunnel"
+      ? "advanced-studio2-assets/polyhaven/studio_small_03-environment-74e6ef69ea9024c2cc25b3a7de8ec2f7.hdr"
+      : props.templateId === "mirror-dune" || props.templateId === "glass-vortex"
+        ? "advanced-studio2-assets/polyhaven/studio_small_05-environment-a9ce891607110a268fdcc8f09742d5c8.hdr"
+        : "advanced-studio2-assets/polyhaven/studio_small_08-environment-de3ba64222895aca876b1d1c2e0cf81a.hdr";
 
   if (!ids.includes(props.templateId as (typeof ids)[number])) return null;
 
@@ -777,15 +1210,19 @@ export const ProductTemplateBatch19: React.FC<ProductVideoProps> = (props) => {
       <ThreeCanvas
         width={width}
         height={height}
-        shadows
-        gl={{antialias: true, alpha: false, toneMapping: THREE.ACESFilmicToneMapping}}
+        shadows="soft"
+        gl={{
+          antialias: true,
+          alpha: false,
+          outputColorSpace: THREE.SRGBColorSpace,
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 0.9,
+        }}
         camera={{position: [0, 0.1, cameraZ], fov: isVertical ? 43 : 48}}
       >
         <CameraDirector id={props.templateId} frame={frame} vertical={isVertical} />
-        <Environment files={staticFile("advanced-studio2-assets/polyhaven/studio_small_08-environment-de3ba64222895aca876b1d1c2e0cf81a.hdr")} environmentIntensity={0.78} />
-        <ambientLight intensity={0.52} />
-        <directionalLight position={[-4, 7, 5]} intensity={3.2} castShadow shadow-mapSize={[1024, 1024]} />
-        <directionalLight position={[5, 2, 1]} intensity={1.2} color="#d2c4b0" />
+        <Environment files={staticFile(environmentFile)} environmentIntensity={0.62} />
+        <SceneLighting id={props.templateId} />
         <World id={props.templateId} frame={frame} />
       </ThreeCanvas>
 

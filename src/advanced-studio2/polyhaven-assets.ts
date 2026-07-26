@@ -1,4 +1,7 @@
+export type PolyHavenAssetType = "textures" | "hdris" | "models";
+
 export type PolyHavenTextureSelection = {
+  assetType?: "textures";
   assetId: string;
   name: string;
   localSrc: string;
@@ -11,7 +14,22 @@ export type PolyHavenTextureSelection = {
   authors: string[];
 };
 
-export type PolyHavenTextureSummary = {
+export type PolyHavenCachedAssetSelection = {
+  assetType: PolyHavenAssetType;
+  assetId: string;
+  name: string;
+  localSrc: string;
+  localFiles: string[];
+  thumbnailUrl: string;
+  filesHash: string;
+  resolution: "1k" | "2k";
+  format: "gltf" | "hdr" | "jpg";
+  sourceUrl: string;
+  authors: string[];
+};
+
+export type PolyHavenAssetSummary = {
+  assetType: PolyHavenAssetType;
   assetId: string;
   name: string;
   description: string;
@@ -21,4 +39,10 @@ export type PolyHavenTextureSummary = {
   filesHash: string;
   authors: string[];
   downloadCount: number;
+  attributes: Record<string, unknown>;
+  dimensions?: number[];
+  polycount?: number;
+  maxResolution?: number[];
 };
+
+export type PolyHavenTextureSummary = PolyHavenAssetSummary;
