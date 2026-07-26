@@ -64,6 +64,8 @@ const defaultState: ProductVideoProps = {
 export const AdvancedStudio2App: React.FC = () => {
   const playerRef = React.useRef<PlayerRef>(null);
   const [project, setProject] = React.useState<ProductVideoProps>(defaultState);
+  const [isTemplateLibraryExpanded, setIsTemplateLibraryExpanded] =
+    React.useState(true);
   const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | null>(null);
   const [isProcessingImage, setIsProcessingImage] = React.useState(false);
   const [imageMessage, setImageMessage] = React.useState("");
@@ -408,7 +410,28 @@ export const AdvancedStudio2App: React.FC = () => {
 
       <main className="as2-workspace">
         <aside className="as2-library">
-          {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const).map((batch) => (
+          <button
+            className="as2-template-folder"
+            type="button"
+            aria-expanded={isTemplateLibraryExpanded}
+            onClick={() => setIsTemplateLibraryExpanded((current) => !current)}
+          >
+            <span className="as2-folder-icon">
+              <Folder size={20} fill="currentColor" />
+            </span>
+            <div>
+              <strong>Product Templates 1</strong>
+              <small>18 template folders</small>
+            </div>
+            <ChevronDown
+              className="as2-folder-chevron"
+              size={17}
+              aria-hidden="true"
+            />
+          </button>
+          {isTemplateLibraryExpanded ? (
+            <div className="as2-template-library-folders">
+              {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18] as const).map((batch) => (
             <React.Fragment key={batch}>
               <button
                 className="as2-template-folder"
@@ -439,7 +462,77 @@ export const AdvancedStudio2App: React.FC = () => {
                   if (batch === 18 && selectedTemplate.batch !== 18) {
                     update("templateId", "faultline");
                   }
-                  if (batch === 19 && selectedTemplate.batch !== 19) {
+                }}
+              >
+                <span className="as2-folder-icon">
+                  <Folder size={20} fill="currentColor" />
+                </span>
+                <div>
+                  <strong>Product Templates {String(batch).padStart(2, "0")}</strong>
+                  <small>
+                    {userFacingProductTemplates.filter(
+                      (template) => template.batch === batch,
+                    ).length} locked templates
+                  </small>
+                </div>
+                <ChevronDown
+                  className="as2-folder-chevron"
+                  size={17}
+                  aria-hidden="true"
+                />
+              </button>
+              {expandedBatch === batch ? (
+                <div className="as2-template-grid">
+                  {userFacingProductTemplates
+                    .filter((template) => template.batch === batch)
+                    .map((template) => (
+                      <button
+                        key={template.id}
+                        className={`as2-template-card ${
+                          project.templateId === template.id ? "selected" : ""
+                        }`}
+                        type="button"
+                        onClick={() => update("templateId", template.id)}
+                      >
+                        <div
+                          className="as2-template-art"
+                          style={{
+                            background: template.background,
+                            color: template.foreground,
+                            borderColor: `${template.accent}55`,
+                          }}
+                        >
+                          <span style={{background: template.accent}} />
+                          <b>
+                            {String(
+                              productTemplates.indexOf(template) + 1,
+                            ).padStart(2, "0")}
+                          </b>
+                          <em>{template.eyebrow}</em>
+                        </div>
+                        <div>
+                          <strong>{template.name}</strong>
+                          <small>{template.category}</small>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              ) : null}
+            </React.Fragment>
+              ))}
+            </div>
+          ) : null}
+          {([19] as const).map((batch) => (
+            <React.Fragment key={batch}>
+              <button
+                className="as2-template-folder"
+                type="button"
+                aria-expanded={expandedBatch === batch}
+                onClick={() => {
+                  setExpandedBatch((current) =>
+                    current === batch ? null : batch,
+                  );
+                  if (selectedTemplate.batch !== 19) {
                     update("templateId", "optical-mesh");
                   }
                 }}
@@ -448,7 +541,7 @@ export const AdvancedStudio2App: React.FC = () => {
                   <Folder size={20} fill="currentColor" />
                 </span>
                 <div>
-                  <strong>Product Templates {batch}</strong>
+                  <strong>Product Templates 19</strong>
                   <small>
                     {userFacingProductTemplates.filter(
                       (template) => template.batch === batch,

@@ -69,6 +69,15 @@ button { color: inherit; }
 .as2-template-folder small { color: #7f8794; margin-top: 4px; font-size: 10px; }
 .as2-folder-chevron { color: #7f8794; transition: transform 150ms ease; }
 .as2-template-folder[aria-expanded="true"] .as2-folder-chevron { transform: rotate(180deg); }
+.as2-template-library-folders {
+  margin: -4px 0 18px 14px; padding-left: 12px; border-left: 1px solid #303744;
+}
+.as2-template-library-folders .as2-template-folder {
+  min-height: 60px; margin-bottom: 10px; padding: 10px;
+}
+.as2-template-library-folders .as2-folder-icon {
+  width: 34px; height: 34px;
+}
 
 .as2-template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .as2-template-card {
