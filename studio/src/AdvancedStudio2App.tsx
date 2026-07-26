@@ -66,7 +66,7 @@ export const AdvancedStudio2App: React.FC = () => {
   const [project, setProject] = React.useState<ProductVideoProps>(defaultState);
   const [isTemplateLibraryExpanded, setIsTemplateLibraryExpanded] =
     React.useState(true);
-  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | null>(null);
+  const [expandedBatch, setExpandedBatch] = React.useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | null>(null);
   const [isProcessingImage, setIsProcessingImage] = React.useState(false);
   const [imageMessage, setImageMessage] = React.useState("");
   const [renderState, setRenderState] = React.useState<
@@ -522,7 +522,7 @@ export const AdvancedStudio2App: React.FC = () => {
               ))}
             </div>
           ) : null}
-          {([19] as const).map((batch) => (
+          {([19, 20] as const).map((batch) => (
             <React.Fragment key={batch}>
               <button
                 className="as2-template-folder"
@@ -532,8 +532,8 @@ export const AdvancedStudio2App: React.FC = () => {
                   setExpandedBatch((current) =>
                     current === batch ? null : batch,
                   );
-                  if (selectedTemplate.batch !== 19) {
-                    update("templateId", "optical-mesh");
+                  if (selectedTemplate.batch !== batch) {
+                    update("templateId", batch === 19 ? "optical-mesh" : "stone-seam");
                   }
                 }}
               >
@@ -541,7 +541,7 @@ export const AdvancedStudio2App: React.FC = () => {
                   <Folder size={20} fill="currentColor" />
                 </span>
                 <div>
-                  <strong>Product Templates 19</strong>
+                  <strong>Product Templates {batch}</strong>
                   <small>
                     {userFacingProductTemplates.filter(
                       (template) => template.batch === batch,

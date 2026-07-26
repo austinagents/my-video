@@ -199,7 +199,27 @@ export type ProductTemplateId =
   | "amber-forest"
   | "glass-vortex"
   | "cloud-portal"
-  | "opal-tunnel";
+  | "opal-tunnel"
+  | "stone-seam"
+  | "marble-shutter"
+  | "slate-horizon"
+  | "brass-eclipse"
+  | "concrete-canyon"
+  | "granite-bridge"
+  | "sandstone-veil"
+  | "steel-lightwell"
+  | "terrazzo-terrace"
+  | "basalt-monolith"
+  | "porcelain-vault"
+  | "metal-lens"
+  | "quarry-threshold"
+  | "stone-cradle"
+  | "marble-sundial"
+  | "slate-proscenium"
+  | "brass-axis"
+  | "concrete-gallery"
+  | "granite-canopy"
+  | "sandstone-alcove";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -233,7 +253,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20;
   accent: string;
   background: string;
   surface: string;
@@ -3233,6 +3253,26 @@ export const productTemplates: ProductTemplate[] = [
   {id:"glass-vortex",name:"Glass Thread Vortex",category:"First-Frame Material Motion",description:"Fine glass and brass threads sweep into a vortex and settle into a product orbit.",batch:19,accent:"#B88752",background:"#34393B",surface:"#D8D9D7",foreground:"#FBF7F0",muted:"#C8C6C0",layout:"poster",imageFit:"contain",imageScale:.94,eyebrow:"DRAWN INTO FOCUS",headline:"Motion finds its center.",subheadline:"Every line resolves around the hero.",cta:"Follow",polyHavenDefaultAssetId:"grey_cartago_03"},
   {id:"cloud-portal",name:"Cloud Portal",category:"First-Frame Impossible Camera",description:"A magnified optical surface becomes a monumental stone portal above a soft neutral cloudscape.",batch:19,accent:"#D5B887",background:"#B8B3A9",surface:"#41423F",foreground:"#FFF9EF",muted:"#D7D0C3",layout:"center",imageFit:"contain",imageScale:.94,eyebrow:"A NEW POINT OF VIEW",headline:"Look through differently.",subheadline:"The camera crosses scale into a composed hero world.",cta:"Enter",polyHavenDefaultAssetId:"aerial_rocks_04"},
   {id:"opal-tunnel",name:"Opal Tunnel Bloom",category:"First-Frame Impossible Camera",description:"A single opal droplet becomes a faceted tunnel that carries the camera to the product.",batch:19,accent:"#D7C6B3",background:"#0B0C0D",surface:"#B8C7C4",foreground:"#FFF9F1",muted:"#C5C6C3",layout:"poster",imageFit:"contain",imageScale:.94,eyebrow:"LIGHT HAS DEPTH",headline:"Inside the extraordinary.",subheadline:"An opal surface opens into a precise crystalline passage.",cta:"Discover",polyHavenDefaultAssetId:"granite_tile_04"},
+  {id:"stone-seam",name:"Stone Seam",category:"Cinematic Material Reveal",description:"Two dark mineral planes separate along one controlled seam.",batch:20,accent:"#B5693C",background:"#080807",surface:"#5B5149",foreground:"#F6F2EA",muted:"#B8AEA3",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"PRESSURE / RELEASE",headline:"Made for the opening.",subheadline:"Material parts cleanly around the hero.",cta:"Discover",polyHavenDefaultAssetId:"dark_rock_02"},
+  {id:"marble-shutter",name:"Marble Shutter",category:"Cinematic Architectural Reveal",description:"Three precise shutters rise into a quiet marble stage.",batch:20,accent:"#BCA47E",background:"#171513",surface:"#B8AFA1",foreground:"#F6F2EA",muted:"#C6BFB4",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"LIGHT / FORM",headline:"Precision opens softly.",subheadline:"A measured reveal gives the product complete focus.",cta:"Enter",polyHavenDefaultAssetId:"marble_01"},
+  {id:"slate-horizon",name:"Slate Horizon",category:"Cinematic Horizon Reveal",description:"A thin slate horizon lifts into a deep product world.",batch:20,accent:"#7193A1",background:"#081116",surface:"#65737A",foreground:"#F3F7F7",muted:"#AAB9BE",layout:"editorial",imageFit:"contain",imageScale:.96,eyebrow:"BEYOND THE LINE",headline:"A new horizon arrives.",subheadline:"Depth and light resolve around one subject.",cta:"See more",polyHavenDefaultAssetId:"slate_floor_03"},
+  {id:"brass-eclipse",name:"Brass Eclipse",category:"Cinematic Optical Reveal",description:"Two restrained metal rings align behind the hero.",batch:20,accent:"#B98B4E",background:"#0D0A06",surface:"#786443",foreground:"#FFF5E7",muted:"#C7B69E",layout:"poster",imageFit:"contain",imageScale:.96,eyebrow:"ALIGN / REVEAL",headline:"Everything finds center.",subheadline:"A controlled eclipse resolves into the product.",cta:"Align",polyHavenDefaultAssetId:"metal_plate"},
+  {id:"concrete-canyon",name:"Concrete Canyon",category:"Cinematic Scale Reveal",description:"Monolithic concrete walls open toward a grounded hero.",batch:20,accent:"#95A7AA",background:"#101314",surface:"#858A89",foreground:"#F4F7F6",muted:"#B1BABB",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"SCALE / CLEAR",headline:"Space yields to presence.",subheadline:"Architectural weight makes room for the product.",cta:"Proceed",polyHavenDefaultAssetId:"concrete"},
+  {id:"granite-bridge",name:"Granite Bridge",category:"Cinematic Architectural Reveal",description:"A granite lintel rises above a protected product bay.",batch:20,accent:"#B39D7E",background:"#11100E",surface:"#777067",foreground:"#FFF8ED",muted:"#C2B8A9",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"ARRIVAL / 01",headline:"Built around the essential.",subheadline:"A monumental frame protects the focal point.",cta:"Arrive",polyHavenDefaultAssetId:"granite_tile_04"},
+  {id:"sandstone-veil",name:"Sandstone Veil",category:"Cinematic Material Reveal",description:"Two thin sandstone planes peel away from the center.",batch:20,accent:"#B86F38",background:"#1B1009",surface:"#A47750",foreground:"#FFF4E8",muted:"#D1B599",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"SURFACE / OPEN",headline:"The material steps aside.",subheadline:"A warm mineral veil reveals the hero.",cta:"Reveal",polyHavenDefaultAssetId:"sandstone_cracks"},
+  {id:"steel-lightwell",name:"Steel Lightwell",category:"Cinematic Light Reveal",description:"A narrow overhead source cuts through a blue steel chamber.",batch:20,accent:"#6D9DAF",background:"#071015",surface:"#52666E",foreground:"#F2FAFC",muted:"#A8BBC2",layout:"technical",imageFit:"contain",imageScale:.96,eyebrow:"LIGHT / LOCK",headline:"Engineered for attention.",subheadline:"One controlled source defines the product.",cta:"Focus",polyHavenDefaultAssetId:"metal_plate"},
+  {id:"terrazzo-terrace",name:"Terrazzo Terrace",category:"Cinematic Scale Reveal",description:"Three restrained terraces rise toward the product.",batch:20,accent:"#B57F85",background:"#171315",surface:"#9A8584",foreground:"#FFF7F4",muted:"#CDBABD",layout:"poster",imageFit:"contain",imageScale:.96,eyebrow:"LEVEL / ASCEND",headline:"Every level leads here.",subheadline:"Material depth builds toward one hero.",cta:"Ascend",polyHavenDefaultAssetId:"terrazzo_tiles"},
+  {id:"basalt-monolith",name:"Basalt Monolith",category:"Cinematic Monument Reveal",description:"Two basalt masses retreat from a bright central product bay.",batch:20,accent:"#A15F39",background:"#070707",surface:"#514B46",foreground:"#F8F2EB",muted:"#B5AAA1",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"MASS / PRESENCE",headline:"The center holds.",subheadline:"Dark mineral weight frames a precise reveal.",cta:"Hold focus",polyHavenDefaultAssetId:"dark_rock_02"},
+  {id:"porcelain-vault",name:"Porcelain Vault",category:"Cinematic Architectural Reveal",description:"A pale circular vault settles around a quiet hero stage.",batch:20,accent:"#BDB3A3",background:"#1B1B19",surface:"#C7C2B9",foreground:"#FAF8F2",muted:"#CBC7BE",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"FORM / SHELTER",headline:"Quietly monumental.",subheadline:"A soft architectural frame isolates the product.",cta:"Discover",polyHavenDefaultAssetId:"marble_01"},
+  {id:"metal-lens",name:"Metal Lens",category:"Cinematic Optical Reveal",description:"A brushed metal lens resolves above a thin product horizon.",batch:20,accent:"#B3976C",background:"#0B0D0D",surface:"#77736B",foreground:"#F7F4EC",muted:"#BBB7AE",layout:"technical",imageFit:"contain",imageScale:.96,eyebrow:"OPTIC / RESOLVE",headline:"Focus becomes form.",subheadline:"A single optical gesture finds the hero.",cta:"Resolve",polyHavenDefaultAssetId:"metal_plate"},
+  {id:"quarry-threshold",name:"Quarry Threshold",category:"Cinematic Architectural Reveal",description:"A deep stone threshold establishes a protected product chamber.",batch:20,accent:"#A98967",background:"#0D0C0B",surface:"#625A51",foreground:"#F8F3EB",muted:"#BDB1A4",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"CROSS / ARRIVE",headline:"Past the expected.",subheadline:"A carved threshold opens into the final frame.",cta:"Enter",polyHavenDefaultAssetId:"dark_rock_02"},
+  {id:"stone-cradle",name:"Stone Cradle",category:"Cinematic Product Stage",description:"Two angled granite supports hold visual weight away from the product.",batch:20,accent:"#AA9374",background:"#12110F",surface:"#756E64",foreground:"#FFF8EE",muted:"#C4B9AA",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"BALANCE / HOLD",headline:"Designed to belong.",subheadline:"A grounded cradle makes placement intentional.",cta:"See it",polyHavenDefaultAssetId:"granite_tile_04"},
+  {id:"marble-sundial",name:"Marble Sundial",category:"Cinematic Light Reveal",description:"A single brass hand sweeps across a marble aperture.",batch:20,accent:"#C09559",background:"#17120D",surface:"#B6AA98",foreground:"#FFF7E9",muted:"#CEBDA5",layout:"poster",imageFit:"contain",imageScale:.96,eyebrow:"TIME / LIGHT",headline:"The decisive moment.",subheadline:"Moving light resolves into a permanent hero frame.",cta:"Mark the moment",polyHavenDefaultAssetId:"marble_01"},
+  {id:"slate-proscenium",name:"Slate Proscenium",category:"Cinematic Stage Reveal",description:"A restrained slate proscenium opens around the product.",batch:20,accent:"#7893A0",background:"#090E11",surface:"#68747A",foreground:"#F2F8FA",muted:"#AEBCC1",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"STAGE / OPEN",headline:"Give it the frame.",subheadline:"Architectural depth keeps the product first.",cta:"Present",polyHavenDefaultAssetId:"slate_floor_03"},
+  {id:"brass-axis",name:"Brass Axis",category:"Cinematic Optical Reveal",description:"A brass axis settles into alignment inside a dark ring.",batch:20,accent:"#C09455",background:"#0E0B07",surface:"#78684E",foreground:"#FFF6E8",muted:"#C9B89D",layout:"technical",imageFit:"contain",imageScale:.96,eyebrow:"AXIS / LOCK",headline:"Precision has a center.",subheadline:"One measured movement resolves the composition.",cta:"Lock in",polyHavenDefaultAssetId:"metal_plate"},
+  {id:"concrete-gallery",name:"Concrete Gallery",category:"Cinematic Depth Reveal",description:"Four slim concrete planes create a clean tracking gallery.",batch:20,accent:"#9AABAD",background:"#111415",surface:"#858A89",foreground:"#F4F7F6",muted:"#B4BDBE",layout:"editorial",imageFit:"contain",imageScale:.96,eyebrow:"DEPTH / ARRIVAL",headline:"The gallery ends here.",subheadline:"Measured depth guides every eye to the product.",cta:"Arrive",polyHavenDefaultAssetId:"concrete"},
+  {id:"granite-canopy",name:"Granite Canopy",category:"Cinematic Architectural Reveal",description:"Two granite planes meet above a protected hero volume.",batch:20,accent:"#AC997C",background:"#12110F",surface:"#767069",foreground:"#FFF8EE",muted:"#C3B9AB",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"COVER / REVEAL",headline:"Protected by design.",subheadline:"A restrained canopy creates focus without competition.",cta:"Discover",polyHavenDefaultAssetId:"granite_tile_04"},
+  {id:"sandstone-alcove",name:"Sandstone Alcove",category:"Cinematic Product Stage",description:"A warm mineral alcove resolves around a thin lit receiver.",batch:20,accent:"#BD7840",background:"#1C1109",surface:"#A77B55",foreground:"#FFF4E7",muted:"#D2B79C",layout:"center",imageFit:"contain",imageScale:.96,eyebrow:"CARVE / HOLD",headline:"A place of its own.",subheadline:"Warm stone shapes an intentional product world.",cta:"Enter",polyHavenDefaultAssetId:"sandstone_cracks"},
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -3260,6 +3300,7 @@ export const productVideoBatch16Duration = 300;
 export const productVideoBatch17Duration = 300;
 export const productVideoBatch18Duration = 300;
 export const productVideoBatch19Duration = 240;
+export const productVideoBatch20Duration = 300;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -3281,5 +3322,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 17) return productVideoBatch17Duration;
   if (batch === 18) return productVideoBatch18Duration;
   if (batch === 19) return productVideoBatch19Duration;
+  if (batch === 20) return productVideoBatch20Duration;
   return productVideoDuration;
 };
