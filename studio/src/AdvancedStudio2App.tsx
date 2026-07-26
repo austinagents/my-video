@@ -39,6 +39,13 @@ const formats: Array<{id: ProductVideoFormat; label: string; meta: string}> = [
   {id: "vertical", label: "Vertical", meta: "1080 × 1920"},
 ];
 
+const archivedUserFacingTemplateIds = new Set<ProductTemplateId>([
+  "porcelain-blossom",
+]);
+const userFacingProductTemplates = productTemplates.filter(
+  (template) => !archivedUserFacingTemplateIds.has(template.id),
+);
+
 const defaultState: ProductVideoProps = {
   templateId: "obsidian",
   imageSrc: "",
@@ -396,7 +403,7 @@ export const AdvancedStudio2App: React.FC = () => {
                     update("templateId", "faultline");
                   }
                   if (batch === 19 && selectedTemplate.batch !== 19) {
-                    update("templateId", "porcelain-blossom");
+                    update("templateId", "optical-mesh");
                   }
                 }}
               >
@@ -406,7 +413,9 @@ export const AdvancedStudio2App: React.FC = () => {
                 <div>
                   <strong>Product Templates {batch}</strong>
                   <small>
-                    {productTemplates.filter((template) => template.batch === batch).length} locked templates
+                    {userFacingProductTemplates.filter(
+                      (template) => template.batch === batch,
+                    ).length} locked templates
                   </small>
                 </div>
                 <ChevronDown
@@ -417,7 +426,7 @@ export const AdvancedStudio2App: React.FC = () => {
               </button>
               {expandedBatch === batch ? (
                 <div className="as2-template-grid">
-                  {productTemplates
+                  {userFacingProductTemplates
                     .filter((template) => template.batch === batch)
                     .map((template) => (
                       <button
