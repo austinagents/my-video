@@ -28,6 +28,7 @@ import {
   productVideoBatch16Duration,
   productVideoBatch17Duration,
   productVideoBatch18Duration,
+  productVideoBatch19Duration,
   productVideoDuration,
   productVideoFormats,
   productVideoFps,
@@ -114,6 +115,10 @@ const defaultBatch17ProductVideoProps: ProductVideoProps = {
 const defaultBatch18ProductVideoProps: ProductVideoProps = {
   ...defaultProductVideoProps,
   templateId: "faultline",
+};
+const defaultBatch19ProductVideoProps: ProductVideoProps = {
+  ...defaultProductVideoProps,
+  templateId: "porcelain-blossom",
 };
 
 export const MyComposition: React.FC = () => {
@@ -706,6 +711,36 @@ export const MyComposition: React.FC = () => {
         width={productVideoFormats.vertical.width}
         height={productVideoFormats.vertical.height}
         defaultProps={{...defaultBatch18ProductVideoProps, formatId: "vertical"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch19Portrait"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch19Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.portrait.width}
+        height={productVideoFormats.portrait.height}
+        defaultProps={defaultBatch19ProductVideoProps}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch19Square"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch19Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.square.width}
+        height={productVideoFormats.square.height}
+        defaultProps={{...defaultBatch19ProductVideoProps, formatId: "square"}}
+      />
+
+      <Composition
+        id="AdvancedStudio2ProductBatch19Vertical"
+        component={ProductVideo}
+        durationInFrames={productVideoBatch19Duration}
+        fps={productVideoFps}
+        width={productVideoFormats.vertical.width}
+        height={productVideoFormats.vertical.height}
+        defaultProps={{...defaultBatch19ProductVideoProps, formatId: "vertical"}}
       />
     </>
   );

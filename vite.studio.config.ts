@@ -217,7 +217,7 @@ const studioApi = (): Plugin => ({
             .split("?")[0],
         );
         if (
-          !/^[a-zA-Z0-9_-]+\.(jpg|json)$/.test(fileName) ||
+          !/^[a-zA-Z0-9_-]+\.(jpg|json|hdr)$/.test(fileName) ||
           path.basename(fileName) !== fileName
         ) {
           response.statusCode = 400;
@@ -238,7 +238,11 @@ const studioApi = (): Plugin => ({
         response.statusCode = 200;
         response.setHeader(
           "Content-Type",
-          fileName.endsWith(".jpg") ? "image/jpeg" : "application/json",
+          fileName.endsWith(".jpg")
+            ? "image/jpeg"
+            : fileName.endsWith(".hdr")
+              ? "application/octet-stream"
+              : "application/json",
         );
         response.setHeader("Content-Length", fs.statSync(filePath).size);
         fs.createReadStream(filePath).pipe(response);
@@ -749,7 +753,9 @@ const studioApi = (): Plugin => ({
           const durationInFrames = getProductVideoDuration(props.templateId);
           const batch = getProductTemplate(props.templateId).batch;
           const compositionPrefix =
-            batch === 18
+            batch === 19
+              ? "AdvancedStudio2ProductBatch19"
+              : batch === 18
               ? "AdvancedStudio2ProductBatch18"
               : batch === 17
               ? "AdvancedStudio2ProductBatch17"
@@ -804,6 +810,7 @@ const studioApi = (): Plugin => ({
               "--props=output/advanced-studio2-project.json",
               `--duration=${durationInFrames}`,
               "--overwrite",
+              ...(batch === 19 ? ["--gl=angle"] : []),
             ],
             {
               cwd: process.cwd(),

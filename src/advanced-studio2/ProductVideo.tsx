@@ -32,6 +32,7 @@ export {
   productVideoBatch16Duration,
   productVideoBatch17Duration,
   productVideoBatch18Duration,
+  productVideoBatch19Duration,
   productVideoDuration,
 } from "./product-templates";
 import {ProductTemplateBatch2} from "./ProductTemplateBatch2";
@@ -51,6 +52,7 @@ import {ProductTemplateBatch15} from "./ProductTemplateBatch15";
 import {ProductTemplateBatch16} from "./ProductTemplateBatch16";
 import {ProductTemplateBatch17} from "./ProductTemplateBatch17";
 import {ProductTemplateBatch18} from "./ProductTemplateBatch18";
+import {ProductTemplateBatch19} from "./ProductTemplateBatch19";
 import type {PolyHavenTextureSelection} from "./polyhaven-assets";
 
 export type ProductVideoFormat = "portrait" | "square" | "vertical";
@@ -159,6 +161,9 @@ export const ProductVideo: React.FC<ProductVideoProps> = (props) => {
   }
   if (template.batch === 18) {
     return <ProductTemplateBatch18 {...props} />;
+  }
+  if (template.batch === 19) {
+    return <ProductTemplateBatch19 {...props} />;
   }
   const accent = props.accent || template.accent;
   const vertical = height / width > 1.55;

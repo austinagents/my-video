@@ -191,7 +191,15 @@ export type ProductTemplateId =
   | "terrazzo-rotating-atrium"
   | "velvet-proscenium"
   | "concrete-monolith-cascade"
-  | "brass-halo-chamber";
+  | "brass-halo-chamber"
+  | "porcelain-blossom"
+  | "optical-mesh"
+  | "mirror-dune"
+  | "water-glacier"
+  | "amber-forest"
+  | "glass-vortex"
+  | "cloud-portal"
+  | "opal-tunnel";
 
 export type ProductMediaSlotId =
   | "hero"
@@ -225,7 +233,7 @@ export type ProductTemplate = {
   name: string;
   category: string;
   description: string;
-  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18;
+  batch: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19;
   accent: string;
   background: string;
   surface: string;
@@ -3217,6 +3225,14 @@ export const productTemplates: ProductTemplate[] = [
   {id:"velvet-proscenium",name:"Velvet Proscenium",category:"Blender Cinematic Product Ad",description:"Simulated velvet curtains open around the hero.",batch:18,accent:"#E8AE58",background:"#351019",surface:"#873448",foreground:"#FFF6EA",muted:"#D7B8BD",layout:"center",imageFit:"contain",imageScale:.95,eyebrow:"FEATURE / PRESENTED",headline:"Give it the full stage.",subheadline:"Cloth, depth, and a restrained theatrical push.",cta:"Present",polyHavenDefaultAssetId:"velour_velvet"},
   {id:"concrete-monolith-cascade",name:"Concrete Monolith Cascade",category:"Blender Cinematic Product Ad",description:"Concrete monoliths move sequentially through a camera corridor.",batch:18,accent:"#B9D2D9",background:"#111719",surface:"#596467",foreground:"#F4F8F8",muted:"#AEBABC",layout:"editorial",imageFit:"contain",imageScale:.95,eyebrow:"DEPTH / SEQUENCE",headline:"Designed through the distance.",subheadline:"A concrete cascade keeps the hero visible.",cta:"Proceed",polyHavenDefaultAssetId:"concrete"},
   {id:"brass-halo-chamber",name:"Brass Halo Chamber",category:"Blender Cinematic Product Ad",description:"Independent metal rings and traveling lights align as a brass halo.",batch:18,accent:"#F0C56A",background:"#100B05",surface:"#806129",foreground:"#FFF7E8",muted:"#CDBC9C",layout:"center",imageFit:"contain",imageScale:.95,eyebrow:"HALO / RESOLVE",headline:"The signal becomes singular.",subheadline:"Brushed metal and moving light converge behind the product.",cta:"Illuminate",polyHavenDefaultAssetId:"metal_plate"},
+  {id:"porcelain-blossom",name:"Porcelain Blossom",category:"First-Frame Transformation",description:"A coiled porcelain form grows into a dimensional bloom before resolving around the product.",batch:19,accent:"#D9C8B0",background:"#202426",surface:"#D8D4CC",foreground:"#F7F2EA",muted:"#B8B2A9",layout:"center",imageFit:"contain",imageScale:.95,eyebrow:"FORM BECOMES PRESENCE",headline:"Made to unfold.",subheadline:"A tactile transformation reveals the hero.",cta:"Discover",polyHavenDefaultAssetId:"concrete"},
+  {id:"optical-mesh",name:"Optical Mesh",category:"First-Frame Technology",description:"A precise wire lattice lifts from a plane and closes into a controlled optical sphere.",batch:19,accent:"#D6A468",background:"#10161A",surface:"#263138",foreground:"#F4F1E9",muted:"#ADB6B8",layout:"technical",imageFit:"contain",imageScale:.94,eyebrow:"FIELD / FORM / FOCUS",headline:"Precision takes shape.",subheadline:"A measured system assembles around the hero.",cta:"Explore",polyHavenDefaultAssetId:"blue_metal_plate"},
+  {id:"mirror-dune",name:"Mirror Dune Chamber",category:"First-Frame Environment",description:"The camera travels through a restrained field of reflective dunes toward a clear product horizon.",batch:19,accent:"#C9B59B",background:"#626A6D",surface:"#171A1B",foreground:"#FAF7F0",muted:"#C2C3C0",layout:"poster",imageFit:"contain",imageScale:.94,eyebrow:"AN IMPOSSIBLE HORIZON",headline:"Beyond the expected.",subheadline:"Reflective terrain guides attention to one subject.",cta:"Enter",polyHavenDefaultAssetId:"metal_plate"},
+  {id:"water-glacier",name:"Water Film Glacier",category:"First-Frame Scale Reveal",description:"A macro liquid film becomes a carved glacial landscape with the product held at its center.",batch:19,accent:"#C4DDE2",background:"#91A2A8",surface:"#C8D5D9",foreground:"#F8FBFA",muted:"#D5DEDF",layout:"editorial",imageFit:"contain",imageScale:.94,eyebrow:"FROM DROP TO DISTANCE",headline:"Scale changes everything.",subheadline:"A material detail opens into a complete world.",cta:"See more",polyHavenDefaultAssetId:"slate_floor_03"},
+  {id:"amber-forest",name:"Amber Crystal Forest",category:"First-Frame Scale Reveal",description:"A single amber facet expands into a dense architectural crystal field.",batch:19,accent:"#DEA35C",background:"#11100E",surface:"#75431F",foreground:"#FFF4E4",muted:"#C9AD8E",layout:"center",imageFit:"contain",imageScale:.94,eyebrow:"ONE FACET / A WHOLE WORLD",headline:"Rare by nature.",subheadline:"An amber detail becomes a monumental stage.",cta:"Discover",polyHavenDefaultAssetId:"dark_rock_02"},
+  {id:"glass-vortex",name:"Glass Thread Vortex",category:"First-Frame Material Motion",description:"Fine glass and brass threads sweep into a vortex and settle into a product orbit.",batch:19,accent:"#B88752",background:"#34393B",surface:"#D8D9D7",foreground:"#FBF7F0",muted:"#C8C6C0",layout:"poster",imageFit:"contain",imageScale:.94,eyebrow:"DRAWN INTO FOCUS",headline:"Motion finds its center.",subheadline:"Every line resolves around the hero.",cta:"Follow",polyHavenDefaultAssetId:"grey_cartago_03"},
+  {id:"cloud-portal",name:"Cloud Portal",category:"First-Frame Impossible Camera",description:"A magnified optical surface becomes a monumental stone portal above a soft neutral cloudscape.",batch:19,accent:"#D5B887",background:"#B8B3A9",surface:"#41423F",foreground:"#FFF9EF",muted:"#D7D0C3",layout:"center",imageFit:"contain",imageScale:.94,eyebrow:"A NEW POINT OF VIEW",headline:"Look through differently.",subheadline:"The camera crosses scale into a composed hero world.",cta:"Enter",polyHavenDefaultAssetId:"aerial_rocks_04"},
+  {id:"opal-tunnel",name:"Opal Tunnel Bloom",category:"First-Frame Impossible Camera",description:"A single opal droplet becomes a faceted tunnel that carries the camera to the product.",batch:19,accent:"#D7C6B3",background:"#0B0C0D",surface:"#B8C7C4",foreground:"#FFF9F1",muted:"#C5C6C3",layout:"poster",imageFit:"contain",imageScale:.94,eyebrow:"LIGHT HAS DEPTH",headline:"Inside the extraordinary.",subheadline:"An opal surface opens into a precise crystalline passage.",cta:"Discover",polyHavenDefaultAssetId:"granite_tile_04"},
 ];
 
 export const getProductTemplate = (id: ProductTemplateId) => {
@@ -3243,6 +3259,7 @@ export const productVideoBatch15Duration = 300;
 export const productVideoBatch16Duration = 300;
 export const productVideoBatch17Duration = 300;
 export const productVideoBatch18Duration = 300;
+export const productVideoBatch19Duration = 240;
 
 export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   const batch = getProductTemplate(templateId).batch;
@@ -3263,5 +3280,6 @@ export const getProductVideoDuration = (templateId: ProductTemplateId) => {
   if (batch === 16) return productVideoBatch16Duration;
   if (batch === 17) return productVideoBatch17Duration;
   if (batch === 18) return productVideoBatch18Duration;
+  if (batch === 19) return productVideoBatch19Duration;
   return productVideoDuration;
 };
